@@ -1,0 +1,97 @@
+<% content_for :title, "Loans" %>
+
+<div class="container-wide" style="padding-top: 6rem;">
+  <%= render "admin/breadcrumbs", crumbs: [{ label: "Loans" }] %>
+
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h1 class="heading-1" style="color: var(--color-navy);">Loans</h1>
+    <%= btn_tag "New Loan", "#", data: { modal_target: "new-loan-modal" } %>
+  </div>
+
+  <div class="loan-status-filters" style="display: flex; gap: 0.5rem; margin-bottom: 2rem;">
+    <%= link_to "All", admin_loans_path, class: "knowledge-filter loan-filter #{params[:status].blank? ? 'active' : ''}" %>
+    <%= link_to "Active", admin_loans_path(status: "active"), class: "knowledge-filter loan-filter #{params[:status] == 'active' ? 'active' : ''}" %>
+    <%= link_to "Paid Off", admin_loans_path(status: "paid_off"), class: "knowledge-filter loan-filter #{params[:status] == 'paid_off' ? 'active' : ''}" %>
+    <%= link_to "Default", admin_loans_path(status: "default"), class: "knowledge-filter loan-filter #{params[:status] == 'default' ? 'active' : ''}" %>
+    <%= link_to "Extended", admin_loans_path(status: "extended"), class: "knowledge-filter loan-filter #{params[:status] == 'extended' ? 'active' : ''}" %>
+  </div>
+
+  <div class="stat-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+    <div class="card" style="padding: 1.5rem;">
+      <div class="stat-value" style="color: var(--color-navy);"><%= Loan.active.count %></div>
+      <div class="stat-label">Total Active Loans</div>
+    </div>
+    <div class="card" style="padding: 1.5rem;">
+      <div class="stat-value" style="color: var(--color-navy);"><%= number_to_currency(Loan.active.sum(:loan_amount)) %></div>
+      <div class="stat-label">Total Portfolio Value</div>
+    </div>
+    <div class="card" style="padding: 1.5rem;">
+      <div class="stat-value" style="color: var(--color-navy);"><%= Loan.maturing_soon(30).count %></div>
+      <div class="stat-label">Maturing in 30 Days</div>
+    </div>
+    <div class="card" style="padding: 1.5rem;">
+      <div class="stat-value" style="color: var(--color-navy);"><%= Loan.defaulted.count %></div>
+      <div class="stat-label">Loans in Default</div>
+    </div>
+  </div>
+
+  <div class="card" style="padding: 0;">
+    <div class="table-container" style="padding: 1rem 0 0;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="padding-left: 2rem;">Borrower</th>
+            <th>Property</th>
+            <th class="text-right">Balance</th>
+            <th class="text-right">Rate</th>
+            <th>Maturity</th>
+            <th>Status</th>
+            <th style="padding-right: 2rem;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @loans.each do |loan| %>
+            <tr>
+              <td style="padding-left: 2rem;">
+                <%= link_to loan.borrower_name, admin_loan_path(loan), style: "font-weight: 700;" %>
+              </td>
+              <td class="text-small"><%= loan.property_address %></td>
+              <td class="text-money"><%= number_to_currency(loan.current_balance) %></td>
+              <td class="text-right"><%= loan.effective_interest_rate %>%</td>
+              <td style="white-space: nowrap;">
+                <%= loan.effective_maturity_date.strftime("%b %-d, %Y") %>
+                <% if loan.effective_maturity_date < Date.today %>
+                  <span class="badge badge-danger">Matured</span>
+                <% elsif loan.effective_maturity_date <= 30.days.from_now.to_date %>
+                  <span class="badge badge-warning">Soon</span>
+                <% end %>
+              </td>
+              <td>
+                <% status_color = case loan.status
+                   when "active" then "success"
+                   when "paid_off" then "neutral"
+                   when "default", "foreclosure" then "danger"
+                   when "extended" then "warning"
+                   else "neutral"
+                   end %>
+                <span class="badge badge-<%= status_color %>"><%= loan.status.titleize %></span>
+              </td>
+              <td style="padding-right: 2rem;">
+                <%= link_to "Edit", edit_admin_loan_path(loan) %>
+              </td>
+            </tr>
+          <% end %>
+          <% if @loans.empty? %>
+            <tr>
+              <td colspan="7" style="padding: 3rem 2rem; text-align: center; color: var(--color-steel);">
+                No <%= params[:status].present? ? params[:status].titleize.downcase : "" %> loans to display.
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <%= render "admin/loans/new_modal" %>
+</div>

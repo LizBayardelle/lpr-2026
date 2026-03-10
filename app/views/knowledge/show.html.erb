@@ -1,0 +1,47 @@
+<%# ──────────────────────────── ARTICLE HEADER ──────────────────────────── %>
+<div class="article-header">
+  <div class="container-narrow">
+    <a href="<%= knowledge_index_path %>" class="article-back">&larr; Back to Knowledge</a>
+
+    <% if @blog.categories.any? %>
+      <div class="article-categories">
+        <% @blog.categories.each do |cat| %>
+          <a href="<%= knowledge_index_path(category: cat.slug) %>" class="badge badge-neutral"><%= cat.name %></a>
+        <% end %>
+      </div>
+    <% end %>
+
+    <h1 class="heading-display" style="margin-top: 1rem;"><%= @blog.title %></h1>
+
+    <% if @blog.teaser.present? %>
+      <p class="article-teaser"><%= @blog.teaser %></p>
+    <% end %>
+
+    <div class="article-meta">
+      <span><%= @blog.published_at&.strftime("%B %-d, %Y") || @blog.created_at.strftime("%B %-d, %Y") %></span>
+      <span>&middot;</span>
+      <span><%= @blog.user&.display_name || "Linchpin Realty Staff" %></span>
+    </div>
+  </div>
+</div>
+
+<%# ──────────────────────────── COVER IMAGE ──────────────────────────── %>
+<% if @blog.cover_image.attached? %>
+  <div class="article-cover">
+    <div class="container-narrow">
+      <%= image_tag @blog.cover_image, alt: @blog.title, class: "article-cover-img" %>
+    </div>
+  </div>
+<% end %>
+
+<%# ──────────────────────────── BODY ──────────────────────────── %>
+<div class="container-narrow">
+  <div class="article-body">
+    <%= raw @blog.body %>
+  </div>
+</div>
+
+<%# ──────────────────────────── RELATED ARTICLES ──────────────────────────── %>
+<div class="container-wide section" style="border-top: 1px solid #e5e7eb;">
+  <%= render "shared/blogs/related_articles", blogs: @related_blogs %>
+</div>

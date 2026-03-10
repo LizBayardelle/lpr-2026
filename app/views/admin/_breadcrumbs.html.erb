@@ -1,0 +1,12 @@
+<%# locals: (crumbs:) %>
+<nav class="admin-breadcrumbs">
+  <a href="<%= admin_dashboard_path %>">Admin</a>
+  <% crumbs.each do |crumb| %>
+    <span class="admin-breadcrumb-sep">/</span>
+    <% if crumb[:path] %>
+      <a href="<%= crumb[:path] %>"><%= crumb[:label] %></a>
+    <% else %>
+      <span class="admin-breadcrumb-current"><%= crumb[:label] %></span>
+    <% end %>
+  <% end %>
+</nav>

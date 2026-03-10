@@ -1,0 +1,38 @@
+<div class="modal-overlay" id="new-draw-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="heading-2">New Draw</h2>
+      <button type="button" data-modal-close>&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <%= form_with model: [:admin, @loan, LoanDraw.new], local: true do |f| %>
+        <div class="field-row">
+          <div class="field">
+            <%= f.label :draw_date, "Draw Date" %>
+            <%= f.date_field :draw_date, value: Date.today, class: "field-input" %>
+          </div>
+          <div class="field">
+            <%= f.label :amount, "Amount" %>
+            <%= f.number_field :amount, step: 0.01, class: "field-input" %>
+          </div>
+        </div>
+
+        <div class="field">
+          <%= f.label :description, "Description" %>
+          <%= f.text_field :description, class: "field-input" %>
+        </div>
+
+        <div class="field">
+          <%= f.label :inspection_notes, "Inspection Notes" %>
+          <%= f.text_area :inspection_notes, class: "field-input", rows: 3 %>
+        </div>
+
+        <div class="modal-actions">
+          <%= btn_filled_tag "Create Draw", nil, type: "submit" %>
+          <a href="#" data-modal-close>Cancel</a>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

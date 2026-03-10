@@ -1,0 +1,46 @@
+<div class="modal-overlay" id="new-fee-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="heading-2">Add Fee</h2>
+      <button type="button" data-modal-close>&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <%= form_with model: [:admin, @loan, LoanFee.new], local: true do |f| %>
+        <div class="field-row">
+          <div class="field">
+            <%= f.label :fee_type, "Fee Type" %>
+            <%= f.select :fee_type, [["Late Fee", "late_fee"], ["Extension", "extension"], ["Modification", "modification"], ["Inspection", "inspection"], ["Legal", "legal"], ["Other", "other"]], {}, class: "field-input" %>
+          </div>
+          <div class="field">
+            <%= f.label :amount, "Amount" %>
+            <%= f.number_field :amount, step: 0.01, class: "field-input" %>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <%= f.label :fee_date, "Fee Date" %>
+            <%= f.date_field :fee_date, value: Date.today, class: "field-input" %>
+          </div>
+          <div class="field">
+            <%= f.label :paid, "Paid" %>
+            <div style="padding-top: 0.5rem;">
+              <%= f.check_box :paid, class: "field-input", style: "width: auto;" %>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <%= f.label :description, "Description" %>
+          <%= f.text_field :description, class: "field-input" %>
+        </div>
+
+        <div class="modal-actions">
+          <%= btn_filled_tag "Add Fee", nil, type: "submit" %>
+          <a href="#" data-modal-close>Cancel</a>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

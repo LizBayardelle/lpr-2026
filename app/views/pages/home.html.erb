@@ -1,0 +1,161 @@
+<%# ──────────────────────────── HERO ──────────────────────────── %>
+<div class="home-hero">
+  <div class="home-hero-inner">
+    <p class="heading-3" style="color: rgba(255,255,255,0.5); letter-spacing: 0.15em;">Invest. Finance. Grow.</p>
+    <h1 class="heading-display" style="margin-top: 0.75rem;">Linchpin Realty</h1>
+    <p style="max-width: 34rem; margin: 1.5rem auto 0; color: rgba(255,255,255,0.55); font-size: 1.125rem; line-height: 1.75;">
+      Dynamic investing and loan services to elevate your
+      real estate opportunities. Real estate lending made simple.
+    </p>
+
+    <% if user_signed_in? %>
+      <p style="margin-top: 2rem; color: rgba(255,255,255,0.7); font-size: 0.9375rem;">
+        Welcome back, <strong style="color: #fff;"><%= current_user.first_name || current_user.email %></strong>.
+      </p>
+      <div style="margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: center;">
+        <%= btn_tag "Dashboard", "#" %>
+        <%= button_to "Sign Out", destroy_user_session_path, method: :delete, class: "btn-filled btn-filled-ghost", style: "color: rgba(255,255,255,0.4);" %>
+      </div>
+    <% else %>
+      <div class="home-actions">
+        <%= btn_tag "Get a Loan", loans_path %>
+        <%= btn_tag "Become a Lender", lenders_path %>
+        <%= btn_tag "Invest", invest_path %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<%#
+──────────────────────────── STATS BAR ────────────────────────────
+Uncomment when numbers are ready to back it up.
+<div class="home-stats">
+  <div class="home-stats-inner">
+    <div>
+      <div class="stat-value">$82M+</div>
+      <div class="stat-label">Lifetime Funded</div>
+    </div>
+    <div>
+      <div class="stat-value">340+</div>
+      <div class="stat-label">Loans Closed</div>
+    </div>
+    <div>
+      <div class="stat-value">4 Days</div>
+      <div class="stat-label">Avg. Close Time</div>
+    </div>
+    <div>
+      <div class="stat-value">98%</div>
+      <div class="stat-label">Repayment Rate</div>
+    </div>
+  </div>
+</div>
+%>
+
+<%# ──────────────────────────── THREE PATHS ──────────────────────────── %>
+<div class="container-wide section">
+  <span class="section-label">How We Work</span>
+
+  <div class="home-grid-3">
+    <div class="card" style="padding: 2rem;">
+      <p class="heading-3">Get a Loan</p>
+      <p class="text-body" style="margin-top: 0.75rem;">
+        Specialized hard money loans for individuals navigating the
+        hurdles of traditional financing. Whether you need a bridge
+        loan, rehab financing, or a fast close, we provide practical
+        solutions that move at the speed of your deal.
+      </p>
+      <div style="margin-top: 1.5rem;">
+        <%= btn_tag "Apply Now", loans_path %>
+      </div>
+    </div>
+
+    <div class="card" style="padding: 2rem;">
+      <p class="heading-3">Become a Lender</p>
+      <p class="text-body" style="margin-top: 0.75rem;">
+        Engage as a hard money lender and earn competitive returns
+        backed by real property. We provide transparent terms,
+        first-position liens, and consistent deal flow so you
+        can put your capital to work with confidence.
+      </p>
+      <div style="margin-top: 1.5rem;">
+        <%= btn_tag "Learn More", lenders_path %>
+      </div>
+    </div>
+
+    <div class="card" style="padding: 2rem;">
+      <p class="heading-3">Invest</p>
+      <p class="text-body" style="margin-top: 0.75rem;">
+        Real estate investment opportunities regardless of capital level.
+        From individual properties to portfolio-level participation,
+        we open the door to new real estate investment for those
+        ready to grow.
+      </p>
+      <div style="margin-top: 1.5rem;">
+        <%= btn_tag "View Opportunities", invest_path %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%# ──────────────────────────── MISSION ──────────────────────────── %>
+<div style="background: var(--color-smoke); border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb;">
+  <div class="container-wide section">
+    <div class="home-grid-2">
+      <div>
+        <span class="section-label">Our Mission</span>
+        <p class="heading-1">Ethical Principles.<br>Practical Solutions.</p>
+      </div>
+      <div>
+        <p class="text-body">
+          Our mission centers on ethical principles and practical solutions,
+          prioritizing transparency, integrity, and excellence in every
+          interaction. Whether you are borrowing, lending, or investing,
+          we structure every deal to protect all parties and deliver
+          real returns.
+        </p>
+        <p class="text-body" style="margin-top: 1rem;">
+          Born in Queens and now operating out of Southern California,
+          Linchpin Realty brings a hands-on, no-nonsense approach to
+          every deal we touch.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%# ──────────────────────────── CTA ──────────────────────────── %>
+<div class="home-cta ctx-black">
+  <div class="container-wide" style="padding-top: 5rem; padding-bottom: 5rem; text-align: center;">
+    <div style="max-width: 36rem; margin: 0 auto;">
+      <p class="heading-1" style="color: white;">Ready to Move?</p>
+      <p style="color: var(--color-steel); margin-top: 1rem; line-height: 1.75; font-size: 0.9375rem;">
+        Schedule a call to discuss your deal. No obligation,
+        no runaround, just a straight conversation about what is possible.
+      </p>
+      <div class="home-cta-buttons">
+        <%= btn_tag "Schedule a Call", "https://calendly.com/anthony-socalkeys" %>
+        <%= btn_tag "Contact Us", "mailto:anthony@linchpinrealty.com" %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%# ──────────────────────────── FOOTER ──────────────────────────── %>
+<footer class="home-footer">
+  <div class="home-footer-inner">
+    <div>
+      <p class="home-footer-brand">Linchpin Realty</p>
+      <p class="home-footer-legal">DRE #02018158 &middot; NMLS #2643847</p>
+      <p class="home-footer-legal">&copy; <%= Date.current.year %> Linchpin Realty LLC | All rights reserved.</p>
+    </div>
+    <div class="home-footer-links">
+      <a href="#">About</a>
+      <a href="/knowledge">Knowledge</a>
+      <a href="#">Contact</a>
+      <a href="#">Client Hub</a>
+    </div>
+    <div class="home-footer-links">
+      <a href="mailto:anthony@linchpinrealty.com">Send Us an Email</a>
+    </div>
+  </div>
+</footer>

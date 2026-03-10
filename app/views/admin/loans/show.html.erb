@@ -1,0 +1,720 @@
+<% content_for :title, @loan.borrower_name %>
+
+<%
+  status_color = case @loan.status
+    when "active" then "success"
+    when "paid_off" then "neutral"
+    when "default", "foreclosure" then "danger"
+    when "extended" then "warning"
+    else "neutral"
+    end
+%>
+
+<div class="container-wide" style="padding-top: 6rem; padding-bottom: 6rem;">
+  <div class="admin-breadcrumbs-inline loan-breadcrumb-bar">
+    <%= render "admin/breadcrumbs", crumbs: [{ label: "Loans", path: admin_loans_path }, { label: @loan.borrower_name }] %>
+    <%= btn_tag "Edit Loan", "#", data: { modal_target: "edit-loan-modal" } %>
+  </div>
+
+  <%# ── Navy Header ── %>
+  <div class="card-navy ctx-navy loan-header-grid" style="padding: 2rem 2.5rem; margin-bottom: 2rem;">
+    <div>
+      <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+        <h1 style="font-family: 'Barlow Condensed', sans-serif; font-size: 1.75rem; font-weight: 700; letter-spacing: 0.01em; text-transform: uppercase; color: #fff; margin: 0;">
+          <%= @loan.borrower_name %>
+        </h1>
+        <span class="badge badge-<%= status_color %>"><%= @loan.status.titleize %></span>
+      </div>
+      <% if @loan.borrower_address.present? %>
+        <div style="font-size: 0.8125rem; color: var(--color-concrete); white-space: pre-line; line-height: 1.5;"><%= @loan.borrower_address %></div>
+      <% end %>
+      <div style="font-size: 0.8125rem; color: var(--color-concrete); margin-top: 0.25rem;"><%= @loan.property_address %></div>
+    </div>
+    <div class="loan-header-dates">
+      <div>
+        <div style="font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em; color: var(--color-concrete); margin-bottom: 0.375rem;">Origination</div>
+        <div style="font-size: 1.0625rem; font-weight: 600; color: #fff; white-space: nowrap;"><%= @loan.origination_date.strftime("%b %-d, %Y") %></div>
+      </div>
+      <div>
+        <div style="font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em; color: var(--color-concrete); margin-bottom: 0.375rem;">Maturity</div>
+        <div style="font-size: 1.0625rem; font-weight: 600; color: #fff; white-space: nowrap;"><%= @loan.effective_maturity_date.strftime("%b %-d, %Y") %></div>
+      </div>
+    </div>
+  </div>
+
+  <%# ── Loan Details + Current Balance + Payment Info — 3-column row ── %>
+  <div class="loan-cards-row">
+
+    <%# Loan Details %>
+    <div class="card" style="padding: 1.75rem 2rem;">
+      <h3 class="heading-3" style="margin-bottom: 1.25rem;">Loan Details</h3>
+      <table style="width: 100%; font-size: 0.8125rem;">
+        <tr>
+          <td style="padding: 0.375rem 0; color: var(--color-steel);">Principal</td>
+          <td style="padding: 0.375rem 0; text-align: right; font-weight: 500;"><%= number_to_currency(@loan.loan_amount) %></td>
+        </tr>
+        <tr>
+          <td style="padding: 0.375rem 0; color: var(--color-steel);">Interest Rate</td>
+          <td style="padding: 0.375rem 0; text-align: right; font-weight: 500;"><%= @loan.effective_interest_rate %>%</td>
+        </tr>
+        <tr>
+          <td style="padding: 0.375rem 0; color: var(--color-steel);">Calculated</td>
+          <td style="padding: 0.375rem 0; text-align: right; font-weight: 500;"><%= @loan.interest_calc_method.gsub("_", "/").gsub(/[a-z]+/) { |w| w.capitalize } %></td>
+        </tr>
+        <tr>
+          <td style="padding: 0.375rem 0; color: var(--color-steel);">Payment Type</td>
+          <td style="padding: 0.375rem 0; text-align: right; font-weight: 500;"><%= @loan.payment_type.titleize %></td>
+        </tr>
+        <tr>
+          <td style="padding: 0.375rem 0; color: var(--color-steel);">Term</td>
+          <td style="padding: 0.375rem 0; text-align: right; font-weight: 500;"><%= @loan.loan_term_months %> months</td>
+        </tr>
+        <% if @loan.origination_fee > 0 %>
+          <tr>
+            <td style="padding: 0.375rem 0; color: var(--color-steel);">Origination Fee</td>
+            <td style="padding: 0.375rem 0; text-align: right; font-weight: 500;">
+              <%= number_to_currency(@loan.origination_fee) %>
+              <div style="font-size: 0.6875rem; font-weight: 400; color: var(--color-steel); margin-top: 1px;"><%= @loan.origination_fee_type == "flat" ? "Flat" : "#{@loan.origination_fee_percent}%" %>, <%= @loan.origination_fee_handling == "net_funded" ? "net funded" : "collected separately" %></div>
+            </td>
+          </tr>
+        <% end %>
+      </table>
+    </div>
+
+    <%# Current Balance %>
+    <% draws_total = @draws.where(status: "funded").sum(:amount) %>
+    <div class="card" style="padding: 1.75rem 2rem;">
+      <h3 class="heading-3" style="margin-bottom: 1.25rem;">Activity to Date</h3>
+      <table style="width: 100%; font-size: 0.8125rem;">
+        <tr>
+          <td style="padding: 0.375rem 0; color: var(--color-steel);">Original Amount</td>
+          <td class="text-money" style="padding: 0.375rem 0; font-size: inherit;"><%= number_to_currency(@loan.loan_amount) %></td>
+        </tr>
+        <% if draws_total > 0 %>
+          <tr>
+            <td style="padding: 0.375rem 0; color: var(--color-steel);">Draws Funded</td>
+            <td class="text-money" style="padding: 0.375rem 0; font-size: inherit;">+ <%= number_to_currency(draws_total) %></td>
+          </tr>
+        <% end %>
+        <tr>
+          <td style="padding: 0.375rem 0; color: var(--color-steel);">Interest Accrued</td>
+          <td class="text-money" style="padding: 0.375rem 0; font-size: inherit;"><%= number_to_currency(@loan.total_interest_accrued) %></td>
+        </tr>
+        <% if @loan.total_fees > 0 %>
+          <tr>
+            <td style="padding: 0.375rem 0; color: var(--color-steel);">Fees Assessed</td>
+            <td class="text-money" style="padding: 0.375rem 0; font-size: inherit;"><%= number_to_currency(@loan.total_fees) %></td>
+          </tr>
+        <% end %>
+        <tr>
+          <td style="padding: 0.375rem 0; color: var(--color-steel);">Total Payments</td>
+          <td class="text-money" style="padding: 0.375rem 0; font-size: inherit;">(<%= number_to_currency(@loan.total_payments_received) %>)</td>
+        </tr>
+        <tr style="border-top: 2px solid #000;">
+          <td style="padding: 0.625rem 0 0; font-weight: 600;">Amount Owed</td>
+          <td class="text-money" style="padding: 0.625rem 0 0; font-weight: 600; font-size: inherit;"><%= number_to_currency(@loan.current_balance) %></td>
+        </tr>
+        <tr>
+          <td style="padding: 0.25rem 0 0 0.75rem; color: var(--color-concrete); font-size: 0.75rem;"><span style="margin-right: 0.375rem;">&#x2514;</span> Principal</td>
+          <td class="text-money" style="padding: 0.25rem 0 0; font-size: 0.75rem; color: var(--color-steel);"><%= number_to_currency(@loan.principal_balance_as_of(Date.current)) %></td>
+        </tr>
+      </table>
+    </div>
+
+    <%# Next Payment %>
+    <div class="card" style="padding: 1.75rem 2rem;">
+      <h3 class="heading-3" style="margin-bottom: 1.25rem;">Next Payment</h3>
+      <table style="width: 100%; font-size: 0.8125rem;">
+        <% if @loan.status == "active" && @loan.next_payment_date.present? %>
+          <tr>
+            <td style="padding: 0.375rem 0; color: var(--color-steel);">Due Date</td>
+            <td style="padding: 0.375rem 0; text-align: right; font-weight: 500;"><%= @loan.next_payment_date.strftime("%b %-d, %Y") %></td>
+          </tr>
+        <% end %>
+        <tr>
+          <td style="padding: 0.375rem 0; color: var(--color-steel);">Amount Due</td>
+          <td class="text-money" style="padding: 0.375rem 0; font-size: inherit;"><%= number_to_currency(@loan.monthly_payment_amount) %></td>
+        </tr>
+        <tr>
+          <td style="padding: 0.25rem 0 0.25rem 0.75rem; color: var(--color-concrete);"><span style="color: var(--color-concrete); margin-right: 0.375rem;">&#x2514;</span> Interest</td>
+          <td class="text-money" style="padding: 0.25rem 0; font-size: inherit; color: var(--color-concrete);"><%= number_to_currency(@loan.monthly_interest_due) %></td>
+        </tr>
+        <% if @loan.payment_type == "fully_amortizing" %>
+          <tr>
+            <td style="padding: 0.25rem 0 0.25rem 0.75rem; color: var(--color-concrete);"><span style="color: var(--color-concrete); margin-right: 0.375rem;">&#x2514;</span> Principal</td>
+            <td class="text-money" style="padding: 0.25rem 0; font-size: inherit; color: var(--color-concrete);"><%= number_to_currency(@loan.monthly_payment_amount - @loan.monthly_interest_due) %></td>
+          </tr>
+        <% end %>
+        <% if @loan.unpaid_fees > 0 %>
+          <tr>
+            <td style="padding: 0.375rem 0; color: var(--color-maroon);">Unpaid Fees</td>
+            <td class="text-money" style="padding: 0.375rem 0; font-size: inherit; color: var(--color-maroon);"><%= number_to_currency(@loan.unpaid_fees) %></td>
+          </tr>
+        <% end %>
+        <% if @loan.grace_period_days.present? && @loan.late_fee_percent.present? && @loan.late_fee_percent > 0 %>
+          <tr>
+            <td colspan="2" style="padding: 0.75rem 0 0; color: var(--color-steel); font-size: 0.75rem; line-height: 1.4;">
+              Late fee of <%= @loan.late_fee_percent %>% applies after <%= @loan.grace_period_days %>-day grace period.
+            </td>
+          </tr>
+        <% end %>
+      </table>
+    </div>
+  </div>
+
+  <%# Tabbed Sections %>
+  <div data-tabs>
+    <div class="loan-tabs">
+      <button data-tab="ledger" class="loan-tab active">Ledger</button>
+      <button data-tab="payments" class="loan-tab">Payments</button>
+      <button data-tab="statements" class="loan-tab">Statements</button>
+      <button data-tab="draws" class="loan-tab">Draws</button>
+      <button data-tab="fees" class="loan-tab">Fees</button>
+      <button data-tab="documents" class="loan-tab">Documents</button>
+      <button data-tab="extensions" class="loan-tab">Extensions</button>
+    </div>
+
+    <%# Ledger Tab %>
+    <div data-tab-panel="ledger" class="loan-tab-panel active">
+      <div class="card" style="padding: 0; margin-top: 1.5rem;">
+        <div style="padding: 1.5rem 2rem 0; display: flex; justify-content: space-between; align-items: center;">
+          <h3 class="heading-3">Transaction Ledger</h3>
+          <%= btn_filled_tag "Post Adjustment", "#", data: { modal_target: "post-adjustment-modal" } %>
+        </div>
+        <div class="table-container" style="padding: 1rem 0 0;">
+          <% next_sort = @ledger_sort == "desc" ? "asc" : "desc" %>
+          <table class="data-table" style="min-width: 1000px;">
+            <thead>
+              <tr>
+                <th style="padding-left: 2rem;">
+                  <%= link_to admin_loan_path(@loan, tab: "ledger", ledger_sort: next_sort), style: "color: inherit; text-decoration: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem;" do %>
+                    Date <span style="font-size: 0.625rem;"><%= @ledger_sort == "desc" ? "▾" : "▴" %></span>
+                  <% end %>
+                </th>
+                <th>Type</th>
+                <th>Description</th>
+                <th class="text-right">Debit</th>
+                <th class="text-right">Credit</th>
+                <th class="text-right">Amount Owed</th>
+                <th class="text-right">Mo. Interest</th>
+                <th style="padding-right: 2rem;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @ledger_entries.each do |entry| %>
+                <%
+                  type_color = case entry.entry_type
+                    when "disbursement" then "navy"
+                    when "draw" then "navy"
+                    when "interest_accrual" then "warning"
+                    when "payment_principal", "payment_interest", "payment_late_fee" then "success"
+                    when "fee_assessed", "late_fee_assessed", "extension_fee" then "danger"
+                    when "fee_paid" then "success"
+                    when "adjustment" then "neutral"
+                    else "neutral"
+                    end
+                %>
+                <tr style="<%= 'opacity: 0.5;' if entry.reversed? %>">
+                  <td style="white-space: nowrap; padding-left: 2rem;"><%= entry.effective_date.strftime("%b %-d, %Y") %></td>
+                  <td style="white-space: nowrap;">
+                    <span class="badge badge-<%= type_color %>"><%= entry.human_type %></span>
+                    <% if entry.reversed? %>
+                      <span class="badge badge-danger" style="margin-left: 0.25rem;">Reversed</span>
+                    <% elsif entry.reversal? %>
+                      <span class="badge badge-neutral" style="margin-left: 0.25rem;">Reversal</span>
+                    <% end %>
+                  </td>
+                  <td class="text-small"><%= entry.description %></td>
+                  <td class="text-money"><%= entry.amount > 0 ? number_to_currency(entry.amount) : "" %></td>
+                  <td class="text-money"><%= entry.amount < 0 ? number_to_currency(entry.amount.abs) : "" %></td>
+                  <td class="text-money" style="font-weight: 500;"><%= number_to_currency(entry.running_balance) %></td>
+                  <td class="text-money" style="color: var(--color-steel);">
+                    <% if entry.principal_affecting? %>
+                      <%= number_to_currency(@loan.monthly_interest_due(@principal_at_entry[entry.id])) %>
+                    <% end %>
+                  </td>
+                  <td style="padding-right: 2rem;">
+                    <% unless entry.reversed? || entry.reversal? %>
+                      <%= button_to "Reverse", reverse_admin_loan_loan_ledger_entry_path(@loan, entry), method: :post, class: "btn-filled btn-filled-danger", style: "font-size: 11px; padding: 4px 10px;", data: { turbo_confirm: "Reverse this ledger entry? This will post an offsetting entry." } %>
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+        <% if @ledger_entries.empty? %>
+          <div style="padding: 2rem; text-align: center; color: var(--color-steel); font-size: 0.875rem;">
+            No ledger entries yet. Entries are created automatically when payments, draws, and fees are recorded.
+          </div>
+        <% end %>
+      </div>
+
+      <%# Post Adjustment Modal %>
+      <div class="modal-overlay" data-modal="post-adjustment-modal">
+        <div class="modal" style="max-width: 480px;">
+          <div class="modal-header">
+            <h3 class="heading-3">Post Manual Adjustment</h3>
+            <button class="modal-close" data-modal-close>&times;</button>
+          </div>
+          <%= form_with url: admin_loan_loan_ledger_entries_path(@loan), method: :post do |f| %>
+            <div class="modal-body" style="display: flex; flex-direction: column; gap: 1rem;">
+              <div>
+                <label class="field-label">Effective Date</label>
+                <input type="date" name="effective_date" value="<%= Date.current %>" class="field-input" required>
+              </div>
+              <div>
+                <label class="field-label">Amount</label>
+                <input type="number" name="amount" step="0.01" class="field-input" required placeholder="Positive = debit, negative = credit">
+              </div>
+              <div>
+                <label class="field-label">Description</label>
+                <input type="text" name="description" class="field-input" required placeholder="Reason for adjustment">
+              </div>
+            </div>
+            <div class="modal-footer">
+              <%= btn_filled_tag "Post Adjustment", nil, type: "submit" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <%# Payments Tab %>
+    <div data-tab-panel="payments" class="loan-tab-panel">
+      <div class="card" style="padding: 0; margin-top: 1.5rem;">
+        <div style="padding: 1.5rem 2rem 0; display: flex; justify-content: space-between; align-items: center;">
+          <h3 class="heading-3">Payment History</h3>
+          <%= btn_filled_tag "Record Payment", "#", data: { modal_target: "new-payment-modal" } %>
+        </div>
+        <div class="table-container" style="padding: 1rem 0 0;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="padding-left: 2rem;">Date</th>
+                <th class="text-right">Amount</th>
+                <th class="text-right">Interest</th>
+                <th class="text-right">Principal</th>
+                <th class="text-right">Late Fee</th>
+                <th style="padding-left: 1.25rem;">Method</th>
+                <th>Reference</th>
+                <th>Notes</th>
+                <th style="padding-right: 2rem;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @payments.each do |payment| %>
+                <tr>
+                  <td style="white-space: nowrap; padding-left: 2rem;"><%= payment.payment_date.strftime("%b %-d, %Y") %></td>
+                  <td class="text-money"><%= number_to_currency(payment.amount) %></td>
+                  <td class="text-money"><%= number_to_currency(payment.interest_amount) %></td>
+                  <td class="text-money"><%= number_to_currency(payment.principal_amount) %></td>
+                  <td class="text-money"><%= number_to_currency(payment.late_fee_amount) %></td>
+                  <td style="padding-left: 1.25rem;"><%= payment.payment_method&.titleize %></td>
+                  <td><%= payment.reference_number %></td>
+                  <td class="text-small"><%= payment.notes %></td>
+                  <td style="padding-right: 2rem;">
+                    <%= link_to "Edit", edit_admin_loan_payment_path(@loan, payment) %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+            <tfoot>
+              <tr style="font-weight: 600;">
+                <td style="padding-left: 2rem;">Totals</td>
+                <td class="text-money"><%= number_to_currency(@payments.sum(&:amount)) %></td>
+                <td class="text-money"><%= number_to_currency(@payments.sum(&:interest_amount)) %></td>
+                <td class="text-money"><%= number_to_currency(@payments.sum(&:principal_amount)) %></td>
+                <td class="text-money"><%= number_to_currency(@payments.sum(&:late_fee_amount)) %></td>
+                <td colspan="4"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <%= render "admin/loans/payments/new_modal" %>
+    </div>
+
+    <%# Statements Tab %>
+    <div data-tab-panel="statements" class="loan-tab-panel">
+      <div class="card" style="padding: 0; margin-top: 1.5rem;">
+        <div style="padding: 1.5rem 2rem 0; display: flex; justify-content: space-between; align-items: center;">
+          <h3 class="heading-3">Statements</h3>
+          <%= btn_filled_tag "Generate Statement", "#", data: { modal_target: "generate-statement-modal" } %>
+        </div>
+        <div class="table-container" style="padding: 1rem 0 0;">
+          <table class="data-table" style="min-width: 900px;">
+            <thead>
+              <tr>
+                <th style="padding-left: 2rem;">Date</th>
+                <th>Period</th>
+                <th class="text-right">Beginning Bal</th>
+                <th class="text-right">Interest Due</th>
+                <th class="text-right">Payments Received</th>
+                <th class="text-right">Past Due</th>
+                <th class="text-right">Late Fee</th>
+                <th class="text-right" style="padding-right: 2rem;">Ending Bal</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @statements.each do |statement| %>
+                <tr style="cursor: pointer;" onclick="window.location='<%= admin_loan_loan_statement_path(@loan, statement) %>'">
+                  <td style="white-space: nowrap; padding-left: 2rem;">
+                    <%= statement.statement_date.strftime("%b %-d, %Y") %>
+                    <% if statement.stale? %>
+                      <span class="badge badge-warning" style="margin-left: 0.375rem;">Stale</span>
+                    <% end %>
+                    <div class="text-small" style="font-size: 0.6875rem; margin-top: 2px;">Generated <%= statement.created_at.strftime("%b %-d, %Y") %></div>
+                  </td>
+                  <td style="white-space: nowrap;"><%= statement.period_start.strftime("%b %-d") %> &ndash; <%= statement.period_end.strftime("%b %-d, %Y") %></td>
+                  <td class="text-money"><%= number_to_currency(statement.beginning_balance) %></td>
+                  <td class="text-money"><%= number_to_currency(statement.interest_due) %></td>
+                  <td class="text-money"><%= number_to_currency(statement.payments_received) %></td>
+                  <td class="text-money"><%= number_to_currency(statement.past_due_amount) %></td>
+                  <td class="text-money"><%= number_to_currency(statement.late_fee) %></td>
+                  <td class="text-money" style="padding-right: 2rem;"><%= number_to_currency(statement.ending_balance) %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <%= render "admin/loans/statements/generate_modal" %>
+    </div>
+
+    <%# Draws Tab %>
+    <div data-tab-panel="draws" class="loan-tab-panel">
+      <div class="card" style="padding: 0; margin-top: 1.5rem;">
+        <div style="padding: 1.5rem 2rem 0; display: flex; justify-content: space-between; align-items: center;">
+          <h3 class="heading-3">Draws</h3>
+          <%= btn_filled_tag "New Draw", "#", data: { modal_target: "new-draw-modal" } %>
+        </div>
+        <div class="table-container" style="padding: 1rem 0 0;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="padding-left: 2rem;">Date</th>
+                <th class="text-right">Amount</th>
+                <th>Description</th>
+                <th>Status</th>
+                <th style="padding-right: 2rem;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @draws.each do |draw| %>
+                <tr>
+                  <td style="white-space: nowrap; padding-left: 2rem;"><%= draw.draw_date.strftime("%b %-d, %Y") %></td>
+                  <td class="text-money"><%= number_to_currency(draw.amount) %></td>
+                  <td><%= draw.description %></td>
+                  <td>
+                    <% draw_color = case draw.status
+                       when "approved" then "success"
+                       when "funded" then "navy"
+                       when "pending" then "warning"
+                       when "rejected" then "danger"
+                       else "neutral"
+                       end %>
+                    <span class="badge badge-<%= draw_color %>"><%= draw.status.titleize %></span>
+                  </td>
+                  <td style="display: flex; gap: 0.5rem; padding-right: 2rem;">
+                    <% if draw.status == "pending" %>
+                      <%= button_to "Approve", approve_admin_loan_loan_draw_path(@loan, draw), method: :post, class: "btn-filled btn-filled-primary", style: "font-size: 11px; padding: 4px 10px;" %>
+                      <%= button_to "Reject", reject_admin_loan_loan_draw_path(@loan, draw), method: :post, class: "btn-filled btn-filled-danger", style: "font-size: 11px; padding: 4px 10px;" %>
+                    <% elsif draw.status == "approved" %>
+                      <%= button_to "Fund", fund_admin_loan_loan_draw_path(@loan, draw), method: :post, class: "btn-filled btn-filled-primary", style: "font-size: 11px; padding: 4px 10px;" %>
+                    <% end %>
+                    <%= link_to "Edit", edit_admin_loan_loan_draw_path(@loan, draw) %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <%= render "admin/loans/draws/new_modal" %>
+    </div>
+
+    <%# Fees Tab %>
+    <div data-tab-panel="fees" class="loan-tab-panel">
+      <div class="card" style="padding: 0; margin-top: 1.5rem;">
+        <div style="padding: 1.5rem 2rem 0; display: flex; justify-content: space-between; align-items: center;">
+          <h3 class="heading-3">Fees</h3>
+          <%= btn_filled_tag "Add Fee", "#", data: { modal_target: "new-fee-modal" } %>
+        </div>
+        <div class="table-container" style="padding: 1rem 0 0;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="padding-left: 2rem;">Date</th>
+                <th>Type</th>
+                <th class="text-right">Amount</th>
+                <th>Description</th>
+                <th>Paid</th>
+                <th style="padding-right: 2rem;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @fees.each do |fee| %>
+                <tr>
+                  <td style="white-space: nowrap; padding-left: 2rem;"><%= fee.fee_date.strftime("%b %-d, %Y") %></td>
+                  <td><%= fee.fee_type.titleize %></td>
+                  <td class="text-money"><%= number_to_currency(fee.amount) %></td>
+                  <td><%= fee.description %></td>
+                  <td>
+                    <% if fee.paid? %>
+                      <span class="badge badge-success">Paid</span>
+                    <% else %>
+                      <span class="badge badge-warning">Unpaid</span>
+                    <% end %>
+                  </td>
+                  <td style="display: flex; gap: 0.5rem; padding-right: 2rem;">
+                    <% unless fee.paid? %>
+                      <%= button_to "Mark Paid", mark_paid_admin_loan_loan_fee_path(@loan, fee), method: :post, class: "btn-filled", style: "font-size: 11px; padding: 4px 10px;" %>
+                    <% end %>
+                    <%= link_to "Edit", edit_admin_loan_loan_fee_path(@loan, fee) %>
+                    <%= button_to "Delete", admin_loan_loan_fee_path(@loan, fee), method: :delete, class: "btn-filled btn-filled-danger", style: "font-size: 11px; padding: 4px 10px;", data: { turbo_confirm: "Delete this fee?" } %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <%= render "admin/loans/fees/new_modal" %>
+    </div>
+
+    <%# Documents Tab %>
+    <div data-tab-panel="documents" class="loan-tab-panel">
+      <div class="card" style="padding: 0; margin-top: 1.5rem;">
+        <div style="padding: 1.5rem 2rem 0; display: flex; justify-content: space-between; align-items: center;">
+          <h3 class="heading-3">Documents</h3>
+          <%= btn_filled_tag "Upload Document", "#", data: { modal_target: "upload-document-modal" } %>
+        </div>
+        <div class="table-container" style="padding: 1rem 0 0; overflow-x: auto;">
+          <table class="data-table" style="min-width: 800px;">
+            <thead>
+              <tr>
+                <th style="padding-left: 2rem;">Name</th>
+                <th>Type</th>
+                <th>Description</th>
+                <th>Uploaded By</th>
+                <th>Date</th>
+                <th style="padding-right: 2rem; width: 1%;"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @documents.each do |document| %>
+                <tr>
+                  <td style="padding-left: 2rem; font-weight: 500;">
+                    <% if document.file.attached? %>
+                      <a href="#" data-modal-target="doc-preview-<%= document.id %>" style="color: inherit; text-decoration: none; border-bottom: 1px dashed var(--color-concrete);">
+                        <%= document.name.presence || document.document_type.titleize %>
+                      </a>
+                    <% else %>
+                      <%= document.name.presence || document.document_type.titleize %>
+                    <% end %>
+                  </td>
+                  <td style="white-space: nowrap;"><span class="badge badge-neutral"><%= LoanDocument::DOCUMENT_TYPES[document.document_type] || document.document_type.titleize %></span></td>
+                  <td class="text-small"><%= document.description %></td>
+                  <td style="white-space: nowrap;"><%= document.uploaded_by %></td>
+                  <td style="white-space: nowrap;"><%= document.created_at.strftime("%-m/%-d/%y") %></td>
+                  <td style="padding-right: 2rem;">
+                    <%= button_to admin_loan_loan_document_path(@loan, document), method: :delete, style: "background: none; border: none; cursor: pointer; color: var(--color-concrete); padding: 0.25rem;", data: { turbo_confirm: "Delete this document?" } do %>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+        <% if @documents.empty? %>
+          <div style="padding: 2rem; text-align: center; color: var(--color-steel); font-size: 0.875rem;">
+            No documents uploaded yet.
+          </div>
+        <% end %>
+      </div>
+
+      <%# Document Preview Modals %>
+      <% @documents.each do |document| %>
+        <% next unless document.file.attached? %>
+        <div class="modal-overlay" id="doc-preview-<%= document.id %>">
+          <div class="modal" style="max-width: 56rem; height: 85vh; display: flex; flex-direction: column; padding: 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; flex-shrink: 0;">
+              <div>
+                <h3 class="heading-3" style="margin: 0;"><%= document.name.presence || document.document_type.titleize %></h3>
+                <div style="font-size: 0.75rem; color: var(--color-steel); margin-top: 0.25rem;">
+                  <%= LoanDocument::DOCUMENT_TYPES[document.document_type] || document.document_type.titleize %>
+                  <% if document.description.present? %> &middot; <%= document.description %><% end %>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <a href="<%= rails_blob_path(document.file, disposition: "attachment") %>" title="Download" style="color: var(--color-steel); text-decoration: none; font-size: 1.125rem; line-height: 1;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                </a>
+                <a href="<%= rails_blob_path(document.file, disposition: "inline") %>" target="_blank" title="Open in new tab" style="color: var(--color-steel); text-decoration: none; font-size: 1.125rem; line-height: 1;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                </a>
+                <button data-modal-close style="background: none; border: none; cursor: pointer; color: var(--color-steel); font-size: 1.25rem; line-height: 1;">&times;</button>
+              </div>
+            </div>
+            <div style="flex: 1; overflow: hidden;">
+              <% content_type = document.file.content_type %>
+              <% if content_type.start_with?("image/") %>
+                <div style="height: 100%; display: flex; align-items: center; justify-content: center; padding: 1rem; background: var(--color-smoke);">
+                  <%= image_tag rails_blob_path(document.file), style: "max-width: 100%; max-height: 100%; object-fit: contain; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); border-radius: 4px;" %>
+                </div>
+              <% elsif content_type == "application/pdf" %>
+                <iframe src="<%= rails_blob_path(document.file, disposition: "inline") %>" style="width: 100%; height: 100%; border: none;"></iframe>
+              <% else %>
+                <div style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--color-steel); gap: 1rem;">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  <div style="font-size: 0.875rem;"><%= document.file.filename %></div>
+                  <div style="font-size: 0.75rem;">Preview not available for this file type</div>
+                  <a href="<%= rails_blob_path(document.file, disposition: "attachment") %>" class="btn-filled" style="margin-top: 0.5rem;">Download File</a>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+
+      <%# Upload Document Modal %>
+      <div class="modal-overlay" id="upload-document-modal">
+        <div class="modal" style="max-width: 480px;">
+          <div class="modal-header">
+            <h3 class="heading-3">Upload Document</h3>
+            <button class="modal-close" data-modal-close>&times;</button>
+          </div>
+          <%= form_with url: admin_loan_loan_documents_path(@loan), method: :post, multipart: true do %>
+            <div class="modal-body" style="display: flex; flex-direction: column; gap: 1rem;">
+              <div class="field">
+                <label class="field-label">Document Type</label>
+                <select name="loan_document[document_type]" class="field-input">
+                  <optgroup label="Loan Documents">
+                    <option value="promissory_note">Promissory Note</option>
+                    <option value="deed_of_trust">Deed of Trust</option>
+                    <option value="loan_agreement">Loan Agreement</option>
+                    <option value="loan_estimate">Loan Estimate</option>
+                    <option value="closing_disclosure">Closing Disclosure</option>
+                    <option value="settlement_statement">Settlement Statement (HUD-1)</option>
+                  </optgroup>
+                  <optgroup label="Property">
+                    <option value="appraisal">Appraisal</option>
+                    <option value="title">Title Report</option>
+                    <option value="title_insurance">Title Insurance</option>
+                    <option value="property_insurance">Property Insurance</option>
+                    <option value="inspection">Inspection Report</option>
+                    <option value="survey">Survey</option>
+                    <option value="purchase_agreement">Purchase Agreement</option>
+                    <option value="scope_of_work">Scope of Work</option>
+                    <option value="draw_request">Draw Request</option>
+                  </optgroup>
+                  <optgroup label="Income & Employment">
+                    <option value="w2">W-2</option>
+                    <option value="tax_return">Tax Return</option>
+                    <option value="pay_stub">Pay Stub</option>
+                    <option value="profit_loss">Profit & Loss Statement</option>
+                    <option value="employment_verification">Employment Verification</option>
+                    <option value="1099">1099</option>
+                  </optgroup>
+                  <optgroup label="Assets & Financials">
+                    <option value="bank_statement">Bank Statement</option>
+                    <option value="financial_statement">Financial Statement</option>
+                    <option value="credit_report">Credit Report</option>
+                    <option value="asset_verification">Asset Verification</option>
+                  </optgroup>
+                  <optgroup label="Identity & Entity">
+                    <option value="photo_id">Photo ID</option>
+                    <option value="social_security">Social Security Card</option>
+                    <option value="entity_docs">Entity Documents (LLC/Corp)</option>
+                    <option value="operating_agreement">Operating Agreement</option>
+                    <option value="articles_of_incorporation">Articles of Incorporation</option>
+                    <option value="certificate_of_good_standing">Certificate of Good Standing</option>
+                  </optgroup>
+                  <optgroup label="Compliance & Legal">
+                    <option value="authorization">Borrower Authorization</option>
+                    <option value="disclosure">Disclosure</option>
+                    <option value="legal">Legal Document</option>
+                    <option value="lien_release">Lien Release</option>
+                    <option value="subordination_agreement">Subordination Agreement</option>
+                    <option value="guarantee">Personal Guarantee</option>
+                  </optgroup>
+                  <optgroup label="Other">
+                    <option value="correspondence">Correspondence</option>
+                    <option value="notice">Notice</option>
+                    <option value="other">Other</option>
+                  </optgroup>
+                </select>
+              </div>
+              <div class="field">
+                <label class="field-label">Name</label>
+                <input type="text" name="loan_document[name]" class="field-input" placeholder="e.g. Original Promissory Note">
+              </div>
+              <div class="field">
+                <label class="field-label">Description (optional)</label>
+                <input type="text" name="loan_document[description]" class="field-input" placeholder="Any notes about this document">
+              </div>
+              <div class="field">
+                <label class="field-label">File</label>
+                <input type="file" name="loan_document[file]" class="field-input" required>
+              </div>
+            </div>
+            <div class="modal-footer" style="padding: 1.25rem 0 0; margin-top: 1rem; border-top: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
+              <%= btn_filled_tag "Upload", nil, type: "submit" %>
+              <% if current_user %>
+                <span style="font-size: 0.6875rem; color: var(--color-concrete);">Uploaded by <%= current_user.display_name %></span>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <%# Extensions Tab %>
+    <div data-tab-panel="extensions" class="loan-tab-panel">
+      <div class="card" style="padding: 0; margin-top: 1.5rem;">
+        <div style="padding: 1.5rem 2rem 0; display: flex; justify-content: space-between; align-items: center;">
+          <h3 class="heading-3">Extensions</h3>
+          <%= btn_filled_tag "New Extension", "#", data: { modal_target: "new-extension-modal" } %>
+        </div>
+        <div class="table-container" style="padding: 1rem 0 0;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="padding-left: 2rem;">Original Maturity</th>
+                <th>New Maturity</th>
+                <th class="text-right">Fee</th>
+                <th class="text-right">New Rate</th>
+                <th>Notes</th>
+                <th style="padding-right: 2rem;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @extensions.each do |extension| %>
+                <tr>
+                  <td style="white-space: nowrap; padding-left: 2rem;"><%= extension.original_maturity_date.strftime("%b %-d, %Y") %></td>
+                  <td style="white-space: nowrap;"><%= extension.new_maturity_date.strftime("%b %-d, %Y") %></td>
+                  <td class="text-money"><%= number_to_currency(extension.extension_fee) %></td>
+                  <td class="text-right"><%= extension.new_rate.present? ? "#{extension.new_rate}%" : "—" %></td>
+                  <td class="text-small"><%= extension.notes %></td>
+                  <td style="padding-right: 2rem;">
+                    <%= button_to "Delete", admin_loan_loan_extension_path(@loan, extension), method: :delete, class: "btn-filled btn-filled-danger", style: "font-size: 11px; padding: 4px 10px;", data: { turbo_confirm: "Delete this extension?" } %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <%= render "admin/loans/extensions/new_modal" %>
+    </div>
+  </div>
+
+  <%= render "admin/loans/edit_modal" %>
+</div>

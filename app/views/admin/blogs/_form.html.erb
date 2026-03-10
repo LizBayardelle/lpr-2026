@@ -1,0 +1,54 @@
+<%# locals: (blog:, categories:) %>
+<%= form_with(model: [:admin, blog], class: "admin-blog-form") do |f| %>
+  <% if blog.errors.any? %>
+    <div class="auth-error-list" style="margin-bottom: 2rem;">
+      <ul>
+        <% blog.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :title %>
+    <%= f.text_field :title, class: "field-input", placeholder: "Article title" %>
+  </div>
+
+  <div class="field">
+    <%= f.label :teaser %>
+    <%= f.text_field :teaser, class: "field-input", placeholder: "Short description for cards and previews" %>
+  </div>
+
+  <div class="field">
+    <%= f.label :body %>
+    <%= f.text_area :body, class: "field-input", style: "height: 20rem;", placeholder: "Article body (HTML supported)" %>
+  </div>
+
+  <div class="field">
+    <%= f.label :cover_image, "Cover Image" %>
+    <%= f.file_field :cover_image, class: "field-input", style: "padding: 0.5rem;" %>
+    <% if blog.persisted? && blog.cover_image.attached? %>
+      <div style="margin-top: 0.75rem;">
+        <%= image_tag blog.cover_image, style: "max-height: 120px; border-radius: 0.25rem;" %>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="field">
+    <%= f.label :category_ids, "Categories" %>
+    <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.25rem;">
+      <% categories.each do |cat| %>
+        <label style="display: flex; align-items: center; gap: 0.375rem; font-size: 0.875rem; color: #374151; cursor: pointer; font-family: inherit; text-transform: none; letter-spacing: normal; font-weight: 400; margin-bottom: 0;">
+          <%= check_box_tag "blog[category_ids][]", cat.id, blog.category_ids.include?(cat.id) %>
+          <%= cat.name %>
+        </label>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="form-actions" style="display: flex; gap: 1rem; align-items: center;">
+    <%= btn_filled_tag "Save Post", nil, variant: "primary" %>
+    <a href="<%= admin_blogs_path %>" style="font-size: 0.8125rem; color: var(--color-steel);">Cancel</a>
+  </div>
+<% end %>

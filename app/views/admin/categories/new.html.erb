@@ -1,0 +1,11 @@
+<div class="container-narrow" style="padding-top: 6rem;">
+  <%= render "admin/breadcrumbs", crumbs: [
+    { label: "Categories", path: admin_categories_path },
+    { label: "New Category" }
+  ] %>
+  <h1 class="heading-1" style="margin-bottom: 2rem;">New Category</h1>
+
+  <div class="card">
+    <%= render "form", category: @category %>
+  </div>
+</div>

@@ -1,0 +1,17 @@
+<div class="container-narrow" style="padding-top: 6rem;">
+  <%= render "admin/breadcrumbs", crumbs: [
+    { label: "Categories", path: admin_categories_path },
+    { label: "Edit" }
+  ] %>
+  <h1 class="heading-1" style="margin-bottom: 2rem;">Edit Category</h1>
+
+  <div class="card">
+    <%= render "form", category: @category %>
+  </div>
+
+  <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb;">
+    <%= button_to "Delete Category", admin_category_path(@category), method: :delete,
+        class: "btn-filled btn-filled-danger",
+        data: { turbo_confirm: "Are you sure? This will remove the category from all blog posts." } %>
+  </div>
+</div>

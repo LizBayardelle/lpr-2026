@@ -1,0 +1,40 @@
+<%# ──────────────────────────── HERO ──────────────────────────── %>
+<div class="knowledge-hero">
+  <div class="knowledge-hero-inner">
+    <span class="section-label" style="color: var(--color-steel);">Knowledge Base</span>
+    <h1 class="heading-display" style="color: #fff; margin-top: 0.5rem;">Knowledge</h1>
+    <p style="max-width: 32rem; margin: 1rem auto 0; color: rgba(255,255,255,0.5); font-size: 1.0625rem; line-height: 1.75;">
+      Insights on hard money lending, real estate investment, and building wealth through property.
+    </p>
+  </div>
+</div>
+
+<%# ──────────────────────────── CATEGORY FILTER ──────────────────────────── %>
+<div class="container-wide" style="padding-top: 2rem;">
+  <div class="knowledge-filters">
+    <a href="<%= knowledge_index_path %>" class="knowledge-filter <%= 'active' unless params[:category] %>">All</a>
+    <% @categories.each do |cat| %>
+      <a href="<%= knowledge_index_path(category: cat.slug) %>" class="knowledge-filter <%= 'active' if params[:category] == cat.slug %>"><%= cat.name %></a>
+    <% end %>
+  </div>
+</div>
+
+<%# ──────────────────────────── ARTICLES GRID ──────────────────────────── %>
+<div class="container-wide section">
+  <% if @blogs.any? %>
+    <div class="knowledge-grid">
+      <% @blogs.each do |blog| %>
+        <%= render "shared/blogs/blog_card", blog: blog %>
+      <% end %>
+    </div>
+  <% else %>
+    <div style="text-align: center; padding: 4rem 0;">
+      <p class="heading-3" style="color: var(--color-steel);">No articles found.</p>
+      <% if params[:category] %>
+        <p class="text-body" style="margin-top: 0.5rem;">
+          Try <a href="<%= knowledge_index_path %>">viewing all articles</a>.
+        </p>
+      <% end %>
+    </div>
+  <% end %>
+</div>

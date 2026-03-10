@@ -1,0 +1,36 @@
+<%# locals: (blog:) %>
+<a href="<%= knowledge_path(blog) %>" class="blog-card">
+  <div class="blog-card-image">
+    <% if blog.cover_image.attached? %>
+      <%= image_tag blog.cover_image, alt: blog.title %>
+    <% else %>
+      <div class="blog-card-image-placeholder">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/>
+        </svg>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="blog-card-body">
+    <% if blog.categories.any? %>
+      <div class="blog-card-categories">
+        <% blog.categories.each do |cat| %>
+          <span class="badge badge-neutral"><%= cat.name %></span>
+        <% end %>
+      </div>
+    <% end %>
+
+    <p class="blog-card-title"><%= blog.title %></p>
+
+    <% if blog.teaser.present? %>
+      <p class="blog-card-teaser"><%= blog.teaser %></p>
+    <% end %>
+
+    <div class="blog-card-meta">
+      <span><%= blog.published_at&.strftime("%b %-d, %Y") || blog.created_at.strftime("%b %-d, %Y") %></span>
+      <span>&middot;</span>
+      <span><%= blog.user&.display_name || "Linchpin Realty Staff" %></span>
+    </div>
+  </div>
+</a>

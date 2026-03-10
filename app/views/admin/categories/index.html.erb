@@ -1,0 +1,40 @@
+<div class="container-wide" style="padding-top: 6rem;">
+  <%= render "admin/breadcrumbs", crumbs: [{ label: "Categories" }] %>
+
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h1 class="heading-1">Categories</h1>
+    <div style="display: flex; gap: 1rem;">
+      <%= btn_tag "New Category", new_admin_category_path %>
+      <%= btn_tag "Blog Posts", admin_blogs_path %>
+    </div>
+  </div>
+
+  <div class="card" style="padding: 0; overflow: hidden;">
+    <div class="table-container" style="padding: 1rem 1.5rem 1.5rem;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Slug</th>
+            <th>Sort</th>
+            <th>Posts</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @categories.each do |cat| %>
+            <tr>
+              <td style="font-weight: 500;"><%= cat.name %></td>
+              <td class="text-mono"><%= cat.slug %></td>
+              <td><%= cat.sort %></td>
+              <td><%= cat.blogs.count %></td>
+              <td style="text-align: right;">
+                <a href="<%= edit_admin_category_path(cat) %>" style="font-size: 0.8125rem;">Edit</a>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

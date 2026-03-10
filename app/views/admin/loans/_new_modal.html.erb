@@ -1,0 +1,264 @@
+<div class="modal-overlay" id="new-loan-modal">
+  <div class="modal modal-wide">
+    <div class="modal-header">
+      <h2 class="heading-2">New Loan</h2>
+      <button type="button" data-modal-close>&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <%= form_with model: [:admin, @loan || Loan.new], local: true do |f| %>
+        <div data-wizard>
+          <%# Step indicators %>
+          <div class="wizard-steps">
+            <button type="button" data-wizard-step class="wizard-step active">
+              <span class="wizard-step-number">1</span>
+              <span class="wizard-step-label">Borrower</span>
+            </button>
+            <button type="button" data-wizard-step class="wizard-step">
+              <span class="wizard-step-number">2</span>
+              <span class="wizard-step-label">Loan Terms</span>
+            </button>
+            <button type="button" data-wizard-step class="wizard-step">
+              <span class="wizard-step-number">3</span>
+              <span class="wizard-step-label">Dates & Fees</span>
+            </button>
+            <button type="button" data-wizard-step class="wizard-step">
+              <span class="wizard-step-number">4</span>
+              <span class="wizard-step-label">Review</span>
+            </button>
+          </div>
+
+          <%# ── Step 1: Borrower ── %>
+          <div data-wizard-panel class="wizard-panel active">
+            <div class="field-row">
+              <div class="field">
+                <%= f.label :borrower_name, "Borrower Name" %>
+                <%= f.text_field :borrower_name, class: "field-input", autofocus: true %>
+              </div>
+              <div class="field">
+                <%= f.label :borrower_email, "Email" %>
+                <%= f.email_field :borrower_email, class: "field-input" %>
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <%= f.label :borrower_phone, "Phone" %>
+                <%= f.text_field :borrower_phone, class: "field-input" %>
+              </div>
+              <div class="field">
+                <%= f.label :borrower_address, "Mailing Address" %>
+                <%= f.text_field :borrower_address, class: "field-input" %>
+              </div>
+            </div>
+            <div class="field">
+              <%= f.label :property_address, "Property Address" %>
+              <%= f.text_field :property_address, class: "field-input" %>
+            </div>
+
+            <div class="wizard-nav">
+              <div class="wizard-nav-spacer"></div>
+              <button type="button" class="btn-filled" data-wizard-nav="next">Continue</button>
+            </div>
+          </div>
+
+          <%# ── Step 2: Loan Terms ── %>
+          <div data-wizard-panel class="wizard-panel">
+            <div class="field-row-3">
+              <div class="field">
+                <%= f.label :loan_amount, "Loan Amount" %>
+                <%= f.number_field :loan_amount, step: 0.01, class: "field-input", placeholder: "$0.00" %>
+              </div>
+              <div class="field">
+                <%= f.label :interest_rate, "Interest Rate (%)" %>
+                <%= f.number_field :interest_rate, step: 0.125, class: "field-input", placeholder: "0.000" %>
+              </div>
+              <div class="field">
+                <%= f.label :loan_term_months, "Term (Months)" %>
+                <%= f.number_field :loan_term_months, class: "field-input", placeholder: "12" %>
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <%= f.label :payment_type, "Payment Type" %>
+                <%= f.select :payment_type, [["Interest Only", "interest_only"], ["Fully Amortizing", "fully_amortizing"]], {}, class: "field-input" %>
+              </div>
+              <div class="field">
+                <%= f.label :interest_calc_method, "Interest Calculation" %>
+                <%= f.select :interest_calc_method, [["30/360", "30_360"], ["Actual/360", "actual_360"], ["Actual/365", "actual_365"]], {}, class: "field-input" %>
+              </div>
+            </div>
+
+            <div class="wizard-nav">
+              <button type="button" class="btn-filled btn-filled-ghost" data-wizard-nav="prev">Back</button>
+              <button type="button" class="btn-filled" data-wizard-nav="next">Continue</button>
+            </div>
+          </div>
+
+          <%# ── Step 3: Dates & Fees ── %>
+          <div data-wizard-panel class="wizard-panel">
+            <div class="field-row-3">
+              <div class="field">
+                <%= f.label :origination_date, "Origination Date" %>
+                <%= f.date_field :origination_date, class: "field-input" %>
+              </div>
+              <div class="field">
+                <%= f.label :maturity_date, "Maturity Date" %>
+                <%= f.date_field :maturity_date, class: "field-input" %>
+              </div>
+              <div class="field">
+                <%= f.label :first_payment_date, "First Payment Date" %>
+                <%= f.date_field :first_payment_date, class: "field-input" %>
+              </div>
+            </div>
+            <div class="field-row-3">
+              <div class="field">
+                <label class="field-label">Origination Fee Type</label>
+                <%= f.select :origination_fee_type, [
+                  ["Percentage of Loan", "percent"],
+                  ["Flat Dollar Amount", "flat"]
+                ], {}, class: "field-input", data: { fee_type_toggle: true } %>
+              </div>
+              <div class="field" data-fee-field="percent">
+                <%= f.label :origination_fee_percent, "Fee (%)" %>
+                <%= f.number_field :origination_fee_percent, step: 0.125, class: "field-input", placeholder: "2.000" %>
+              </div>
+              <div class="field" data-fee-field="flat" style="display: none;">
+                <%= f.label :origination_fee_flat, "Fee Amount ($)" %>
+                <%= f.number_field :origination_fee_flat, step: 0.01, class: "field-input", placeholder: "0.00" %>
+              </div>
+              <div class="field">
+                <%= f.label :origination_fee_handling, "Fee Handling" %>
+                <%= f.select :origination_fee_handling, [
+                  ["Net Funded (withheld)", "net_funded"],
+                  ["Collected Separately", "collected_separately"]
+                ], {}, class: "field-input" %>
+              </div>
+            </div>
+            <div class="field-row-3">
+              <div class="field">
+                <%= f.label :default_interest_rate, "Default Interest Rate (%)" %>
+                <%= f.number_field :default_interest_rate, step: 0.125, class: "field-input", placeholder: "0.000" %>
+              </div>
+              <div class="field">
+                <%= f.label :late_fee_percent, "Late Fee (%)" %>
+                <%= f.number_field :late_fee_percent, step: 0.25, class: "field-input" %>
+              </div>
+              <div class="field">
+                <%= f.label :grace_period_days, "Grace Period (Days)" %>
+                <%= f.number_field :grace_period_days, class: "field-input" %>
+              </div>
+            </div>
+
+            <div class="wizard-nav">
+              <button type="button" class="btn-filled btn-filled-ghost" data-wizard-nav="prev">Back</button>
+              <button type="button" class="btn-filled" data-wizard-nav="next">Review & Save</button>
+            </div>
+          </div>
+
+          <%# ── Step 4: Review ── %>
+          <div data-wizard-panel class="wizard-panel">
+            <p style="color: var(--color-steel); font-size: 0.8125rem; margin-bottom: 1.5rem;">
+              Review the details below, then save. You can click any step above to go back and edit.
+            </p>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+              <div>
+                <div class="section-label" style="margin-bottom: 0.75rem;">Borrower</div>
+                <table style="width: 100%; font-size: 0.8125rem;" data-wizard-review>
+                  <tr>
+                    <td style="padding: 0.25rem 0; color: var(--color-steel); width: 40%;">Name</td>
+                    <td style="padding: 0.25rem 0; font-weight: 500;" data-review-field="loan_borrower_name"></td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 0.25rem 0; color: var(--color-steel);">Email</td>
+                    <td style="padding: 0.25rem 0;" data-review-field="loan_borrower_email"></td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 0.25rem 0; color: var(--color-steel);">Phone</td>
+                    <td style="padding: 0.25rem 0;" data-review-field="loan_borrower_phone"></td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 0.25rem 0; color: var(--color-steel);">Property</td>
+                    <td style="padding: 0.25rem 0;" data-review-field="loan_property_address"></td>
+                  </tr>
+                </table>
+              </div>
+
+              <div>
+                <div class="section-label" style="margin-bottom: 0.75rem;">Loan Terms</div>
+                <table style="width: 100%; font-size: 0.8125rem;" data-wizard-review>
+                  <tr>
+                    <td style="padding: 0.25rem 0; color: var(--color-steel); width: 50%;">Loan Amount</td>
+                    <td style="padding: 0.25rem 0; font-weight: 500;" data-review-field="loan_loan_amount" data-review-format="currency"></td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 0.25rem 0; color: var(--color-steel);">Interest Rate</td>
+                    <td style="padding: 0.25rem 0;" data-review-field="loan_interest_rate" data-review-format="percent"></td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 0.25rem 0; color: var(--color-steel);">Term</td>
+                    <td style="padding: 0.25rem 0;" data-review-field="loan_loan_term_months" data-review-format="months"></td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 0.25rem 0; color: var(--color-steel);">Payment Type</td>
+                    <td style="padding: 0.25rem 0;" data-review-field="loan_payment_type" data-review-format="titleize"></td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 0.25rem 0; color: var(--color-steel);">Origination Fee</td>
+                    <td style="padding: 0.25rem 0;" data-review-field="loan_origination_fee" data-review-format="origination_fee"></td>
+                  </tr>
+                </table>
+              </div>
+
+              <div>
+                <div class="section-label" style="margin-bottom: 0.75rem;">Dates</div>
+                <table style="width: 100%; font-size: 0.8125rem;" data-wizard-review>
+                  <tr>
+                    <td style="padding: 0.25rem 0; color: var(--color-steel); width: 50%;">Origination</td>
+                    <td style="padding: 0.25rem 0;" data-review-field="loan_origination_date"></td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 0.25rem 0; color: var(--color-steel);">Maturity</td>
+                    <td style="padding: 0.25rem 0;" data-review-field="loan_maturity_date"></td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 0.25rem 0; color: var(--color-steel);">First Payment</td>
+                    <td style="padding: 0.25rem 0;" data-review-field="loan_first_payment_date"></td>
+                  </tr>
+                </table>
+              </div>
+
+              <div>
+                <div class="section-label" style="margin-bottom: 0.75rem;">Late Fee Terms</div>
+                <table style="width: 100%; font-size: 0.8125rem;" data-wizard-review>
+                  <tr>
+                    <td style="padding: 0.25rem 0; color: var(--color-steel); width: 50%;">Default Rate</td>
+                    <td style="padding: 0.25rem 0;" data-review-field="loan_default_interest_rate" data-review-format="percent"></td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 0.25rem 0; color: var(--color-steel);">Late Fee</td>
+                    <td style="padding: 0.25rem 0;" data-review-field="loan_late_fee_percent" data-review-format="percent"></td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 0.25rem 0; color: var(--color-steel);">Grace Period</td>
+                    <td style="padding: 0.25rem 0;" data-review-field="loan_grace_period_days" data-review-format="days"></td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+
+            <div class="field" style="margin-top: 1.5rem;">
+              <%= f.label :notes, "Notes (optional)" %>
+              <%= f.text_area :notes, class: "field-input", rows: 3 %>
+            </div>
+
+            <div class="wizard-nav">
+              <button type="button" class="btn-filled btn-filled-ghost" data-wizard-nav="prev">Back</button>
+              <%= btn_filled_tag "Create Loan", nil, type: "submit" %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

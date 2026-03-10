@@ -1,0 +1,45 @@
+<div class="modal-overlay" id="new-extension-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="heading-2">New Extension</h2>
+      <button type="button" data-modal-close>&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <%= form_with model: [:admin, @loan, LoanExtension.new], local: true do |f| %>
+        <div class="field-row">
+          <div class="field">
+            <%= f.label :original_maturity_date, "Original Maturity Date" %>
+            <%= f.date_field :original_maturity_date, value: @loan.effective_maturity_date, class: "field-input" %>
+          </div>
+          <div class="field">
+            <%= f.label :new_maturity_date, "New Maturity Date" %>
+            <%= f.date_field :new_maturity_date, class: "field-input" %>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <%= f.label :extension_fee, "Extension Fee" %>
+            <%= f.number_field :extension_fee, step: 0.01, class: "field-input" %>
+          </div>
+          <div class="field">
+            <%= f.label :new_rate, "New Rate (%)" %>
+            <%= f.number_field :new_rate, step: 0.125, class: "field-input" %>
+            <span class="text-small">Leave blank to keep current rate</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <%= f.label :notes, "Notes" %>
+          <%= f.text_area :notes, class: "field-input", rows: 3 %>
+        </div>
+
+        <div class="modal-actions">
+          <%= btn_filled_tag "Create Extension", nil, type: "submit" %>
+          <a href="#" data-modal-close>Cancel</a>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

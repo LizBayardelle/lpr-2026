@@ -1,0 +1,68 @@
+<nav class="main-nav" id="main-nav">
+  <div class="main-nav-inner">
+    <a href="/" class="main-nav-logo">
+      <img src="https://linchpinrealty.s3.us-west-1.amazonaws.com/logos/Logo+(H+White).png" alt="Linchpin Realty">
+    </a>
+
+    <div class="main-nav-links" id="nav-links">
+      <a href="/loans">Get a Loan</a>
+      <a href="/lenders">Become a Lender</a>
+      <a href="/invest">Invest</a>
+      <a href="/knowledge">Knowledge</a>
+
+      <div class="main-nav-mobile-user">
+        <% if user_signed_in? %>
+          <div class="main-nav-mobile-greeting">
+            Signed in as <strong><%= current_user.first_name || current_user.email %></strong>
+          </div>
+          <% if current_user.admin? %>
+            <a href="<%= admin_dashboard_path %>">Admin Dashboard</a>
+          <% end %>
+          <a href="#">Dashboard</a>
+          <a href="<%= edit_user_registration_path %>">Edit Profile</a>
+          <%= button_to "Sign Out", destroy_user_session_path, method: :delete, class: "main-nav-mobile-signout" %>
+        <% else %>
+          <a href="<%= new_user_session_path %>">Sign In</a>
+          <a href="<%= new_user_registration_path %>">Create Account</a>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="main-nav-right">
+      <div class="main-nav-user">
+        <button class="main-nav-user-btn" id="user-menu-btn" aria-label="User menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+          <svg class="main-nav-user-caret" width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
+            <path d="M2 4l3 3 3-3z"/>
+          </svg>
+        </button>
+
+        <div class="main-nav-dropdown" id="user-dropdown">
+          <% if user_signed_in? %>
+            <div class="main-nav-dropdown-greeting">
+              Signed in as <strong><%= current_user.first_name || current_user.email %></strong>
+            </div>
+            <% if current_user.admin? %>
+              <a href="<%= admin_dashboard_path %>" class="main-nav-dropdown-item">Admin Dashboard</a>
+            <% end %>
+            <a href="#" class="main-nav-dropdown-item">Dashboard</a>
+            <a href="<%= edit_user_registration_path %>" class="main-nav-dropdown-item">Edit Profile</a>
+            <%= button_to "Sign Out", destroy_user_session_path, method: :delete, class: "main-nav-dropdown-item main-nav-dropdown-item--danger" %>
+          <% else %>
+            <a href="<%= new_user_session_path %>" class="main-nav-dropdown-item">Sign In</a>
+            <a href="<%= new_user_registration_path %>" class="main-nav-dropdown-item">Create Account</a>
+          <% end %>
+        </div>
+      </div>
+
+      <button class="main-nav-hamburger" id="hamburger-btn" aria-label="Toggle menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+</nav>

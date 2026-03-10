@@ -1,0 +1,93 @@
+<div class="modal-overlay" id="generate-statement-modal">
+  <div class="modal" style="max-width: 30rem;">
+    <div class="modal-header">
+      <h2 class="heading-2">Generate Statement</h2>
+      <button type="button" data-modal-close>&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <%= form_with url: generate_statement_admin_loan_path(@loan), method: :post do |f| %>
+
+        <%# Period type toggle %>
+        <div class="field" style="margin-bottom: 1.5rem;">
+          <span class="section-label" style="margin-bottom: 0.75rem;">Period Type</span>
+          <div style="display: flex; gap: 0.5rem;">
+            <button type="button" class="loan-tab active" data-statement-type="monthly" onclick="toggleStatementType('monthly')">Calendar Month</button>
+            <button type="button" class="loan-tab" data-statement-type="custom" onclick="toggleStatementType('custom')">Custom Range</button>
+          </div>
+        </div>
+
+        <%# Monthly fields %>
+        <div id="statement-monthly-fields">
+          <p class="text-small" style="margin-bottom: 1rem;">
+            Statement will cover the full calendar month. If a stale statement exists for this month, it will be replaced.
+          </p>
+          <div class="field-row">
+            <div class="field">
+              <%= f.label :month, "Month" %>
+              <%= f.select :month, (1..12).map { |m| [Date::MONTHNAMES[m], m] }, { selected: Date.current.month }, class: "field-input" %>
+            </div>
+            <div class="field">
+              <%= f.label :year, "Year" %>
+              <%= f.select :year, ((@loan.origination_date&.year || 2024)..Date.current.year + 1).to_a.reverse, { selected: Date.current.year }, class: "field-input" %>
+            </div>
+          </div>
+        </div>
+
+        <%# Custom range fields %>
+        <div id="statement-custom-fields" style="display: none;">
+          <p class="text-small" style="margin-bottom: 1rem;">
+            Specify an exact date range. Interest will be pro-rated by the number of days in the period.
+          </p>
+          <div class="field-row">
+            <div class="field">
+              <%= f.label :period_start, "Period Start" %>
+              <%= f.date_field :period_start, class: "field-input" %>
+            </div>
+            <div class="field">
+              <%= f.label :period_end, "Period End" %>
+              <%= f.date_field :period_end, class: "field-input" %>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <%= btn_filled_tag "Generate", nil, type: "submit", variant: "primary" %>
+          <a href="#" data-modal-close style="font-size: 0.8125rem; color: var(--color-steel);">Cancel</a>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleStatementType(type) {
+    const monthlyFields = document.getElementById("statement-monthly-fields")
+    const customFields = document.getElementById("statement-custom-fields")
+    const monthlyBtn = document.querySelector('[data-statement-type="monthly"]')
+    const customBtn = document.querySelector('[data-statement-type="custom"]')
+
+    if (type === "custom") {
+      monthlyFields.style.display = "none"
+      customFields.style.display = "block"
+      // Clear monthly fields so they don't submit
+      monthlyFields.querySelectorAll("select").forEach(s => s.disabled = true)
+      customFields.querySelectorAll("input").forEach(i => i.disabled = false)
+      monthlyBtn.classList.remove("active")
+      customBtn.classList.add("active")
+    } else {
+      monthlyFields.style.display = "block"
+      customFields.style.display = "none"
+      monthlyFields.querySelectorAll("select").forEach(s => s.disabled = false)
+      customFields.querySelectorAll("input").forEach(i => i.disabled = true)
+      monthlyBtn.classList.add("active")
+      customBtn.classList.remove("active")
+    }
+  }
+
+  // Initialize: disable custom fields so they don't submit by default
+  document.addEventListener("DOMContentLoaded", () => {
+    const customFields = document.getElementById("statement-custom-fields")
+    if (customFields) customFields.querySelectorAll("input").forEach(i => i.disabled = true)
+  })
+</script>

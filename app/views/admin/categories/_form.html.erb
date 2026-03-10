@@ -1,0 +1,38 @@
+<%# locals: (category:) %>
+<%= form_with(model: [:admin, category]) do |f| %>
+  <% if category.errors.any? %>
+    <div class="auth-error-list" style="margin-bottom: 2rem;">
+      <ul>
+        <% category.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :name %>
+    <%= f.text_field :name, class: "field-input", placeholder: "Category name" %>
+  </div>
+
+  <div class="field">
+    <%= f.label :slug %>
+    <%= f.text_field :slug, class: "field-input", placeholder: "auto-generated-from-name" %>
+    <p class="field-hint">Leave blank to auto-generate from name.</p>
+  </div>
+
+  <div class="field">
+    <%= f.label :description %>
+    <%= f.text_area :description, class: "field-input", placeholder: "Optional description" %>
+  </div>
+
+  <div class="field">
+    <%= f.label :sort, "Sort Order" %>
+    <%= f.number_field :sort, class: "field-input", style: "max-width: 8rem;", placeholder: "0" %>
+  </div>
+
+  <div class="form-actions" style="display: flex; gap: 1rem; align-items: center;">
+    <%= btn_filled_tag "Save Category", nil, variant: "primary" %>
+    <a href="<%= admin_categories_path %>" style="font-size: 0.8125rem; color: var(--color-steel);">Cancel</a>
+  </div>
+<% end %>

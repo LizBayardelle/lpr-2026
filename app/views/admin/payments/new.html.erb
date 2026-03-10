@@ -1,0 +1,15 @@
+<% content_for :title, "New Payment" %>
+
+<div class="container-wide" style="padding-top: 6rem;">
+  <%= render "admin/breadcrumbs", crumbs: [
+    { label: "Loans", path: admin_loans_path },
+    { label: @loan.borrower_name, path: admin_loan_path(@loan) },
+    { label: "New Payment" }
+  ] %>
+
+  <h1 class="heading-1">New Payment</h1>
+
+  <div class="card" style="padding: 2rem; margin-top: 1.5rem;">
+    <%= render "form", loan: @loan, payment: @payment %>
+  </div>
+</div>

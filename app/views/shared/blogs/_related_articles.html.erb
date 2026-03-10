@@ -1,0 +1,11 @@
+<%# locals: (blogs:, title: "Related Articles") %>
+<% if blogs.any? %>
+  <div class="related-articles">
+    <span class="section-label"><%= title %></span>
+    <div class="related-articles-grid">
+      <% blogs.each do |blog| %>
+        <%= render "shared/blogs/blog_card", blog: blog %>
+      <% end %>
+    </div>
+  </div>
+<% end %>

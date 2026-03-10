@@ -1,0 +1,67 @@
+<%= form_with(model: [:admin, loan, payment], local: true) do |f| %>
+  <% if payment.errors.any? %>
+    <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; padding: 1rem; margin-bottom: 1.5rem;">
+      <h4 class="heading-4" style="color: #dc2626; margin-bottom: 0.5rem;"><%= pluralize(payment.errors.count, "error") %> prohibited this payment from being saved:</h4>
+      <ul style="margin: 0; padding-left: 1.25rem;">
+        <% payment.errors.full_messages.each do |message| %>
+          <li style="color: #dc2626; font-size: 0.875rem;"><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field-row">
+    <div class="field">
+      <%= f.label :payment_date, "Payment Date" %>
+      <%= f.date_field :payment_date, value: payment.payment_date || Date.today, class: "field-input" %>
+    </div>
+    <div class="field">
+      <%= f.label :amount, "Amount" %>
+      <%= f.number_field :amount, step: 0.01, class: "field-input" %>
+    </div>
+  </div>
+
+  <div class="field-row">
+    <div class="field">
+      <%= f.label :payment_method, "Payment Method" %>
+      <%= f.select :payment_method, [["Check", "check"], ["Wire", "wire"], ["ACH", "ach"], ["Cash", "cash"], ["Other", "other"]], {}, class: "field-input" %>
+    </div>
+    <div class="field">
+      <%= f.label :reference_number, "Reference Number" %>
+      <%= f.text_field :reference_number, class: "field-input" %>
+    </div>
+  </div>
+
+  <div class="field-row">
+    <div class="field">
+      <%= f.label :interest_amount, "Interest Amount" %>
+      <%= f.number_field :interest_amount, step: 0.01, class: "field-input" %>
+      <span class="text-small">Leave blank to auto-allocate</span>
+    </div>
+    <div class="field">
+      <%= f.label :principal_amount, "Principal Amount" %>
+      <%= f.number_field :principal_amount, step: 0.01, class: "field-input" %>
+    </div>
+  </div>
+
+  <div class="field-row">
+    <div class="field">
+      <%= f.label :late_fee_amount, "Late Fee Amount" %>
+      <%= f.number_field :late_fee_amount, step: 0.01, class: "field-input" %>
+    </div>
+    <div class="field">
+      <%= f.label :extra_amount, "Extra Amount" %>
+      <%= f.number_field :extra_amount, step: 0.01, class: "field-input" %>
+    </div>
+  </div>
+
+  <div class="field">
+    <%= f.label :notes, "Notes" %>
+    <%= f.text_area :notes, class: "field-input", rows: 3 %>
+  </div>
+
+  <div class="modal-actions" style="margin-top: 2rem;">
+    <%= btn_filled_tag payment.persisted? ? "Update Payment" : "Record Payment", nil, type: "submit" %>
+    <%= link_to "Cancel", admin_loan_path(loan) %>
+  </div>
+<% end %>

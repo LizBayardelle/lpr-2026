@@ -1,0 +1,145 @@
+<%= form_with(model: [:admin, loan], local: true) do |f| %>
+  <% if loan.errors.any? %>
+    <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; padding: 1rem; margin-bottom: 1.5rem;">
+      <h4 class="heading-4" style="color: #dc2626; margin-bottom: 0.5rem;"><%= pluralize(loan.errors.count, "error") %> prohibited this loan from being saved:</h4>
+      <ul style="margin: 0; padding-left: 1.25rem;">
+        <% loan.errors.full_messages.each do |message| %>
+          <li style="color: #dc2626; font-size: 0.875rem;"><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <% if loan.persisted? %>
+    <div class="section-label">Status</div>
+    <div class="field">
+      <%= f.label :status, "Status" %>
+      <%= f.select :status, [["Active", "active"], ["Paid Off", "paid_off"], ["Default", "default"], ["Foreclosure", "foreclosure"], ["Extended", "extended"]], {}, class: "field-input" %>
+    </div>
+  <% end %>
+
+  <div class="section-label">Borrower Information</div>
+  <div class="field-row">
+    <div class="field">
+      <%= f.label :borrower_name, "Borrower Name" %>
+      <%= f.text_field :borrower_name, class: "field-input" %>
+    </div>
+    <div class="field">
+      <%= f.label :borrower_email, "Borrower Email" %>
+      <%= f.email_field :borrower_email, class: "field-input" %>
+    </div>
+  </div>
+  <div class="field-row">
+    <div class="field">
+      <%= f.label :borrower_phone, "Borrower Phone" %>
+      <%= f.text_field :borrower_phone, class: "field-input" %>
+    </div>
+    <div class="field">
+      <%= f.label :borrower_address, "Borrower Address" %>
+      <%= f.text_field :borrower_address, class: "field-input" %>
+    </div>
+  </div>
+
+  <div class="section-label">Property</div>
+  <div class="field">
+    <%= f.label :property_address, "Property Address" %>
+    <%= f.text_field :property_address, class: "field-input" %>
+  </div>
+
+  <div class="section-label">Loan Terms</div>
+  <div class="field-row-3">
+    <div class="field">
+      <%= f.label :loan_amount, "Loan Amount" %>
+      <%= f.number_field :loan_amount, step: 0.01, class: "field-input" %>
+    </div>
+    <div class="field">
+      <%= f.label :interest_rate, "Interest Rate (%)" %>
+      <%= f.number_field :interest_rate, step: 0.125, class: "field-input" %>
+    </div>
+    <div class="field">
+      <%= f.label :loan_term_months, "Term (Months)" %>
+      <%= f.number_field :loan_term_months, class: "field-input" %>
+    </div>
+  </div>
+  <div class="field-row-3">
+    <div class="field">
+      <label class="field-label">Origination Fee Type</label>
+      <%= f.select :origination_fee_type, [
+        ["Percentage of Loan", "percent"],
+        ["Flat Dollar Amount", "flat"]
+      ], {}, class: "field-input", data: { fee_type_toggle: true } %>
+    </div>
+    <div class="field" data-fee-field="percent" style="<%= 'display: none;' if loan.origination_fee_type == 'flat' %>">
+      <%= f.label :origination_fee_percent, "Fee (%)" %>
+      <%= f.number_field :origination_fee_percent, step: 0.125, class: "field-input" %>
+    </div>
+    <div class="field" data-fee-field="flat" style="<%= 'display: none;' unless loan.origination_fee_type == 'flat' %>">
+      <%= f.label :origination_fee_flat, "Fee Amount ($)" %>
+      <%= f.number_field :origination_fee_flat, step: 0.01, class: "field-input" %>
+    </div>
+  </div>
+  <div class="field-row">
+    <div class="field">
+      <%= f.label :origination_fee_handling, "Fee Handling" %>
+      <%= f.select :origination_fee_handling, [
+        ["Net Funded (withheld)", "net_funded"],
+        ["Collected Separately", "collected_separately"]
+      ], {}, class: "field-input" %>
+    </div>
+    <div class="field"></div>
+  </div>
+  <div class="field-row-3">
+    <div class="field">
+      <%= f.label :payment_type, "Payment Type" %>
+      <%= f.select :payment_type, [["Interest Only", "interest_only"], ["Fully Amortizing", "fully_amortizing"]], {}, class: "field-input" %>
+    </div>
+    <div class="field">
+      <%= f.label :interest_calc_method, "Interest Calculation" %>
+      <%= f.select :interest_calc_method, [["30/360", "30_360"], ["Actual/360", "actual_360"], ["Actual/365", "actual_365"]], {}, class: "field-input" %>
+    </div>
+    <div class="field"></div>
+  </div>
+
+  <div class="section-label">Dates</div>
+  <div class="field-row-3">
+    <div class="field">
+      <%= f.label :origination_date, "Origination Date" %>
+      <%= f.date_field :origination_date, class: "field-input" %>
+    </div>
+    <div class="field">
+      <%= f.label :maturity_date, "Maturity Date" %>
+      <%= f.date_field :maturity_date, class: "field-input" %>
+    </div>
+    <div class="field">
+      <%= f.label :first_payment_date, "First Payment Date" %>
+      <%= f.date_field :first_payment_date, class: "field-input" %>
+    </div>
+  </div>
+
+  <div class="section-label">Default & Late Fee Terms</div>
+  <div class="field-row-3">
+    <div class="field">
+      <%= f.label :default_interest_rate, "Default Interest Rate (%)" %>
+      <%= f.number_field :default_interest_rate, step: 0.125, class: "field-input" %>
+    </div>
+    <div class="field">
+      <%= f.label :late_fee_percent, "Late Fee (%)" %>
+      <%= f.number_field :late_fee_percent, step: 0.25, class: "field-input" %>
+    </div>
+    <div class="field">
+      <%= f.label :grace_period_days, "Grace Period (Days)" %>
+      <%= f.number_field :grace_period_days, class: "field-input" %>
+    </div>
+  </div>
+
+  <div class="section-label">Notes</div>
+  <div class="field">
+    <%= f.label :notes, "Notes" %>
+    <%= f.text_area :notes, class: "field-input", rows: 4 %>
+  </div>
+
+  <div class="modal-actions" style="margin-top: 2rem;">
+    <%= btn_filled_tag loan.persisted? ? "Update Loan" : "Save Loan", nil, type: "submit" %>
+    <%= link_to "Cancel", loan.persisted? ? admin_loan_path(loan) : admin_loans_path %>
+  </div>
+<% end %>

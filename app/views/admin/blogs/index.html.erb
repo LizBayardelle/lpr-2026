@@ -1,0 +1,57 @@
+<div class="container-wide" style="padding-top: 6rem;">
+  <%= render "admin/breadcrumbs", crumbs: [{ label: "Blog Posts" }] %>
+
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h1 class="heading-1">Blog Posts</h1>
+    <div style="display: flex; gap: 1rem;">
+      <%= btn_tag "New Post", new_admin_blog_path %>
+      <%= btn_tag "Categories", admin_categories_path %>
+    </div>
+  </div>
+
+  <div class="card" style="padding: 0; overflow: hidden;">
+    <div class="table-container" style="padding: 1rem 1.5rem 1.5rem;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Categories</th>
+            <th>Author</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @blogs.each do |blog| %>
+            <tr>
+              <td style="font-weight: 500;"><%= blog.title %></td>
+              <td>
+                <% blog.categories.each do |cat| %>
+                  <span class="badge badge-neutral"><%= cat.name %></span>
+                <% end %>
+              </td>
+              <td><%= blog.user.display_name %></td>
+              <td>
+                <% if blog.published? %>
+                  <span class="badge badge-success">Published</span>
+                <% else %>
+                  <span class="badge badge-neutral">Draft</span>
+                <% end %>
+              </td>
+              <td class="text-small"><%= blog.published_at&.strftime("%b %-d, %Y") || blog.created_at.strftime("%b %-d, %Y") %></td>
+              <td style="text-align: right; white-space: nowrap;">
+                <a href="<%= edit_admin_blog_path(blog) %>" style="font-size: 0.8125rem; margin-right: 1rem;">Edit</a>
+                <% if blog.published? %>
+                  <%= button_to "Unpublish", unpublish_admin_blog_path(blog), method: :post, class: "btn-filled btn-filled-ghost", style: "font-size: 11px; padding: 4px 10px; display: inline-flex;" %>
+                <% else %>
+                  <%= button_to "Publish", publish_admin_blog_path(blog), method: :post, class: "btn-filled btn-filled-primary", style: "font-size: 11px; padding: 4px 10px; display: inline-flex;" %>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

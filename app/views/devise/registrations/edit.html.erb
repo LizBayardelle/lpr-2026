@@ -1,0 +1,72 @@
+<%# navbar visible on edit profile %>
+<div class="auth-page">
+  <a href="/" class="auth-brand">Linchpin Realty</a>
+
+  <div class="auth-card">
+    <h2>Edit Profile</h2>
+
+    <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }) do |f| %>
+      <%= render "devise/shared/error_messages", resource: resource %>
+
+      <div class="field field-row">
+        <div>
+          <%= f.label :first_name %>
+          <%= f.text_field :first_name, autocomplete: "given-name", class: "field-input" %>
+        </div>
+        <div>
+          <%= f.label :last_name %>
+          <%= f.text_field :last_name, autocomplete: "family-name", class: "field-input" %>
+        </div>
+      </div>
+
+      <div class="field">
+        <%= f.label :email %>
+        <%= f.email_field :email, autocomplete: "email", class: "field-input" %>
+      </div>
+
+      <div class="field">
+        <%= f.label :phone_number %>
+        <%= f.telephone_field :phone_number, autocomplete: "tel", class: "field-input" %>
+      </div>
+
+      <div class="field">
+        <%= f.label :password %>
+        <p class="field-hint">Leave blank if you don't want to change it</p>
+        <%= f.password_field :password, autocomplete: "new-password", class: "field-input" %>
+      </div>
+
+      <div class="field">
+        <%= f.label :password_confirmation %>
+        <%= f.password_field :password_confirmation, autocomplete: "new-password", class: "field-input" %>
+      </div>
+
+      <div class="field">
+        <%= f.label :current_password %>
+        <p class="field-hint">We need your current password to confirm changes</p>
+        <%= f.password_field :current_password, autocomplete: "current-password", class: "field-input" %>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn" style="width: 100%; justify-content: center;">
+          <span class="corners-t"></span>
+          <span class="corners-b"></span>
+          Update Profile
+        </button>
+      </div>
+    <% end %>
+
+    <div class="auth-danger-zone">
+      <p>
+        <a href="#" class="auth-danger-toggle" onclick="event.preventDefault(); this.closest('.auth-danger-zone').classList.toggle('open');">
+          Want to delete your account?
+        </a>
+      </p>
+      <div class="auth-danger-confirm">
+        <p style="font-size: 0.8125rem; color: var(--color-maroon); margin-top: 0.75rem; line-height: 1.5;">
+          This will permanently delete your account and all associated data. This cannot be undone.
+        </p>
+        <%= button_to "Yes, Delete My Account", registration_path(resource_name), method: :delete, class: "btn-filled btn-filled-danger", style: "margin-top: 0.75rem; font-size: 11px; padding: 6px 14px;", form: { onsubmit: "return confirm('Last chance! This will permanently delete your account. Are you absolutely sure?');" } %>
+      </div>
+    </div>
+  </div>
+</div>

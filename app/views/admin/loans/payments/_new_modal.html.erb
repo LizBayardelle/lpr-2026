@@ -1,0 +1,67 @@
+<div class="modal-overlay" id="new-payment-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="heading-2">Record Payment</h2>
+      <button type="button" data-modal-close>&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <%= form_with model: [:admin, @loan, Payment.new], local: true do |f| %>
+        <div class="field-row">
+          <div class="field">
+            <%= f.label :payment_date, "Payment Date" %>
+            <%= f.date_field :payment_date, value: Date.today, class: "field-input" %>
+          </div>
+          <div class="field">
+            <%= f.label :amount, "Amount" %>
+            <%= f.number_field :amount, step: 0.01, class: "field-input" %>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <%= f.label :payment_method, "Payment Method" %>
+            <%= f.select :payment_method, [["Check", "check"], ["Wire", "wire"], ["ACH", "ach"], ["Cash", "cash"], ["Other", "other"]], {}, class: "field-input" %>
+          </div>
+          <div class="field">
+            <%= f.label :reference_number, "Reference Number" %>
+            <%= f.text_field :reference_number, class: "field-input" %>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <%= f.label :interest_amount, "Interest Amount" %>
+            <%= f.number_field :interest_amount, step: 0.01, class: "field-input" %>
+            <span class="text-small">Leave blank to auto-allocate</span>
+          </div>
+          <div class="field">
+            <%= f.label :principal_amount, "Principal Amount" %>
+            <%= f.number_field :principal_amount, step: 0.01, class: "field-input" %>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <%= f.label :late_fee_amount, "Late Fee Amount" %>
+            <%= f.number_field :late_fee_amount, step: 0.01, class: "field-input" %>
+          </div>
+          <div class="field">
+            <%= f.label :extra_amount, "Extra Amount" %>
+            <%= f.number_field :extra_amount, step: 0.01, class: "field-input" %>
+          </div>
+        </div>
+
+        <div class="field">
+          <%= f.label :notes, "Notes" %>
+          <%= f.text_area :notes, class: "field-input", rows: 3 %>
+        </div>
+
+        <div class="modal-actions">
+          <%= btn_filled_tag "Record Payment", nil, type: "submit" %>
+          <a href="#" data-modal-close>Cancel</a>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

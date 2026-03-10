@@ -1,0 +1,17 @@
+<div class="container-narrow" style="padding-top: 6rem;">
+  <%= render "admin/breadcrumbs", crumbs: [
+    { label: "Blog Posts", path: admin_blogs_path },
+    { label: "Edit" }
+  ] %>
+  <h1 class="heading-1" style="margin-bottom: 2rem;">Edit Blog Post</h1>
+
+  <div class="card">
+    <%= render "form", blog: @blog, categories: @categories %>
+  </div>
+
+  <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb;">
+    <%= button_to "Delete Post", admin_blog_path(@blog), method: :delete,
+        class: "btn-filled btn-filled-danger",
+        data: { turbo_confirm: "Are you sure you want to delete this post?" } %>
+  </div>
+</div>
