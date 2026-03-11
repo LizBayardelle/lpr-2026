@@ -24,6 +24,36 @@
       </div>
     </a>
 
+    <a href="<%= admin_client_uploads_path %>" class="admin-action-card" style="display: flex; align-items: flex-start; gap: 1rem;">
+      <div style="flex-shrink: 0; width: 2.25rem; height: 2.25rem; display: flex; align-items: center; justify-content: center; background: var(--color-navy); border-radius: 0.375rem;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+      </div>
+      <div>
+        <p class="heading-3">Client Uploads</p>
+        <p class="text-small" style="margin-top: 0.25rem;">
+          Review and assign uploaded documents.
+          <% if @pending_uploads_count > 0 %>
+            <span class="badge badge-warning" style="margin-left: 0.25rem;"><%= @pending_uploads_count %> pending</span>
+          <% end %>
+        </p>
+      </div>
+    </a>
+
+    <a href="<%= admin_contact_submissions_path %>" class="admin-action-card" style="display: flex; align-items: flex-start; gap: 1rem;">
+      <div style="flex-shrink: 0; width: 2.25rem; height: 2.25rem; display: flex; align-items: center; justify-content: center; background: var(--color-navy); border-radius: 0.375rem;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      </div>
+      <div>
+        <p class="heading-3">Messages</p>
+        <p class="text-small" style="margin-top: 0.25rem;">
+          Contact form submissions.
+          <% if @unread_messages_count > 0 %>
+            <span class="badge badge-warning" style="margin-left: 0.25rem;"><%= @unread_messages_count %> new</span>
+          <% end %>
+        </p>
+      </div>
+    </a>
+
     <a href="<%= admin_categories_path %>" class="admin-action-card" style="display: flex; align-items: flex-start; gap: 1rem;">
       <div style="flex-shrink: 0; width: 2.25rem; height: 2.25rem; display: flex; align-items: center; justify-content: center; background: var(--color-navy); border-radius: 0.375rem;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>

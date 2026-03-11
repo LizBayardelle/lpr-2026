@@ -1,0 +1,76 @@
+<div class="container-wide" style="padding-top: 6rem;">
+  <%= render "admin/breadcrumbs", crumbs: [{ label: "Messages" }] %>
+
+  <div style="display: flex; justify-content: space-between; align-items: center;">
+    <h1 class="heading-1" style="color: var(--color-navy);">Contact Messages</h1>
+    <% if @unread_count > 0 %>
+      <span class="badge badge-warning"><%= @unread_count %> new</span>
+    <% end %>
+  </div>
+
+  <%# ── Status Tabs ── %>
+  <div style="display: flex; gap: 0.5rem; margin-top: 1.5rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0;">
+    <% [["new", "New"], ["read", "Read"], ["replied", "Replied"], ["archived", "Archived"]].each do |value, label| %>
+      <a href="<%= admin_contact_submissions_path(status: value) %>"
+         style="padding: 0.5rem 1rem; font-size: 0.8125rem; font-weight: 600; text-decoration: none;
+                border-bottom: 2px solid <%= @status == value ? 'var(--color-navy)' : 'transparent' %>;
+                color: <%= @status == value ? 'var(--color-navy)' : 'var(--color-steel)' %>;
+                margin-bottom: -2px;">
+        <%= label %>
+      </a>
+    <% end %>
+  </div>
+
+  <% if @submissions.any? %>
+    <div class="card" style="padding: 0; margin-top: 1.5rem;">
+      <div class="table-container" style="padding: 1rem 0 0; overflow-x: auto; -webkit-overflow-scrolling: touch;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="padding-left: 2rem;">From</th>
+              <th>Subject</th>
+              <th>Message</th>
+              <th>Date</th>
+              <th style="padding-right: 2rem;"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @submissions.each do |sub| %>
+              <tr>
+                <td style="padding-left: 2rem;">
+                  <div style="font-weight: <%= sub.status == 'new' ? '700' : '500' %>;"><%= sub.name %></div>
+                  <div class="text-small" style="color: var(--color-steel);"><%= sub.email %></div>
+                  <% if sub.phone.present? %>
+                    <div class="text-small" style="color: var(--color-steel);"><%= sub.phone %></div>
+                  <% end %>
+                </td>
+                <td style="white-space: nowrap;">
+                  <% if sub.subject.present? %>
+                    <span class="badge badge-navy"><%= sub.subject %></span>
+                  <% end %>
+                </td>
+                <td class="text-small"><%= truncate(sub.message, length: 100) %></td>
+                <td class="text-small" style="white-space: nowrap;">
+                  <%= sub.created_at.strftime("%b %-d, %Y") %>
+                  <div style="color: var(--color-steel);"><%= sub.created_at.strftime("%-I:%M %p") %></div>
+                </td>
+                <td style="padding-right: 2rem; text-align: right; white-space: nowrap;">
+                  <%= link_to "View", admin_contact_submission_path(sub), style: "font-size: 0.8125rem; margin-right: 0.5rem;" %>
+                  <% if sub.status != "archived" %>
+                    <%= button_to "Archive", archive_admin_contact_submission_path(sub), method: :post,
+                        class: "btn-filled btn-filled-ghost",
+                        style: "font-size: 0.75rem; padding: 0.375rem 0.75rem; display: inline;" %>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  <% else %>
+    <div class="card" style="margin-top: 1.5rem; text-align: center; padding: 3rem;">
+      <p style="color: var(--color-steel);">No <%= @status %> messages.</p>
+    </div>
+  <% end %>
+</div>

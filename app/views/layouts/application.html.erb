@@ -23,7 +23,7 @@
     <%= javascript_include_tag "application", type: "module" %>
   </head>
 
-  <body>
+  <body style="display: flex; flex-direction: column; min-height: 100vh;">
     <%= render "shared/navbar" unless content_for?(:hide_navbar) %>
 
     <% if notice.present? %>
@@ -33,6 +33,10 @@
       <div class="flash-alert"><%= alert %></div>
     <% end %>
 
-    <%= yield %>
+    <main style="flex: 1;">
+      <%= yield %>
+    </main>
+
+    <%= render "shared/footer" unless content_for?(:hide_footer) %>
   </body>
 </html>

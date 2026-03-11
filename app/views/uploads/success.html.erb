@@ -1,0 +1,20 @@
+<div class="container-narrow section" style="padding-top: 6rem;">
+  <div style="max-width: 32rem; margin: 0 auto; text-align: center;">
+    <div style="width: 3.5rem; height: 3.5rem; margin: 0 auto; display: flex; align-items: center; justify-content: center; background: rgba(103, 128, 151, 0.1); border-radius: 50%;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-slate-blue-dark)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    </div>
+
+    <h1 class="heading-1" style="color: var(--color-navy); margin-top: 1.5rem;">Document Received</h1>
+    <p class="text-body" style="margin-top: 1rem; color: var(--color-steel);">
+      Thank you! Your document has been securely uploaded. Our team will review it
+      and assign it to your file. No further action is needed on your part.
+    </p>
+
+    <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center;">
+      <%= btn_tag "Upload Another Document", upload_path %>
+      <%= btn_tag "Back to Home", root_path %>
+    </div>
+  </div>
+</div>

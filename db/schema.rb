@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_10_162356) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_11_011348) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -71,6 +71,35 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_10_162356) do
     t.datetime "updated_at", null: false
     t.index ["blog_id"], name: "index_category_blogs_on_blog_id"
     t.index ["category_id"], name: "index_category_blogs_on_category_id"
+  end
+
+  create_table "client_uploads", force: :cascade do |t|
+    t.datetime "assigned_at"
+    t.bigint "assigned_by_user_id"
+    t.string "client_email", null: false
+    t.string "client_name", null: false
+    t.string "client_phone"
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "document_type", null: false
+    t.bigint "loan_id"
+    t.string "name"
+    t.string "status", default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.index ["loan_id"], name: "index_client_uploads_on_loan_id"
+    t.index ["status"], name: "index_client_uploads_on_status"
+  end
+
+  create_table "contact_submissions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "email", null: false
+    t.text "message", null: false
+    t.string "name", null: false
+    t.string "phone"
+    t.string "status", default: "new", null: false
+    t.string "subject"
+    t.datetime "updated_at", null: false
+    t.index ["status"], name: "index_contact_submissions_on_status"
   end
 
   create_table "loan_documents", force: :cascade do |t|
@@ -235,6 +264,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_10_162356) do
   add_foreign_key "blogs", "users"
   add_foreign_key "category_blogs", "blogs"
   add_foreign_key "category_blogs", "categories"
+  add_foreign_key "client_uploads", "loans"
+  add_foreign_key "client_uploads", "users", column: "assigned_by_user_id"
   add_foreign_key "loan_documents", "loans"
   add_foreign_key "loan_documents", "users", column: "uploaded_by_user_id"
   add_foreign_key "loan_draws", "loans"

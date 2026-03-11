@@ -1,0 +1,53 @@
+<div class="container-wide" style="padding-top: 6rem;">
+  <%= render "admin/breadcrumbs", crumbs: [
+    { label: "Messages", path: admin_contact_submissions_path },
+    { label: @submission.name }
+  ] %>
+
+  <div style="max-width: 40rem;">
+    <h1 class="heading-1" style="color: var(--color-navy);">Message from <%= @submission.name %></h1>
+
+    <div class="card" style="margin-top: 1.5rem; padding: 2rem;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+        <div>
+          <div class="text-small" style="color: var(--color-steel);">Name</div>
+          <div style="font-weight: 600;"><%= @submission.name %></div>
+        </div>
+        <div>
+          <div class="text-small" style="color: var(--color-steel);">Email</div>
+          <div><a href="mailto:<%= @submission.email %>"><%= @submission.email %></a></div>
+        </div>
+        <div>
+          <div class="text-small" style="color: var(--color-steel);">Phone</div>
+          <div><%= @submission.phone.presence || "Not provided" %></div>
+        </div>
+        <div>
+          <div class="text-small" style="color: var(--color-steel);">Subject</div>
+          <div><%= @submission.subject.presence || "None" %></div>
+        </div>
+        <div>
+          <div class="text-small" style="color: var(--color-steel);">Received</div>
+          <div><%= @submission.created_at.strftime("%b %-d, %Y at %-I:%M %p") %></div>
+        </div>
+        <div>
+          <div class="text-small" style="color: var(--color-steel);">Status</div>
+          <div>
+            <span class="badge <%= @submission.status == 'new' ? 'badge-warning' : 'badge-neutral' %>"><%= @submission.status.capitalize %></span>
+          </div>
+        </div>
+      </div>
+
+      <div style="border-top: 1px solid #e5e7eb; padding-top: 1.5rem;">
+        <div class="text-small" style="color: var(--color-steel); margin-bottom: 0.5rem;">Message</div>
+        <div style="white-space: pre-wrap; line-height: 1.75; font-size: 0.9375rem;"><%= @submission.message %></div>
+      </div>
+
+      <div style="border-top: 1px solid #e5e7eb; margin-top: 1.5rem; padding-top: 1.5rem; display: flex; gap: 0.5rem;">
+        <a href="mailto:<%= @submission.email %>?subject=Re: <%= @submission.subject %>" class="btn-filled btn-filled-primary">Reply via Email</a>
+        <% if @submission.status != "archived" %>
+          <%= button_to "Archive", archive_admin_contact_submission_path(@submission), method: :post, class: "btn-filled btn-filled-ghost" %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

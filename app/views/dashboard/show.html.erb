@@ -1,0 +1,207 @@
+<div class="container-wide" style="padding-top: 6rem;">
+  <span class="section-label">Client Portal</span>
+  <h1 class="heading-1" style="color: var(--color-navy);">Welcome, <%= current_user.first_name || current_user.email %></h1>
+
+  <%# ──────────────────────────── QUICK ACTIONS ──────────────────────────── %>
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); gap: 1rem; margin-top: 2rem;">
+    <a href="<%= upload_path %>" class="admin-action-card" style="display: flex; align-items: flex-start; gap: 1rem;">
+      <div style="flex-shrink: 0; width: 2.25rem; height: 2.25rem; display: flex; align-items: center; justify-content: center; background: var(--color-navy); border-radius: 0.375rem;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+      </div>
+      <div>
+        <p class="heading-3">Upload Document</p>
+        <p class="text-small" style="margin-top: 0.25rem;">Send us a file securely.</p>
+      </div>
+    </a>
+
+    <a href="<%= edit_user_registration_path %>" class="admin-action-card" style="display: flex; align-items: flex-start; gap: 1rem;">
+      <div style="flex-shrink: 0; width: 2.25rem; height: 2.25rem; display: flex; align-items: center; justify-content: center; background: var(--color-navy); border-radius: 0.375rem;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <div>
+        <p class="heading-3">Edit Profile</p>
+        <p class="text-small" style="margin-top: 0.25rem;">Update your login and contact info.</p>
+      </div>
+    </a>
+
+    <a href="mailto:anthony@linchpinrealty.com" class="admin-action-card" style="display: flex; align-items: flex-start; gap: 1rem;">
+      <div style="flex-shrink: 0; width: 2.25rem; height: 2.25rem; display: flex; align-items: center; justify-content: center; background: var(--color-navy); border-radius: 0.375rem;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      </div>
+      <div>
+        <p class="heading-3">Contact Us</p>
+        <p class="text-small" style="margin-top: 0.25rem;">Questions? Send us an email.</p>
+      </div>
+    </a>
+  </div>
+
+  <%# ──────────────────────────── YOUR LOANS ──────────────────────────── %>
+  <div class="section">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <span class="section-label" style="margin-bottom: 0;">Your Loans</span>
+    </div>
+
+    <% if @loans.any? %>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr)); gap: 1rem; margin-top: 1.5rem;">
+        <% @loans.each do |loan| %>
+          <div class="card" style="padding: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+              <div>
+                <p class="heading-3"><%= loan.property_address %></p>
+                <p class="text-small" style="color: var(--color-steel); margin-top: 0.25rem;"><%= loan.borrower_name %></p>
+              </div>
+              <span class="badge <%= loan.status == 'active' ? 'badge-success' : loan.status == 'paid_off' ? 'badge-navy' : 'badge-warning' %>" style="white-space: nowrap;">
+                <%= loan.status.titleize %>
+              </span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.25rem;">
+              <div>
+                <div class="text-small" style="color: var(--color-steel);">Loan Amount</div>
+                <div style="font-weight: 600;"><%= number_to_currency(loan.loan_amount) %></div>
+              </div>
+              <div>
+                <div class="text-small" style="color: var(--color-steel);">Current Balance</div>
+                <div style="font-weight: 600;"><%= number_to_currency(loan.current_balance) %></div>
+              </div>
+              <div>
+                <div class="text-small" style="color: var(--color-steel);">Interest Rate</div>
+                <div style="font-weight: 600;"><%= number_to_percentage(loan.interest_rate, precision: 2) %></div>
+              </div>
+              <div>
+                <div class="text-small" style="color: var(--color-steel);">Maturity Date</div>
+                <div style="font-weight: 600;"><%= loan.effective_maturity_date.strftime("%b %-d, %Y") %></div>
+              </div>
+            </div>
+
+            <div style="border-top: 1px solid #e5e7eb; margin-top: 1.25rem; padding-top: 1rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="text-small" style="color: var(--color-steel);">Monthly Payment</div>
+                <div style="font-weight: 600;"><%= number_to_currency(loan.monthly_payment_amount) %></div>
+              </div>
+              <% if loan.status == "active" && loan.effective_maturity_date <= 60.days.from_now.to_date %>
+                <div style="margin-top: 0.75rem; padding: 0.5rem 0.75rem; background: rgba(138, 109, 43, 0.08); border-radius: 0.25rem;">
+                  <p class="text-small" style="color: var(--color-caution); font-weight: 600;">
+                    Matures <%= loan.effective_maturity_date.strftime("%b %-d, %Y") %>
+                  </p>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="card" style="margin-top: 1.5rem; text-align: center; padding: 3rem;">
+        <p style="color: var(--color-steel);">No loans associated with your account yet.</p>
+        <p class="text-small" style="color: var(--color-steel); margin-top: 0.5rem;">
+          If you have an active loan, contact us to link it to your account.
+        </p>
+      </div>
+    <% end %>
+  </div>
+
+  <%# ──────────────────────────── STATEMENTS ──────────────────────────── %>
+  <div class="section">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <span class="section-label" style="margin-bottom: 0;">Recent Statements</span>
+    </div>
+
+    <% if @statements.any? %>
+      <div class="card" style="padding: 0; margin-top: 1.5rem;">
+        <div class="table-container" style="padding: 1rem 0 0; overflow-x: auto; -webkit-overflow-scrolling: touch;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="padding-left: 2rem;">Period</th>
+                <th>Property</th>
+                <th class="text-right">Balance</th>
+                <th class="text-right">Total Due</th>
+                <th style="padding-right: 2rem;"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @statements.each do |statement| %>
+                <tr>
+                  <td style="padding-left: 2rem; white-space: nowrap;">
+                    <%= statement.period_start.strftime("%b %Y") %>
+                  </td>
+                  <td class="text-small"><%= statement.loan.property_address %></td>
+                  <td class="text-money"><%= number_to_currency(statement.ending_balance) %></td>
+                  <td class="text-money"><%= number_to_currency(statement.total_due) %></td>
+                  <td style="padding-right: 2rem; text-align: right;">
+                    <% if statement.pdf.attached? %>
+                      <%= link_to "Download", rails_blob_path(statement.pdf, disposition: "attachment"), style: "font-size: 0.8125rem;" %>
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    <% else %>
+      <div class="card" style="margin-top: 1.5rem; text-align: center; padding: 3rem;">
+        <p style="color: var(--color-steel);">No statements available yet.</p>
+      </div>
+    <% end %>
+  </div>
+
+  <%# ──────────────────────────── YOUR UPLOADS ──────────────────────────── %>
+  <div class="section">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <span class="section-label" style="margin-bottom: 0;">Your Uploaded Documents</span>
+      <%= btn_tag "Upload New", upload_path %>
+    </div>
+
+    <% if @uploads.any? %>
+      <div class="card" style="padding: 0; margin-top: 1.5rem;">
+        <div class="table-container" style="padding: 1rem 0 0; overflow-x: auto; -webkit-overflow-scrolling: touch;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="padding-left: 2rem;">Document</th>
+                <th>Type</th>
+                <th>Uploaded</th>
+                <th style="padding-right: 2rem;">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @uploads.each do |upload| %>
+                <tr>
+                  <td style="padding-left: 2rem; font-weight: 500;">
+                    <% if upload.file.attached? %>
+                      <%= link_to (upload.name.presence || upload.file.filename), rails_blob_path(upload.file, disposition: "inline"), target: "_blank" %>
+                    <% else %>
+                      <%= upload.name.presence || "Untitled" %>
+                    <% end %>
+                    <% if upload.description.present? %>
+                      <div class="text-small" style="color: var(--color-steel); margin-top: 0.25rem;"><%= truncate(upload.description, length: 60) %></div>
+                    <% end %>
+                  </td>
+                  <td><span class="badge badge-navy" style="white-space: nowrap;"><%= upload.document_type_label %></span></td>
+                  <td class="text-small" style="white-space: nowrap;"><%= upload.created_at.strftime("%b %-d, %Y") %></td>
+                  <td style="padding-right: 2rem;">
+                    <% if upload.pending? %>
+                      <span class="badge badge-warning">Pending Review</span>
+                    <% elsif upload.assigned? %>
+                      <span class="badge badge-success">Received</span>
+                    <% elsif upload.rejected? %>
+                      <span class="badge badge-danger">Rejected</span>
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    <% else %>
+      <div class="card" style="margin-top: 1.5rem; text-align: center; padding: 3rem;">
+        <p style="color: var(--color-steel);">You haven't uploaded any documents yet.</p>
+        <div style="margin-top: 1rem;">
+          <%= btn_tag "Upload a Document", upload_path %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

@@ -13,7 +13,7 @@
         Welcome back, <strong style="color: #fff;"><%= current_user.first_name || current_user.email %></strong>.
       </p>
       <div style="margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: center;">
-        <%= btn_tag "Dashboard", "#" %>
+        <%= btn_tag "Dashboard", dashboard_path %>
         <%= button_to "Sign Out", destroy_user_session_path, method: :delete, class: "btn-filled btn-filled-ghost", style: "color: rgba(255,255,255,0.4);" %>
       </div>
     <% else %>
@@ -139,23 +139,3 @@ Uncomment when numbers are ready to back it up.
     </div>
   </div>
 </div>
-
-<%# ──────────────────────────── FOOTER ──────────────────────────── %>
-<footer class="home-footer">
-  <div class="home-footer-inner">
-    <div>
-      <p class="home-footer-brand">Linchpin Realty</p>
-      <p class="home-footer-legal">DRE #02018158 &middot; NMLS #2643847</p>
-      <p class="home-footer-legal">&copy; <%= Date.current.year %> Linchpin Realty LLC | All rights reserved.</p>
-    </div>
-    <div class="home-footer-links">
-      <a href="#">About</a>
-      <a href="/knowledge">Knowledge</a>
-      <a href="#">Contact</a>
-      <a href="#">Client Hub</a>
-    </div>
-    <div class="home-footer-links">
-      <a href="mailto:anthony@linchpinrealty.com">Send Us an Email</a>
-    </div>
-  </div>
-</footer>

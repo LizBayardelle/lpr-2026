@@ -1,5 +1,5 @@
 Rails.application.routes.draw do
-  devise_for :users
+  devise_for :users, controllers: { registrations: "users/registrations" }
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
@@ -15,6 +15,18 @@ Rails.application.routes.draw do
   get "lenders", to: "pages#lenders", as: :lenders
   get "invest", to: "pages#invest", as: :invest
 
+  # About & Contact
+  get "about", to: "contact#show", as: :contact
+  post "about", to: "contact#create"
+
+  # Client dashboard (requires login)
+  get "dashboard", to: "dashboard#show", as: :dashboard
+
+  # Public document upload (no auth required)
+  get "upload", to: "uploads#new", as: :upload
+  post "upload", to: "uploads#create"
+  get "upload/success", to: "uploads#success", as: :upload_success
+
   # Public blog / knowledge base
   resources :knowledge, only: [:index, :show], controller: "knowledge"
 
@@ -28,6 +40,18 @@ Rails.application.routes.draw do
       end
     end
     resources :categories
+    resources :contact_submissions, only: [:index, :show], path: "messages" do
+      member do
+        post :mark_read
+        post :archive
+      end
+    end
+    resources :client_uploads, only: [:index, :show], path: "documents" do
+      member do
+        post :assign
+        post :reject
+      end
+    end
 
     resources :loans do
       member do

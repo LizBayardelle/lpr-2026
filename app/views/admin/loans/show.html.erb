@@ -520,7 +520,7 @@
                   </td>
                   <td style="white-space: nowrap;"><span class="badge badge-neutral"><%= LoanDocument::DOCUMENT_TYPES[document.document_type] || document.document_type.titleize %></span></td>
                   <td class="text-small"><%= document.description %></td>
-                  <td style="white-space: nowrap;"><%= document.uploaded_by %></td>
+                  <td style="white-space: nowrap;"><span class="badge badge-neutral"><%= document.uploaded_by %></span></td>
                   <td style="white-space: nowrap;"><%= document.created_at.strftime("%-m/%-d/%y") %></td>
                   <td style="padding-right: 2rem;">
                     <%= button_to admin_loan_loan_document_path(@loan, document), method: :delete, style: "background: none; border: none; cursor: pointer; color: var(--color-concrete); padding: 0.25rem;", data: { turbo_confirm: "Delete this document?" } do %>

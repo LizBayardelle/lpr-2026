@@ -6,6 +6,7 @@ class Loan < ApplicationRecord
   has_many :loan_documents, dependent: :destroy
   has_many :loan_extensions, dependent: :destroy
   has_many :loan_ledger_entries, dependent: :destroy
+  has_many :client_uploads
 
   after_create_commit :post_disbursement_to_ledger
 

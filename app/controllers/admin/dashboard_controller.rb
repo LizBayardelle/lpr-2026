@@ -9,5 +9,11 @@ class Admin::DashboardController < Admin::BaseController
     @active_loans_count = Loan.active.count
     @total_portfolio = Loan.active.sum(:loan_amount)
     @maturing_soon_count = Loan.maturing_soon(30).count
+
+    # Client uploads
+    @pending_uploads_count = ClientUpload.pending.count
+
+    # Contact messages
+    @unread_messages_count = ContactSubmission.unread.count
   end
 end
