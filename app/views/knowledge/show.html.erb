@@ -20,7 +20,7 @@
     <div class="article-meta">
       <span><%= @blog.published_at&.strftime("%B %-d, %Y") || @blog.created_at.strftime("%B %-d, %Y") %></span>
       <span>&middot;</span>
-      <span><%= @blog.user&.display_name || "Linchpin Realty Staff" %></span>
+      <span><%= @blog.author_name %></span>
     </div>
   </div>
 </div>

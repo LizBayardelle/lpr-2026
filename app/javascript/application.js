@@ -2,3 +2,4 @@
 import "./navbar"
 import "./react_mount"
 import "./admin_loans"
+import "./wysiwyg"

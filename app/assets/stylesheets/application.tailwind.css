@@ -2261,3 +2261,308 @@ a:hover {
     font-size: 9px;
   }
 }
+
+/* ================================================================
+   WYSIWYG EDITOR
+   ================================================================ */
+
+.wysiwyg-wrapper {
+  border: 1px solid var(--color-concrete);
+  border-radius: 0.375rem;
+  overflow: hidden;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  max-height: 70vh;
+}
+
+.wysiwyg-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+  padding: 0.375rem 0.5rem;
+  background: var(--color-smoke);
+  border-bottom: 1px solid var(--color-concrete);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+.wysiwyg-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.75rem;
+  height: 1.75rem;
+  padding: 0 0.375rem;
+  border: none;
+  border-radius: 0.25rem;
+  background: transparent;
+  color: var(--color-soot);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.wysiwyg-btn:hover {
+  background: var(--color-concrete);
+}
+
+.wysiwyg-btn.is-active {
+  background: var(--color-navy);
+  color: #fff;
+}
+
+.wysiwyg-separator {
+  width: 1px;
+  height: 1.25rem;
+  background: var(--color-concrete);
+  margin: 0 0.25rem;
+}
+
+/* Heading / paragraph dropdown */
+.wysiwyg-dropdown {
+  position: relative;
+}
+
+.wysiwyg-dropdown-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  height: 1.75rem;
+  padding: 0 0.5rem;
+  border: 1px solid var(--color-concrete);
+  border-radius: 0.25rem;
+  background: #fff;
+  color: var(--color-soot);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  text-transform: none;
+  letter-spacing: normal;
+  min-width: 7rem;
+}
+
+.wysiwyg-dropdown-toggle:hover {
+  background: var(--color-smoke);
+}
+
+.wysiwyg-dropdown-toggle i {
+  font-size: 0.625rem;
+  color: var(--color-steel);
+}
+
+.wysiwyg-dropdown-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 10rem;
+  background: #fff;
+  border: 1px solid var(--color-concrete);
+  border-radius: 0.375rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  z-index: 50;
+  padding: 0.25rem;
+  max-height: 20rem;
+  overflow-y: auto;
+}
+
+.wysiwyg-dropdown-menu.is-open {
+  display: block;
+}
+
+.wysiwyg-dropdown-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.375rem 0.625rem;
+  border: none;
+  border-radius: 0.25rem;
+  background: transparent;
+  color: var(--color-soot);
+  font-family: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 400;
+}
+
+.wysiwyg-dropdown-item:hover {
+  background: var(--color-smoke);
+}
+
+.wysiwyg-dropdown-item.is-active {
+  background: var(--color-navy);
+  color: #fff;
+}
+
+.wysiwyg-dropdown-item.is-active h1,
+.wysiwyg-dropdown-item.is-active h2,
+.wysiwyg-dropdown-item.is-active h3,
+.wysiwyg-dropdown-item.is-active h4,
+.wysiwyg-dropdown-item.is-active h5,
+.wysiwyg-dropdown-item.is-active h6 {
+  color: #fff;
+}
+
+.wysiwyg-dropdown-item h1 { font-size: 1.5rem; font-weight: 700; }
+.wysiwyg-dropdown-item h2 { font-size: 1.3rem; font-weight: 700; }
+.wysiwyg-dropdown-item h3 { font-size: 1.125rem; font-weight: 600; }
+.wysiwyg-dropdown-item h4 { font-size: 1rem; font-weight: 600; }
+.wysiwyg-dropdown-item h5 { font-size: 0.875rem; font-weight: 600; }
+.wysiwyg-dropdown-item h6 { font-size: 0.8125rem; font-weight: 600; }
+
+/* Scrollable editor content */
+.wysiwyg-editor {
+  overflow-y: auto;
+  flex: 1 1 auto;
+  min-height: 20rem;
+}
+
+.wysiwyg-editor .tiptap {
+  padding: 1rem;
+  min-height: 20rem;
+  outline: none;
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--color-soot);
+}
+
+.wysiwyg-editor .tiptap > *:first-child {
+  margin-top: 0;
+}
+
+.wysiwyg-editor .tiptap h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 1.75rem 0 0.75rem;
+  color: var(--color-navy);
+}
+
+.wysiwyg-editor .tiptap h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 1.5rem 0 0.75rem;
+  color: var(--color-navy);
+}
+
+.wysiwyg-editor .tiptap h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 1.25rem 0 0.5rem;
+  color: var(--color-navy);
+}
+
+.wysiwyg-editor .tiptap h4 {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  margin: 1rem 0 0.5rem;
+  color: var(--color-navy);
+}
+
+.wysiwyg-editor .tiptap h5 {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin: 1rem 0 0.5rem;
+  color: var(--color-navy);
+}
+
+.wysiwyg-editor .tiptap h6 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin: 1rem 0 0.5rem;
+  color: var(--color-navy);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.wysiwyg-editor .tiptap p {
+  margin: 0 0 0.75rem;
+}
+
+.wysiwyg-editor .tiptap ul,
+.wysiwyg-editor .tiptap ol {
+  padding-left: 1.5rem;
+  margin: 0 0 0.75rem;
+}
+
+.wysiwyg-editor .tiptap ul {
+  list-style: disc;
+}
+
+.wysiwyg-editor .tiptap ol {
+  list-style: decimal;
+}
+
+.wysiwyg-editor .tiptap li {
+  margin-bottom: 0.25rem;
+}
+
+.wysiwyg-editor .tiptap blockquote {
+  border-left: 3px solid var(--color-navy);
+  padding-left: 1rem;
+  margin: 1rem 0;
+  color: var(--color-steel);
+  font-style: italic;
+}
+
+.wysiwyg-editor .tiptap a {
+  color: var(--color-navy);
+  text-decoration: underline;
+}
+
+.wysiwyg-editor .tiptap img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.375rem;
+  margin: 1rem 0;
+}
+
+.wysiwyg-editor .tiptap pre {
+  background: var(--color-smoke);
+  border: 1px solid var(--color-concrete);
+  border-radius: 0.375rem;
+  padding: 0.75rem 1rem;
+  margin: 1rem 0;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.wysiwyg-editor .tiptap code {
+  background: var(--color-smoke);
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.875em;
+}
+
+.wysiwyg-editor .tiptap pre code {
+  background: none;
+  padding: 0;
+}
+
+.wysiwyg-editor .tiptap hr {
+  border: none;
+  border-top: 1px solid var(--color-concrete);
+  margin: 1.5rem 0;
+}
+
+.wysiwyg-editor .tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--color-steel);
+  pointer-events: none;
+  height: 0;
+}

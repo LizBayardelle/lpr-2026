@@ -30,7 +30,7 @@
     <div class="blog-card-meta">
       <span><%= blog.published_at&.strftime("%b %-d, %Y") || blog.created_at.strftime("%b %-d, %Y") %></span>
       <span>&middot;</span>
-      <span><%= blog.user&.display_name || "Linchpin Realty Staff" %></span>
+      <span><%= blog.author_name %></span>
     </div>
   </div>
 </a>

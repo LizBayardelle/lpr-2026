@@ -20,6 +20,10 @@ class Blog < ApplicationRecord
     update(published: false)
   end
 
+  def author_name
+    user&.godpowers? ? "Linchpin Team" : (user&.display_name || "Linchpin Team")
+  end
+
   def related(limit: 3)
     return Blog.published.recent.where.not(id: id).limit(limit) if category_ids.empty?
 

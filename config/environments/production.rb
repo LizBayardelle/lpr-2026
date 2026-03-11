@@ -50,8 +50,11 @@ Rails.application.configure do
   config.cache_store = :solid_cache_store
 
   # Replace the default in-process and non-durable queuing backend for Active Job.
-  config.active_job.queue_adapter = :solid_queue
-  config.solid_queue.connects_to = { database: { writing: :queue } }
+  # NOTE: SolidQueue migrations haven't been installed yet. Using inline adapter
+  # until `bin/rails solid_queue:install:migrations` and `db:migrate` are run.
+  config.active_job.queue_adapter = :inline
+  # config.active_job.queue_adapter = :solid_queue
+  # config.solid_queue.connects_to = { database: { writing: :queue } }
 
   # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.

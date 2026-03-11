@@ -22,7 +22,7 @@
 
   <div class="field">
     <%= f.label :body %>
-    <%= f.text_area :body, class: "field-input", style: "height: 20rem;", placeholder: "Article body (HTML supported)" %>
+    <%= f.text_area :body, data: { wysiwyg: true }, class: "field-input", style: "height: 20rem;", placeholder: "Article body (HTML supported)" %>
   </div>
 
   <div class="field">
