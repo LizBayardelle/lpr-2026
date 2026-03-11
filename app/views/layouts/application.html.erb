@@ -29,10 +29,10 @@
     <%= render "shared/navbar" unless content_for?(:hide_navbar) %>
 
     <% if notice.present? %>
-      <div class="flash-notice"><%= notice %></div>
+      <div class="flash-notice" data-flash><%= notice %></div>
     <% end %>
     <% if alert.present? %>
-      <div class="flash-alert"><%= alert %></div>
+      <div class="flash-alert" data-flash><%= alert %></div>
     <% end %>
 
     <main style="flex: 1;">
