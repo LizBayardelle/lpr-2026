@@ -23,6 +23,7 @@
 
     <%= stylesheet_link_tag :app %>
     <%= javascript_include_tag "application", type: "module" %>
+    <%= recaptcha_v3(action: "page_load", site_key: ENV.fetch("RECAPTCHA_SITE_KEY", ""), turbolinks: false) if ENV["RECAPTCHA_SITE_KEY"].present? %>
   </head>
 
   <body style="display: flex; flex-direction: column; min-height: 100vh;">

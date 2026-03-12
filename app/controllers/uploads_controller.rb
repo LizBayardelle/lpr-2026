@@ -4,6 +4,12 @@ class UploadsController < ApplicationController
   end
 
   def create
+    unless verify_recaptcha(action: "upload", minimum_score: 0.5, secret_key: ENV["RECAPTCHA_SECRET_KEY"])
+      @upload = ClientUpload.new(upload_params)
+      flash.now[:alert] = "reCAPTCHA verification failed. Please try again."
+      return render :new, status: :unprocessable_entity
+    end
+
     @upload = ClientUpload.new(upload_params)
     if user_signed_in?
       @upload.client_name = current_user.display_name

@@ -166,6 +166,8 @@
                 value: params.dig(:contact_submission, :message) %>
           </div>
 
+          <%= recaptcha_v3(action: "contact", site_key: ENV.fetch("RECAPTCHA_SITE_KEY", "")) if ENV["RECAPTCHA_SITE_KEY"].present? %>
+
           <div class="form-actions">
             <button type="submit" class="btn" style="width: 100%; justify-content: center;">
               <span class="corners-t"></span><span class="corners-b"></span>Send Message
