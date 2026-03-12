@@ -10,9 +10,9 @@ class Admin::LoanLedgerEntriesController < Admin::BaseController
       amount: params[:amount].to_d,
       description: params[:description]
     })
-    redirect_to admin_loan_path(@loan, tab: "ledger"), notice: "Adjustment posted."
+    redirect_to ledger_path, notice: "Adjustment posted."
   rescue => e
-    redirect_to admin_loan_path(@loan, tab: "ledger"), alert: "Could not post adjustment: #{e.message}"
+    redirect_to ledger_path, alert: "Could not post adjustment: #{e.message}"
   end
 
   def accrue_interest
@@ -20,7 +20,7 @@ class Admin::LoanLedgerEntriesController < Admin::BaseController
     period_end = params[:period_end].to_date
 
     if period_end <= period_start
-      redirect_to admin_loan_path(@loan, tab: "ledger"), alert: "Period end must be after period start."
+      redirect_to ledger_path, alert: "Period end must be after period start."
       return
     end
 
@@ -28,7 +28,7 @@ class Admin::LoanLedgerEntriesController < Admin::BaseController
     balance = @loan.principal_balance_as_of(period_start)
 
     if balance <= 0
-      redirect_to admin_loan_path(@loan, tab: "ledger"), alert: "No principal balance as of #{period_start}."
+      redirect_to ledger_path, alert: "No principal balance as of #{period_start}."
       return
     end
 
@@ -48,30 +48,30 @@ class Admin::LoanLedgerEntriesController < Admin::BaseController
       }
     })
 
-    redirect_to admin_loan_path(@loan, tab: "ledger"), notice: "Interest accrual of #{ActionController::Base.helpers.number_to_currency(interest)} posted (#{days} days on #{ActionController::Base.helpers.number_to_currency(balance)} balance)."
+    redirect_to ledger_path, notice: "Interest accrual of #{ActionController::Base.helpers.number_to_currency(interest)} posted (#{days} days on #{ActionController::Base.helpers.number_to_currency(balance)} balance)."
   rescue => e
-    redirect_to admin_loan_path(@loan, tab: "ledger"), alert: "Could not post interest accrual: #{e.message}"
+    redirect_to ledger_path, alert: "Could not post interest accrual: #{e.message}"
   end
 
   def reverse
     service = LoanLedger::PostingService.new(@loan, posted_by: current_user)
     service.reverse!(@entry, reason: params[:reason].presence || "Admin reversal")
-    redirect_to admin_loan_path(@loan, tab: "ledger"), notice: "Entry reversed."
+    redirect_to ledger_path, notice: "Entry reversed."
   rescue => e
-    redirect_to admin_loan_path(@loan, tab: "ledger"), alert: "Could not reverse entry: #{e.message}"
+    redirect_to ledger_path, alert: "Could not reverse entry: #{e.message}"
   end
 
   def destroy
     unless current_user.godpowers?
-      redirect_to admin_loan_path(@loan, tab: "ledger"), alert: "Only godpowers users can delete ledger entries."
+      redirect_to ledger_path, alert: "Only godpowers users can delete ledger entries."
       return
     end
 
     @entry.destroy!
     LoanLedger::PostingService.new(@loan).rebalance!
-    redirect_to admin_loan_path(@loan, tab: "ledger"), notice: "Entry ##{@entry.id} deleted and balances recalculated."
+    redirect_to ledger_path, notice: "Entry ##{@entry.id} deleted and balances recalculated."
   rescue => e
-    redirect_to admin_loan_path(@loan, tab: "ledger"), alert: "Could not delete entry: #{e.message}"
+    redirect_to ledger_path, alert: "Could not delete entry: #{e.message}"
   end
 
   private
@@ -82,5 +82,9 @@ class Admin::LoanLedgerEntriesController < Admin::BaseController
 
   def set_entry
     @entry = @loan.loan_ledger_entries.find(params[:id])
+  end
+
+  def ledger_path
+    admin_loan_path(@loan, tab: "ledger", ledger_sort: params[:ledger_sort])
   end
 end

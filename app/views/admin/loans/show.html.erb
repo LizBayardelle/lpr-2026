@@ -239,12 +239,12 @@
                   </td>
                   <td style="padding-right: 2rem;">
                     <% unless entry.reversed? || entry.reversal? %>
-                      <%= button_to "Reverse", reverse_admin_loan_loan_ledger_entry_path(@loan, entry), method: :post, class: "btn-filled btn-filled-danger", style: "font-size: 11px; padding: 4px 10px;", data: { turbo_confirm: "Reverse this ledger entry? This will post an offsetting entry." } %>
+                      <%= button_to "Reverse", reverse_admin_loan_loan_ledger_entry_path(@loan, entry), method: :post, params: { ledger_sort: @ledger_sort }, class: "btn-filled btn-filled-danger", style: "font-size: 11px; padding: 4px 10px;", data: { turbo_confirm: "Reverse this ledger entry? This will post an offsetting entry." } %>
                     <% end %>
                   </td>
                   <% if current_user.godpowers? %>
                     <td style="text-align: center; vertical-align: middle;">
-                      <%= button_to admin_loan_loan_ledger_entry_path(@loan, entry), method: :delete, style: "background: none; border: none; cursor: pointer; color: #ccc; font-size: 14px; padding: 2px 4px; line-height: 1;", data: { turbo_confirm: "Permanently delete this ledger entry? This cannot be undone and will recalculate all balances." } do %>&#x2715;<% end %>
+                      <%= button_to admin_loan_loan_ledger_entry_path(@loan, entry), method: :delete, params: { ledger_sort: @ledger_sort }, style: "background: none; border: none; cursor: pointer; color: #ccc; font-size: 14px; padding: 2px 4px; line-height: 1;", data: { turbo_confirm: "Permanently delete this ledger entry? This cannot be undone and will recalculate all balances." } do %>&#x2715;<% end %>
                     </td>
                   <% end %>
                 </tr>
@@ -267,6 +267,7 @@
             <button class="modal-close" data-modal-close>&times;</button>
           </div>
           <%= form_with url: accrue_interest_admin_loan_loan_ledger_entries_path(@loan), method: :post do |f| %>
+            <%= hidden_field_tag :ledger_sort, @ledger_sort %>
             <div class="modal-body" style="display: flex; flex-direction: column; gap: 1rem; padding-bottom: 1.5rem;">
               <p style="font-size: 0.8125rem; color: var(--color-steel); margin: 0;">
                 Calculates interest from the principal balance as of the period start date using the loan's rate (<%= @loan.effective_interest_rate %>%) and calculation method (<%= @loan.interest_calc_method.gsub("_", "/") %>).
@@ -295,6 +296,7 @@
             <button class="modal-close" data-modal-close>&times;</button>
           </div>
           <%= form_with url: admin_loan_loan_ledger_entries_path(@loan), method: :post do |f| %>
+            <%= hidden_field_tag :ledger_sort, @ledger_sort %>
             <div class="modal-body" style="display: flex; flex-direction: column; gap: 1rem;">
               <div>
                 <label class="field-label">Effective Date</label>

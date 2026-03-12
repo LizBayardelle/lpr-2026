@@ -9,7 +9,7 @@ class Admin::LoansController < Admin::BaseController
   def show
     @loan.accrue_interest_if_needed
     LoanLedger::PostingService.new(@loan).rebalance!
-    @ledger_sort = params[:ledger_sort] == "asc" ? "asc" : "desc"
+    @ledger_sort = params[:ledger_sort] == "desc" ? "desc" : "asc"
     @ledger_entries = @ledger_sort == "asc" ? @loan.loan_ledger_entries.chronological : @loan.loan_ledger_entries.reverse_chronological
 
     # Build a hash of entry_id => principal balance at that point (for monthly interest column)
