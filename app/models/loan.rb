@@ -170,6 +170,8 @@ class Loan < ApplicationRecord
   # Ensure monthly interest accruals are posted for each completed month since origination.
   # Accrual is posted on the last day of each month (or origination_date for the first partial month).
   # Idempotent — skips months that already have an accrual entry.
+  # Only accrues from the loan's created_at date forward to avoid incorrect retroactive accruals
+  # (e.g. interest-only loans where principal was paid down before the loan entered the system).
   def accrue_interest_if_needed
     return unless status == "active"
 
@@ -177,9 +179,12 @@ class Loan < ApplicationRecord
     # If we haven't finished the current month yet, go back to previous month end
     last_month_end = last_month_end.prev_month.end_of_month if last_month_end >= Date.current
 
-    # Build list of month-end dates from origination through last completed month
+    # Only accrue from the month the loan was entered into the system, not from origination
+    earliest_accrual_date = [origination_date, created_at.to_date].max
+
+    # Build list of month-end dates from earliest accrual date through last completed month
     accrual_dates = []
-    date = origination_date.end_of_month
+    date = earliest_accrual_date.end_of_month
     while date <= last_month_end
       accrual_dates << date
       date = date.next_month.end_of_month
@@ -198,7 +203,7 @@ class Loan < ApplicationRecord
     service = LoanLedger::PostingService.new(self)
 
     missing_dates.each do |month_end|
-      month_start = [month_end.beginning_of_month, origination_date].max
+      month_start = [month_end.beginning_of_month, earliest_accrual_date].max
       days_in_period = (month_end - month_start).to_i + 1
 
       balance = principal_balance_as_of(month_end)

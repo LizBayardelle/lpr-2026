@@ -1,6 +1,6 @@
 class Admin::LoanLedgerEntriesController < Admin::BaseController
   before_action :set_loan
-  before_action :set_entry, only: [:reverse]
+  before_action :set_entry, only: [:reverse, :destroy]
 
   def create
     service = LoanLedger::PostingService.new(@loan, posted_by: current_user)
@@ -21,6 +21,19 @@ class Admin::LoanLedgerEntriesController < Admin::BaseController
     redirect_to admin_loan_path(@loan, tab: "ledger"), notice: "Entry reversed."
   rescue => e
     redirect_to admin_loan_path(@loan, tab: "ledger"), alert: "Could not reverse entry: #{e.message}"
+  end
+
+  def destroy
+    unless current_user.godpowers?
+      redirect_to admin_loan_path(@loan, tab: "ledger"), alert: "Only godpowers users can delete ledger entries."
+      return
+    end
+
+    @entry.destroy!
+    LoanLedger::PostingService.new(@loan).rebalance!
+    redirect_to admin_loan_path(@loan, tab: "ledger"), notice: "Entry ##{@entry.id} deleted and balances recalculated."
+  rescue => e
+    redirect_to admin_loan_path(@loan, tab: "ledger"), alert: "Could not delete entry: #{e.message}"
   end
 
   private

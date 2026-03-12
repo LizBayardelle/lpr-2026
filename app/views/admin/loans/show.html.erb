@@ -237,6 +237,9 @@
                     <% unless entry.reversed? || entry.reversal? %>
                       <%= button_to "Reverse", reverse_admin_loan_loan_ledger_entry_path(@loan, entry), method: :post, class: "btn-filled btn-filled-danger", style: "font-size: 11px; padding: 4px 10px;", data: { turbo_confirm: "Reverse this ledger entry? This will post an offsetting entry." } %>
                     <% end %>
+                    <% if current_user.godpowers? %>
+                      <%= button_to "Delete", admin_loan_loan_ledger_entry_path(@loan, entry), method: :delete, class: "btn-filled btn-filled-danger", style: "font-size: 11px; padding: 4px 10px;", data: { turbo_confirm: "Permanently delete this ledger entry? This cannot be undone and will recalculate all balances." } %>
+                    <% end %>
                   </td>
                 </tr>
               <% end %>
