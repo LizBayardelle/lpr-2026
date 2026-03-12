@@ -24,7 +24,8 @@ class Admin::LoanLedgerEntriesController < Admin::BaseController
       return
     end
 
-    days = (period_end - period_start).to_i + 1
+    actual_days = (period_end - period_start).to_i + 1
+    display_days = @loan.interest_calc_method == "30_360" ? @loan.calc_30_360_days(period_start, period_end) : actual_days
     balance = @loan.principal_balance_as_of(period_start)
 
     if balance <= 0
@@ -32,7 +33,7 @@ class Admin::LoanLedgerEntriesController < Admin::BaseController
       return
     end
 
-    interest = @loan.monthly_interest_for_period(balance, days, period_end)
+    interest = @loan.monthly_interest_for_period(balance, actual_days, period_end, period_start: period_start)
 
     service = LoanLedger::PostingService.new(@loan, posted_by: current_user)
     service.post!({
@@ -44,11 +45,11 @@ class Admin::LoanLedgerEntriesController < Admin::BaseController
         balance: balance.to_f,
         rate: @loan.effective_interest_rate.to_f,
         calc_method: @loan.interest_calc_method,
-        days: days
+        days: display_days
       }
     })
 
-    redirect_to ledger_path, notice: "Interest accrual of #{ActionController::Base.helpers.number_to_currency(interest)} posted (#{days} days on #{ActionController::Base.helpers.number_to_currency(balance)} balance)."
+    redirect_to ledger_path, notice: "Interest accrual of #{ActionController::Base.helpers.number_to_currency(interest)} posted (#{display_days} days on #{ActionController::Base.helpers.number_to_currency(balance)} balance)."
   rescue => e
     redirect_to ledger_path, alert: "Could not post interest accrual: #{e.message}"
   end

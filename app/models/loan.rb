@@ -143,9 +143,16 @@ class Loan < ApplicationRecord
     end
   end
 
-  # Unpaid fees
+  # Unpaid fees — all outstanding
   def unpaid_fees
     loan_fees.where(paid: false).sum(:amount)
+  end
+
+  # Unpaid fees for the current month only (for next payment box)
+  def unpaid_fees_current_month
+    loan_fees.where(paid: false)
+             .where(fee_date: Date.current.beginning_of_month..Date.current.end_of_month)
+             .sum(:amount)
   end
 
   # Next payment due date (1st of next month, or first_payment_date if in the future)
@@ -209,7 +216,7 @@ class Loan < ApplicationRecord
       balance = principal_balance_as_of(month_end)
       next if balance <= 0
 
-      interest = monthly_interest_for_period(balance, days_in_period, month_end)
+      interest = monthly_interest_for_period(balance, days_in_period, month_end, period_start: month_start)
       next if interest <= 0
 
       service.post!({
@@ -228,12 +235,17 @@ class Loan < ApplicationRecord
   end
 
   # Calculate interest for a specific period based on calc method
-  def monthly_interest_for_period(balance, days, date)
+  def monthly_interest_for_period(balance, days, date, period_start: nil)
     rate = effective_interest_rate / 100.0
     case interest_calc_method
     when "30_360"
-      # 30/360: each month is 30 days / 360-day year
-      (balance * rate / 12).round(2)
+      # 30/360 (US NASD): each month is treated as 30 days, year as 360
+      if period_start
+        thirty_360_days = calc_30_360_days(period_start, date)
+      else
+        thirty_360_days = 30
+      end
+      (balance * rate * thirty_360_days / 360).round(2)
     when "actual_360"
       # Actual days in period / 360-day year
       (balance * rate * days / 360).round(2)
@@ -241,6 +253,16 @@ class Loan < ApplicationRecord
       # Actual days in period / 365-day year
       (balance * rate * days / 365).round(2)
     end
+  end
+
+  # 30/360 US (NASD) day count convention
+  def calc_30_360_days(start_date, end_date)
+    d1 = [start_date.day, 30].min
+    d2 = end_date.day
+    d2 = 30 if d2 == 31 && d1 >= 30
+    # Treat end-of-Feb as 30 for full-month periods
+    d2 = 30 if end_date.month == 2 && end_date == end_date.end_of_month
+    (end_date.year - start_date.year) * 360 + (end_date.month - start_date.month) * 30 + (d2 - d1)
   end
 
   def display_name
