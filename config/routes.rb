@@ -58,6 +58,9 @@ Rails.application.routes.draw do
         post :generate_statement
       end
       resources :loan_ledger_entries, only: [:create, :destroy] do
+        collection do
+          post :accrue_interest
+        end
         member do
           post :reverse
         end
