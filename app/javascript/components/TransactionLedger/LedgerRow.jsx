@@ -1,4 +1,4 @@
-import React, { useRef } from "react"
+import React, { useRef, useState } from "react"
 import EditableCell from "./EditableCell"
 import TypeBadge from "./TypeBadge"
 import { formatCurrency, formatDate, monthlyInterestDue } from "./ledgerUtils"
@@ -7,6 +7,14 @@ const EDITABLE_FIELDS = ["date", "description", "debit", "credit"]
 
 export default function LedgerRow({ entry, loan, godpowers, onUpdate, onReverse, onDelete, onTabToNext, rowIndex }) {
   const rowRef = useRef(null)
+  const [highlighted, setHighlighted] = useState(false)
+
+  const handleRowClick = (e) => {
+    // Don't highlight if clicking on an editable cell, button, or input
+    const target = e.target
+    if (target.closest("button, input, select, textarea, [data-field]")) return
+    setHighlighted(h => !h)
+  }
 
   const reversed = !!entry.reversedById
   const reversal = !!entry.reversalOfId
@@ -32,7 +40,7 @@ export default function LedgerRow({ entry, loan, godpowers, onUpdate, onReverse,
   }
 
   return (
-    <tr ref={rowRef} style={{ opacity: reversed ? 0.5 : 1 }}>
+    <tr ref={rowRef} onClick={handleRowClick} style={{ opacity: reversed ? 0.5 : 1, background: highlighted ? "rgba(30, 58, 95, 0.06)" : undefined, cursor: "default" }}>
       <EditableCell
         value={entry.effectiveDate}
         displayValue={formatDate(entry.effectiveDate)}
