@@ -451,6 +451,29 @@ a:hover {
   text-align: right;
 }
 
+.ledger-tooltip-trigger {
+  position: relative;
+}
+.ledger-tooltip {
+  display: none;
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  margin-bottom: 4px;
+  padding: 4px 8px;
+  background: #1a1a1a;
+  color: #fff;
+  font-size: 0.6875rem;
+  font-family: inherit;
+  white-space: nowrap;
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 10;
+}
+.ledger-tooltip-trigger:hover .ledger-tooltip {
+  display: block;
+}
+
 /* Right-align th when the column body uses text-money */
 .data-table th.text-right,
 .data-table td.text-right {
