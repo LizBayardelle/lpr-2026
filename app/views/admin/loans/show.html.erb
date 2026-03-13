@@ -191,7 +191,7 @@
         end
 
         last_accrual = @loan.loan_ledger_entries.where(entry_type: "interest_accrual").maximum(:effective_date)
-        next_accrual = last_accrual ? last_accrual.next_month.beginning_of_month : @loan.origination_date.beginning_of_month
+        next_accrual = last_accrual ? last_accrual.beginning_of_month : @loan.origination_date.beginning_of_month
 
         ledger_props = {
           entries: ledger_entries_json,

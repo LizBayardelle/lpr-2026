@@ -64,7 +64,7 @@ export default function PostInterestModal({ loan, onPost, onClose }) {
         <form onSubmit={handleSubmit}>
           <div className="modal-body" style={{ display: "flex", flexDirection: "column", gap: "1rem", paddingBottom: "1.5rem" }}>
             <p style={{ fontSize: "0.8125rem", color: "var(--color-steel)", margin: 0 }}>
-              Calculates interest from the principal balance as of the period start date using the loan's rate ({loan.interestRate}%) and calculation method ({calcMethod}).
+              Calculates interest from the principal balance as of the period end date using the loan's rate ({loan.interestRate}%) and calculation method ({calcMethod}). Posted on the 1st of the following month.
             </p>
             <div>
               <label className="field-label">For the Month of</label>

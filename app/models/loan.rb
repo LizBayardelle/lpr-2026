@@ -203,46 +203,51 @@ class Loan < ApplicationRecord
     # Only accrue from the month the loan was entered into the system, not from origination
     earliest_accrual_date = [origination_date, created_at.to_date].max
 
-    # Build list of month-end dates from earliest accrual date through last completed month
-    accrual_dates = []
-    date = earliest_accrual_date.end_of_month
-    while date <= last_month_end
-      accrual_dates << date
-      date = date.next_month.end_of_month
+    # Build periods: interest for each month, posted on the 1st of the next month
+    periods = []
+    month_end = earliest_accrual_date.end_of_month
+    while month_end <= last_month_end
+      posting_date = month_end + 1.day # 1st of next month
+      periods << {
+        period_start: [month_end.beginning_of_month, earliest_accrual_date].max,
+        period_end: month_end,
+        posting_date: posting_date
+      }
+      month_end = month_end.next_month.end_of_month
     end
-    return if accrual_dates.empty?
+    return if periods.empty?
 
-    # Find which months already have accruals
+    # Find which months already have accruals (by posting date)
     existing_dates = loan_ledger_entries
       .where(entry_type: "interest_accrual")
       .pluck(:effective_date)
       .to_set
 
-    missing_dates = accrual_dates.reject { |d| existing_dates.include?(d) }
-    return if missing_dates.empty?
+    missing = periods.reject { |p| existing_dates.include?(p[:posting_date]) }
+    return if missing.empty?
 
     service = LoanLedger::PostingService.new(self)
 
-    missing_dates.each do |month_end|
-      month_start = [month_end.beginning_of_month, earliest_accrual_date].max
-      days_in_period = (month_end - month_start).to_i + 1
-
-      balance = principal_balance_as_of(month_end)
+    missing.each do |period|
+      balance = principal_balance_as_of(period[:period_end])
       next if balance <= 0
 
-      interest = monthly_interest_for_period(balance, days_in_period, month_end, period_start: month_start)
+      days_in_period = (period[:period_end] - period[:period_start]).to_i + 1
+      interest = monthly_interest_for_period(balance, days_in_period, period[:period_end], period_start: period[:period_start])
       next if interest <= 0
 
       service.post!({
         entry_type: "interest_accrual",
-        effective_date: month_end,
+        effective_date: period[:posting_date],
         amount: interest,
-        description: "Interest accrual - #{month_start.strftime('%b %Y')}",
+        description: "Interest accrual - #{period[:period_start].strftime('%b %Y')}",
         metadata: {
           balance: balance.to_f,
           rate: effective_interest_rate.to_f,
           calc_method: interest_calc_method,
-          days: days_in_period
+          days: days_in_period,
+          period_start: period[:period_start].to_s,
+          period_end: period[:period_end].to_s
         }
       })
     end

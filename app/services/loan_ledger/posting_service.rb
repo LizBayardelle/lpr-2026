@@ -46,13 +46,50 @@ module LoanLedger
       end
     end
 
-    # Recalculate all running balances in chronological order.
-    # Call after posting entries with backdated effective_dates.
+    # Recalculate all running balances and interest accrual amounts in chronological order.
+    # Call after posting entries with backdated effective_dates or editing existing entries.
     def rebalance!
       LoanLedgerEntry.transaction do
         @loan.loan_ledger_entries.lock("FOR UPDATE").first # lock
         running = BigDecimal("0")
+        principal = BigDecimal("0")
+
         @loan.loan_ledger_entries.order(:effective_date, :id).each do |entry|
+          # Recalculate interest accrual amounts based on principal at that point
+          if entry.entry_type == "interest_accrual" && !entry.reversed? && !entry.reversal?
+            period_start = entry.metadata&.dig("period_start")&.to_date
+            period_end = entry.metadata&.dig("period_end")&.to_date
+
+            # Fall back: infer period from effective_date (1st of month = prior month's interest)
+            if period_end.nil?
+              if entry.effective_date.day == 1
+                period_end = entry.effective_date - 1.day
+                period_start ||= period_end.beginning_of_month
+              else
+                period_end = entry.effective_date.end_of_month
+                period_start ||= entry.effective_date.beginning_of_month
+              end
+            end
+            period_start ||= period_end.beginning_of_month
+
+            if principal > 0
+              days = (period_end - period_start).to_i + 1
+              new_amount = @loan.monthly_interest_for_period(principal, days, period_end, period_start: period_start)
+              if new_amount != entry.amount
+                entry.update_columns(
+                  amount: new_amount,
+                  metadata: (entry.metadata || {}).merge(
+                    "balance" => principal.to_f,
+                    "period_start" => period_start.to_s,
+                    "period_end" => period_end.to_s
+                  )
+                )
+                entry.reload
+              end
+            end
+          end
+
+          principal += entry.amount if entry.principal_affecting?
           running += entry.amount
           entry.update_column(:running_balance, running) if entry.running_balance != running
         end

@@ -59,17 +59,20 @@ class Admin::LoanLedgerEntriesController < Admin::BaseController
 
     interest = @loan.monthly_interest_for_period(balance, actual_days, period_end, period_start: period_start)
 
+    posting_date = period_end + 1.day # Post on 1st of next month
     service = LoanLedger::PostingService.new(@loan, posted_by: current_user)
     service.post!({
       entry_type: "interest_accrual",
-      effective_date: period_end,
+      effective_date: posting_date,
       amount: interest,
       description: "Interest accrual - #{period_start.strftime('%b %-d, %Y')} to #{period_end.strftime('%b %-d, %Y')}",
       metadata: {
         balance: balance.to_f,
         rate: @loan.effective_interest_rate.to_f,
         calc_method: @loan.interest_calc_method,
-        days: display_days
+        days: display_days,
+        period_start: period_start.to_s,
+        period_end: period_end.to_s
       }
     })
 

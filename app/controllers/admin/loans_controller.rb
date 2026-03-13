@@ -21,7 +21,9 @@ class Admin::LoansController < Admin::BaseController
     end
     last_accrual_date = @loan.loan_ledger_entries.where(entry_type: "interest_accrual").maximum(:effective_date)
     @next_accrual_month = if last_accrual_date
-      last_accrual_date.next_month.beginning_of_month
+      # Accruals are dated 1st of the month after the period, so the next period
+      # to accrue starts on that same date (e.g., last accrual Aug 1 = July done, next = Aug 1-31)
+      last_accrual_date.beginning_of_month
     else
       @loan.origination_date.beginning_of_month
     end
