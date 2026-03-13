@@ -246,9 +246,7 @@
                   </td>
                   <td class="text-money" style="font-weight: 500;"><%= number_to_currency(entry.running_balance) %></td>
                   <td class="text-money" style="color: var(--color-steel);">
-                    <% if entry.principal_affecting? %>
-                      <%= number_to_currency(@loan.monthly_interest_due(@principal_at_entry[entry.id])) %>
-                    <% end %>
+                    <%= number_to_currency(@loan.monthly_interest_due(@principal_at_entry[entry.id])) %>
                   </td>
                   <td style="padding-right: 2rem;">
                     <% unless entry.reversed? || entry.reversal? %>
