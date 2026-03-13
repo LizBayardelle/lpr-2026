@@ -53,6 +53,17 @@ Rails.application.routes.draw do
       end
     end
 
+    resources :users do
+      member do
+        post :toggle_admin
+        post :toggle_godpowers
+        post :resend_invite
+        post :send_reset
+        post :add_loan_role
+        delete :remove_loan_role
+      end
+    end
+
     resources :loans do
       member do
         post :generate_statement

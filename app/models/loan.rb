@@ -7,8 +7,22 @@ class Loan < ApplicationRecord
   has_many :loan_extensions, dependent: :destroy
   has_many :loan_ledger_entries, dependent: :destroy
   has_many :client_uploads
+  has_many :loan_roles, dependent: :destroy
+  has_many :users, through: :loan_roles
 
   after_create_commit :post_disbursement_to_ledger
+
+  def users_with_role(role)
+    users.merge(LoanRole.where(role: role))
+  end
+
+  def borrowers
+    users_with_role("borrower")
+  end
+
+  def lender_investors
+    users_with_role("lender_investor")
+  end
 
   validates :borrower_name, presence: true
   validates :property_address, presence: true

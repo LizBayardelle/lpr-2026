@@ -4,8 +4,10 @@ class DashboardController < ApplicationController
   def show
     email = current_user.email
 
-    # Loans where the borrower email matches this user
-    @loans = Loan.where(borrower_email: email).order(origination_date: :desc)
+    # Loans where the borrower email matches this user OR they have a loan_role
+    email_loan_ids = Loan.where(borrower_email: email).select(:id)
+    role_loan_ids = current_user.loans.select(:id)
+    @loans = Loan.where(id: email_loan_ids).or(Loan.where(id: role_loan_ids)).order(origination_date: :desc)
 
     # Statements across all their loans, most recent first
     @statements = LoanStatement.where(loan_id: @loans.select(:id)).order(statement_date: :desc).limit(10)

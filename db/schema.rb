@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_11_011348) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_13_163616) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -173,6 +173,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_11_011348) do
     t.index ["source_type", "source_id"], name: "index_loan_ledger_entries_on_source_type_and_source_id"
   end
 
+  create_table "loan_roles", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "loan_id", null: false
+    t.string "role", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["loan_id"], name: "index_loan_roles_on_loan_id"
+    t.index ["user_id", "loan_id", "role"], name: "index_loan_roles_on_user_id_and_loan_id_and_role", unique: true
+    t.index ["user_id"], name: "index_loan_roles_on_user_id"
+  end
+
   create_table "loan_statements", force: :cascade do |t|
     t.decimal "beginning_balance", precision: 12, scale: 2, null: false
     t.datetime "created_at", null: false
@@ -273,6 +284,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_11_011348) do
   add_foreign_key "loan_fees", "loans"
   add_foreign_key "loan_ledger_entries", "loans"
   add_foreign_key "loan_ledger_entries", "users", column: "posted_by_id"
+  add_foreign_key "loan_roles", "loans"
+  add_foreign_key "loan_roles", "users"
   add_foreign_key "loan_statements", "loans"
   add_foreign_key "payments", "loans"
 end

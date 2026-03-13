@@ -1,0 +1,127 @@
+<% content_for :title, "Edit #{@user.display_name}" %>
+
+<div class="container-wide" style="padding-top: 6rem;">
+  <%= render "admin/breadcrumbs", crumbs: [
+    { label: "Users", path: admin_users_path },
+    { label: @user.display_name, path: admin_user_path(@user) },
+    { label: "Edit" }
+  ] %>
+
+  <h1 class="heading-1" style="color: var(--color-navy); margin-bottom: 2rem;">Edit User</h1>
+
+  <div class="card" style="padding: 2rem; max-width: 40rem;">
+    <%= form_for @user, url: admin_user_path(@user), html: { autocomplete: "off" } do |f| %>
+      <% if @user.errors.any? %>
+        <div class="auth-error-list" style="margin-bottom: 2rem;">
+          <ul>
+            <% @user.errors.full_messages.each do |msg| %>
+              <li><%= msg %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="field">
+          <%= f.label :first_name %>
+          <%= f.text_field :first_name, class: "field-input" %>
+        </div>
+        <div class="field">
+          <%= f.label :last_name %>
+          <%= f.text_field :last_name, class: "field-input" %>
+        </div>
+      </div>
+
+      <div class="field">
+        <%= f.label :email %>
+        <%= f.email_field :email, class: "field-input", required: true %>
+      </div>
+
+      <div class="field">
+        <%= f.label :phone_number, "Phone" %>
+        <%= f.text_field :phone_number, class: "field-input" %>
+      </div>
+
+      <div class="field">
+        <%= f.label :notes %>
+        <%= f.text_area :notes, class: "field-input" %>
+      </div>
+
+      <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb;">
+        <div class="field">
+          <label for="user_password" style="display: block; font-family: 'Barlow Condensed', sans-serif; font-size: 0.8125rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-steel); margin-bottom: 0.5rem;">Reset Password</label>
+          <input type="password" name="user[password]" id="user_password" class="field-input" minlength="6" autocomplete="new-password" placeholder="Leave blank to keep current password">
+          <p class="field-hint">Minimum 6 characters. Leave blank to keep current password.</p>
+        </div>
+      </div>
+
+      <div class="form-actions" style="display: flex; gap: 1rem; align-items: center;">
+        <%= btn_filled_tag "Update User", nil, variant: "primary" %>
+        <a href="<%= admin_user_path(@user) %>" style="font-size: 0.8125rem; color: var(--color-steel);">Cancel</a>
+      </div>
+    <% end %>
+  </div>
+
+  <%# ── Loan Roles ── %>
+  <div class="section" style="margin-top: 2rem;">
+    <span class="section-label" style="margin-bottom: 1rem; display: block;">Loan Assignments</span>
+
+    <div class="card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
+      <%= form_tag add_loan_role_admin_user_path(@user), method: :post, style: "display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;" do %>
+        <div class="field" style="flex: 1; min-width: 12rem;">
+          <label for="loan_id" style="display: block; font-family: 'Barlow Condensed', sans-serif; font-size: 0.8125rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-steel); margin-bottom: 0.5rem;">Loan</label>
+          <select name="loan_id" id="loan_id" class="field-input" required>
+            <option value="">Select a loan...</option>
+            <% @available_loans.each do |loan| %>
+              <option value="<%= loan.id %>"><%= loan.borrower_name %> - <%= loan.property_address %></option>
+            <% end %>
+          </select>
+        </div>
+        <div class="field" style="min-width: 10rem;">
+          <label for="role" style="display: block; font-family: 'Barlow Condensed', sans-serif; font-size: 0.8125rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-steel); margin-bottom: 0.5rem;">Role</label>
+          <select name="role" id="role" class="field-input" required>
+            <option value="">Select role...</option>
+            <% LoanRole::ROLES.each do |role| %>
+              <option value="<%= role %>"><%= role.titleize.gsub("_", " ") %></option>
+            <% end %>
+          </select>
+        </div>
+        <div style="padding-bottom: 0.75rem;">
+          <%= btn_filled_tag "Add Role", nil, variant: "primary" %>
+        </div>
+      <% end %>
+    </div>
+
+    <% if @loan_roles.any? %>
+      <div class="card" style="padding: 0;">
+        <div class="table-container" style="padding: 1rem 0 0;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="padding-left: 2rem;">Loan</th>
+                <th>Property</th>
+                <th>Role</th>
+                <th style="padding-right: 2rem;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @loan_roles.each do |lr| %>
+                <tr>
+                  <td style="padding-left: 2rem; font-weight: 600;"><%= lr.loan.borrower_name %></td>
+                  <td class="text-small"><%= lr.loan.property_address %></td>
+                  <td><span class="badge badge-navy"><%= lr.role_label %></span></td>
+                  <td style="padding-right: 2rem;">
+                    <%= link_to "Remove",
+                          remove_loan_role_admin_user_path(@user, loan_role_id: lr.id),
+                          data: { turbo_method: :delete, turbo_confirm: "Remove this role?" },
+                          style: "font-size: 0.8125rem; color: var(--color-danger);" %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

@@ -1,0 +1,165 @@
+<% content_for :title, "New User" %>
+
+<div class="container-wide" style="padding-top: 6rem;">
+  <%= render "admin/breadcrumbs", crumbs: [
+    { label: "Users", path: admin_users_path },
+    { label: "New User" }
+  ] %>
+
+  <h1 class="heading-1" style="color: var(--color-navy); margin-bottom: 2rem;">New User</h1>
+
+  <div class="card" style="padding: 2rem; max-width: 40rem;">
+    <%= form_for @user, url: admin_users_path, html: { autocomplete: "off" } do |f| %>
+      <% if @user.errors.any? %>
+        <div class="auth-error-list" style="margin-bottom: 2rem;">
+          <ul>
+            <% @user.errors.full_messages.each do |msg| %>
+              <li><%= msg %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="field">
+          <%= f.label :first_name %>
+          <%= f.text_field :first_name, class: "field-input", placeholder: "Jane" %>
+        </div>
+        <div class="field">
+          <%= f.label :last_name %>
+          <%= f.text_field :last_name, class: "field-input", placeholder: "Doe" %>
+        </div>
+      </div>
+
+      <div class="field">
+        <%= f.label :email %>
+        <%= f.email_field :email, class: "field-input", placeholder: "jane@example.com", required: true %>
+      </div>
+
+      <div class="field">
+        <%= f.label :phone_number, "Phone" %>
+        <%= f.text_field :phone_number, class: "field-input", placeholder: "(555) 555-1234" %>
+      </div>
+
+      <div class="field">
+        <%= f.label :notes %>
+        <%= f.text_area :notes, class: "field-input", placeholder: "Optional internal notes about this user" %>
+      </div>
+
+      <%# ── Site Permissions ── %>
+      <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb;">
+        <span class="section-label" style="margin-bottom: 1rem; display: block;">Site Permissions</span>
+
+        <label style="display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer;">
+          <input type="hidden" name="user[admin]" value="0">
+          <input type="checkbox" name="user[admin]" value="1" style="margin-top: 0.2rem; accent-color: var(--color-navy);">
+          <div>
+            <div style="font-weight: 600; font-size: 0.875rem; color: var(--color-navy);">Site Admin</div>
+            <div class="field-hint" style="margin-top: 0.125rem;">Can access the admin dashboard and manage loans, blogs, and documents.</div>
+          </div>
+        </label>
+
+        <% if current_user.godpowers? %>
+          <label style="display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer; margin-top: 0.75rem;">
+            <input type="hidden" name="user[godpowers]" value="0">
+            <input type="checkbox" name="user[godpowers]" value="1" style="margin-top: 0.2rem; accent-color: var(--color-navy);">
+            <div>
+              <div style="font-weight: 600; font-size: 0.875rem; color: var(--color-navy);">Site Godpowers</div>
+              <div class="field-hint" style="margin-top: 0.125rem;">Full system access including user permission management and destructive actions.</div>
+            </div>
+          </label>
+        <% end %>
+      </div>
+
+      <%# ── Loan Assignment (optional) ── %>
+      <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb;">
+        <span class="section-label" style="margin-bottom: 1rem; display: block;">Loan Assignment</span>
+        <p class="field-hint" style="margin-bottom: 1rem;">Optionally assign this user to a loan right away. You can always add more later.</p>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="field">
+            <label for="loan_id" style="display: block; font-family: 'Barlow Condensed', sans-serif; font-size: 0.8125rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-steel); margin-bottom: 0.5rem;">Loan</label>
+            <select name="loan_id" id="loan_id" class="field-input">
+              <option value="">None</option>
+              <% @available_loans.each do |loan| %>
+                <option value="<%= loan.id %>"><%= loan.borrower_name %> - <%= loan.property_address %></option>
+              <% end %>
+            </select>
+          </div>
+          <div class="field">
+            <label for="loan_role" style="display: block; font-family: 'Barlow Condensed', sans-serif; font-size: 0.8125rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-steel); margin-bottom: 0.5rem;">Role</label>
+            <select name="loan_role" id="loan_role" class="field-input">
+              <option value="">Select role...</option>
+              <% LoanRole::ROLES.each do |role| %>
+                <option value="<%= role %>"><%= role.titleize.gsub("_", " ") %></option>
+              <% end %>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <%# ── Account Setup Method ── %>
+      <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb;">
+        <span class="section-label" style="margin-bottom: 1rem; display: block;">Account Setup</span>
+
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+          <label style="display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer; padding: 0.875rem 1rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; transition: border-color 0.15s;" class="invite-option" data-selected="true">
+            <input type="radio" name="invite_method" value="send_invite" checked style="margin-top: 0.2rem; accent-color: var(--color-navy);">
+            <div>
+              <div style="font-weight: 600; font-size: 0.875rem; color: var(--color-navy);">Send invite email</div>
+              <div class="field-hint" style="margin-top: 0.125rem;">User receives an email to set their own password.</div>
+            </div>
+          </label>
+
+          <label style="display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer; padding: 0.875rem 1rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; transition: border-color 0.15s;" class="invite-option">
+            <input type="radio" name="invite_method" value="set_password" style="margin-top: 0.2rem; accent-color: var(--color-navy);">
+            <div>
+              <div style="font-weight: 600; font-size: 0.875rem; color: var(--color-navy);">Set temporary password</div>
+              <div class="field-hint" style="margin-top: 0.125rem;">You create a password and share it with the user directly.</div>
+            </div>
+          </label>
+        </div>
+
+        <div id="password-fields" class="field" style="margin-top: 1rem; display: none;">
+          <label for="user_password" style="display: block; font-family: 'Barlow Condensed', sans-serif; font-size: 0.8125rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-steel); margin-bottom: 0.5rem;">Password</label>
+          <input type="password" name="user[password]" id="user_password" class="field-input" minlength="6" autocomplete="new-password" placeholder="Minimum 6 characters">
+          <p class="field-hint">The user should change this after their first login.</p>
+        </div>
+      </div>
+
+      <div class="form-actions" style="display: flex; gap: 1rem; align-items: center;">
+        <%= btn_filled_tag "Create User", nil, variant: "primary" %>
+        <a href="<%= admin_users_path %>" style="font-size: 0.8125rem; color: var(--color-steel);">Cancel</a>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<style>
+  .invite-option { border-color: #e5e7eb; }
+  .invite-option:has(input:checked) {
+    border-color: var(--color-navy);
+    background: rgba(3, 29, 85, 0.03);
+  }
+</style>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    var radios = document.querySelectorAll('input[name="invite_method"]');
+    var passwordFields = document.getElementById("password-fields");
+    var passwordInput = passwordFields.querySelector("input[type='password']");
+
+    radios.forEach(function(radio) {
+      radio.addEventListener("change", function() {
+        if (this.value === "set_password") {
+          passwordFields.style.display = "block";
+          passwordInput.required = true;
+        } else {
+          passwordFields.style.display = "none";
+          passwordInput.required = false;
+          passwordInput.value = "";
+        }
+      });
+    });
+  });
+</script>

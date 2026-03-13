@@ -40,6 +40,20 @@ Rails.application.configure do
   # Set localhost to be used by links generated in mailer templates.
   config.action_mailer.default_url_options = { host: "localhost", port: 3000 }
 
+  # Use SendGrid in dev if API key is set, otherwise use letter_opener or :test
+  if ENV["SENDGRID_API_KEY"].present?
+    config.action_mailer.delivery_method = :smtp
+    config.action_mailer.smtp_settings = {
+      user_name: "apikey",
+      password: ENV["SENDGRID_API_KEY"],
+      domain: ENV.fetch("SENDGRID_DOMAIN", "linchpinrealty.com"),
+      address: "smtp.sendgrid.net",
+      port: 587,
+      authentication: :plain,
+      enable_starttls_auto: true
+    }
+  end
+
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
 

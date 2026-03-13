@@ -1,0 +1,17 @@
+Welcome to Linchpin Realty
+==========================
+
+Hi <%= @user.first_name.presence || "there" %>,
+
+<%= @invited_by.display_name %> has created an account for you on the Linchpin Realty portal.
+
+To get started, set your password by visiting this link:
+
+<%= @url %>
+
+This link will expire in <%= distance_of_time_in_words(Devise.reset_password_within) %>.
+
+If you didn't expect this invitation, you can safely ignore this email.
+
+--
+Linchpin Realty - Private Lending Solutions

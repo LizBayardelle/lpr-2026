@@ -1,0 +1,100 @@
+<% content_for :title, "Users" %>
+
+<div class="container-wide" style="padding-top: 6rem;">
+  <%= render "admin/breadcrumbs", crumbs: [{ label: "Users" }] %>
+
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h1 class="heading-1" style="color: var(--color-navy);">Users</h1>
+    <%= btn_tag "New User", new_admin_user_path %>
+  </div>
+
+  <%# ── Filters & Search ── %>
+  <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 2rem; flex-wrap: wrap;">
+    <div style="display: flex; gap: 0.5rem;">
+      <%= link_to "All", admin_users_path(q: params[:q]), class: "knowledge-filter loan-filter #{params[:filter].blank? ? 'active' : ''}" %>
+      <%= link_to "Admins", admin_users_path(filter: "admin", q: params[:q]), class: "knowledge-filter loan-filter #{params[:filter] == 'admin' ? 'active' : ''}" %>
+      <%= link_to "Godpowers", admin_users_path(filter: "godpowers", q: params[:q]), class: "knowledge-filter loan-filter #{params[:filter] == 'godpowers' ? 'active' : ''}" %>
+    </div>
+
+    <%= form_tag admin_users_path, method: :get, style: "flex: 1; max-width: 20rem;" do %>
+      <%= hidden_field_tag :filter, params[:filter] %>
+      <input type="text" name="q" value="<%= params[:q] %>" placeholder="Search name or email..." class="field-input" style="width: 100%;">
+    <% end %>
+  </div>
+
+  <%# ── Stats ── %>
+  <div class="stat-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+    <div class="card" style="padding: 1.5rem;">
+      <div class="stat-value" style="color: var(--color-navy);"><%= User.count %></div>
+      <div class="stat-label">Total Users</div>
+    </div>
+    <div class="card" style="padding: 1.5rem;">
+      <div class="stat-value" style="color: var(--color-navy);"><%= User.where(admin: true).count %></div>
+      <div class="stat-label">Admins</div>
+    </div>
+    <div class="card" style="padding: 1.5rem;">
+      <div class="stat-value" style="color: var(--color-navy);"><%= LoanRole.select(:user_id).distinct.count %></div>
+      <div class="stat-label">Users on Loans</div>
+    </div>
+  </div>
+
+  <%# ── Users Table ── %>
+  <div class="card" style="padding: 0;">
+    <div class="table-container" style="padding: 1rem 0 0;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="padding-left: 2rem;">Name</th>
+            <th>Email</th>
+            <th>Status</th>
+            <th>Roles</th>
+            <th>Loans</th>
+            <th>Created</th>
+            <th style="padding-right: 2rem;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @users.each do |user| %>
+            <tr>
+              <td style="padding-left: 2rem;">
+                <%= link_to user.display_name, admin_user_path(user), style: "font-weight: 700;" %>
+              </td>
+              <td class="text-small"><%= user.email %></td>
+              <td>
+                <% if user.invite_pending? %>
+                  <span class="badge badge-warning">Invite Pending</span>
+                <% else %>
+                  <span class="badge badge-success">Active</span>
+                <% end %>
+              </td>
+              <td>
+                <% if user.godpowers? %>
+                  <span class="badge badge-danger">Godpowers</span>
+                <% end %>
+                <% if user.admin? %>
+                  <span class="badge badge-warning">Admin</span>
+                <% end %>
+              </td>
+              <td class="text-small"><%= user.loan_roles.count %></td>
+              <td class="text-small" style="white-space: nowrap;"><%= user.created_at.strftime("%b %-d, %Y") %></td>
+              <td style="padding-right: 2rem; white-space: nowrap;">
+                <%= link_to "Edit", edit_admin_user_path(user), style: "font-size: 0.8125rem;" %>
+                <% if user.invite_pending? %>
+                  &middot;
+                  <%= button_to "Resend Invite", resend_invite_admin_user_path(user), method: :post, style: "font-size: 0.8125rem; background: none; border: none; color: var(--color-navy); cursor: pointer; padding: 0; display: inline;" %>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+          <% if @users.empty? %>
+            <tr>
+              <td colspan="7" style="padding: 3rem 2rem; text-align: center; color: var(--color-steel);">
+                No users found.
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

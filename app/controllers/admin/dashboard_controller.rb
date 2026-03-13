@@ -15,5 +15,8 @@ class Admin::DashboardController < Admin::BaseController
 
     # Contact messages
     @unread_messages_count = ContactSubmission.unread.count
+
+    # Users
+    @users_count = User.count
   end
 end

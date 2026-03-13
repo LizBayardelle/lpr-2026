@@ -47,7 +47,7 @@ class Admin::LoanLedgerEntriesController < Admin::BaseController
 
     actual_days = (period_end - period_start).to_i + 1
     display_days = @loan.interest_calc_method == "30_360" ? @loan.calc_30_360_days(period_start, period_end) : actual_days
-    balance = @loan.principal_balance_as_of(period_start)
+    balance = @loan.principal_balance_as_of(period_end)
 
     if balance <= 0
       respond_to do |format|
