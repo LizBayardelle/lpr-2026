@@ -76,11 +76,11 @@ class Loan < ApplicationRecord
     balance ||= current_balance
     case interest_calc_method
     when "30_360"
-      (balance * interest_rate / 100.0 / 12).round(2)
+      (balance * interest_rate / 100 / 12).round(2)
     when "actual_360"
-      (balance * interest_rate / 100.0 * 30 / 360).round(2)
+      (balance * interest_rate / 100 * 30 / 360).round(2)
     when "actual_365"
-      (balance * interest_rate / 100.0 * 30 / 365).round(2)
+      (balance * interest_rate / 100 * 30 / 365).round(2)
     end
   end
 
@@ -89,11 +89,11 @@ class Loan < ApplicationRecord
     balance ||= current_balance
     case interest_calc_method
     when "30_360"
-      (balance * interest_rate / 100.0 / 360).round(2)
+      (balance * interest_rate / 100 / 360).round(2)
     when "actual_360"
-      (balance * interest_rate / 100.0 / 360).round(2)
+      (balance * interest_rate / 100 / 360).round(2)
     when "actual_365"
-      (balance * interest_rate / 100.0 / 365).round(2)
+      (balance * interest_rate / 100 / 365).round(2)
     end
   end
 
@@ -103,7 +103,7 @@ class Loan < ApplicationRecord
       monthly_interest_due
     else
       # Standard amortization formula
-      r = interest_rate / 100.0 / 12
+      r = interest_rate / 100 / 12
       n = loan_term_months
       bal = current_balance
       (bal * r * (1 + r)**n / ((1 + r)**n - 1)).round(2)
@@ -250,7 +250,7 @@ class Loan < ApplicationRecord
 
   # Calculate interest for a specific period based on calc method
   def monthly_interest_for_period(balance, days, date, period_start: nil)
-    rate = effective_interest_rate / 100.0
+    rate = effective_interest_rate / 100
     case interest_calc_method
     when "30_360"
       # 30/360 (US NASD): each month is treated as 30 days, year as 360
