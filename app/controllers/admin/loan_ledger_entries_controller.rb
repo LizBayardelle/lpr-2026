@@ -169,14 +169,16 @@ class Admin::LoanLedgerEntriesController < Admin::BaseController
     interest_portion = [payment_abs, outstanding_interest].min
     principal_portion = payment_abs - interest_portion
 
+    total_label = ActionController::Base.helpers.number_to_currency(payment_abs)
+
     entries = []
     if interest_portion > 0
       entries << { entry_type: "payment_interest", effective_date: effective_date,
-                   amount: -interest_portion, description: description.presence || "Interest payment" }
+                   amount: -interest_portion, description: description.present? ? "#{description} (#{total_label} total payment)" : "Interest payment (#{total_label} total payment)" }
     end
     if principal_portion > 0
       entries << { entry_type: "payment_principal", effective_date: effective_date,
-                   amount: -principal_portion, description: "Principal payment" }
+                   amount: -principal_portion, description: "Principal payment (#{total_label} total payment)" }
     end
     entries.presence || [{ entry_type: "payment_interest", effective_date: effective_date,
                            amount: amount, description: description }]
