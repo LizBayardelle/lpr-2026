@@ -151,13 +151,30 @@ export default function TransactionLedger({ entries: initialEntries, loan, godpo
       )}
 
       <div className="card" style={{ padding: 0, marginTop: "1.5rem" }}>
-        <div style={{ padding: "1.5rem 2rem 0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        {/* Fixed sidebar actions */}
+        <div style={{
+          position: "fixed", left: 0, top: "50%", transform: "translateY(-50%)",
+          zIndex: 100, display: "flex", flexDirection: "column", gap: "2px",
+        }}>
+          <a href="#" onClick={e => { e.preventDefault(); document.getElementById("new-payment-modal")?.classList.add("active") }} title="Record Payment" style={{
+            display: "flex", alignItems: "center", justifyContent: "center",
+            width: "40px", height: "40px", background: "var(--color-navy)", color: "#fff",
+            fontSize: "18px", textDecoration: "none", borderRadius: "0 6px 6px 0",
+          }}>&#x0024;</a>
+          <a href="#" onClick={e => { e.preventDefault(); setModal("interest") }} title="Post Interest" style={{
+            display: "flex", alignItems: "center", justifyContent: "center",
+            width: "40px", height: "40px", background: "var(--color-navy)", color: "#fff",
+            fontSize: "18px", textDecoration: "none", borderRadius: "0 6px 6px 0",
+          }}>&#x25D4;</a>
+          <a href="#" onClick={e => { e.preventDefault(); setModal("adjustment") }} title="Post Adjustment" style={{
+            display: "flex", alignItems: "center", justifyContent: "center",
+            width: "40px", height: "40px", background: "var(--color-navy)", color: "#fff",
+            fontSize: "18px", textDecoration: "none", borderRadius: "0 6px 6px 0",
+          }}>&#x270E;</a>
+        </div>
+
+        <div style={{ padding: "1.5rem 2rem 0" }}>
           <h3 className="heading-3">Transaction Ledger</h3>
-          <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-            <a href="#" onClick={e => { e.preventDefault(); document.getElementById("new-payment-modal")?.classList.add("active") }} title="Record Payment" style={{ color: "var(--color-navy)", fontSize: "22px", padding: "4px 6px", textDecoration: "none", lineHeight: 1 }}>&#x0024;</a>
-            <a href="#" onClick={e => { e.preventDefault(); setModal("interest") }} title="Post Interest" style={{ color: "var(--color-navy)", fontSize: "22px", padding: "4px 6px", textDecoration: "none", lineHeight: 1 }}>&#x25D4;</a>
-            <a href="#" onClick={e => { e.preventDefault(); setModal("adjustment") }} title="Post Adjustment" style={{ color: "var(--color-navy)", fontSize: "22px", padding: "4px 6px", textDecoration: "none", lineHeight: 1 }}>&#x270E;</a>
-          </div>
         </div>
         <div className="table-container" style={{ padding: "1rem 0 0" }}>
           <table ref={tableRef} className="data-table" style={{ minWidth: "1000px" }}>
