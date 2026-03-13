@@ -279,20 +279,20 @@
                   <option value="">Custom range...</option>
                   <% date = @loan.origination_date.beginning_of_month %>
                   <% while date <= Date.current %>
-                    <option value="<%= date.strftime('%Y-%m') %>"><%= date.strftime('%B %Y') %></option>
+                    <option value="<%= date.strftime('%Y-%m') %>" <%= 'selected' if date == @next_accrual_month %>><%= date.strftime('%B %Y') %></option>
                     <% date = date.next_month %>
                   <% end %>
                 </select>
               </div>
-              <div data-interest-custom-range>
+              <div data-interest-custom-range style="display: none;">
                 <div style="display: flex; gap: 1rem;">
                   <div style="flex: 1;">
                     <label class="field-label">Period Start</label>
-                    <input type="date" name="period_start" value="<%= @loan.origination_date %>" class="field-input" required data-interest-start>
+                    <input type="date" name="period_start" value="<%= @next_accrual_month %>" class="field-input" required data-interest-start>
                   </div>
                   <div style="flex: 1;">
                     <label class="field-label">Period End</label>
-                    <input type="date" name="period_end" value="<%= @loan.origination_date.end_of_month %>" class="field-input" required data-interest-end>
+                    <input type="date" name="period_end" value="<%= @next_accrual_month.end_of_month %>" class="field-input" required data-interest-end>
                   </div>
                 </div>
               </div>
@@ -339,6 +339,8 @@
           <% end %>
         </div>
       </div>
+
+      <%= render "admin/loans/payments/new_modal" %>
     </div>
 
     <%# Payments Tab %>
@@ -394,7 +396,6 @@
         </div>
       </div>
 
-      <%= render "admin/loans/payments/new_modal" %>
     </div>
 
     <%# Statements Tab %>

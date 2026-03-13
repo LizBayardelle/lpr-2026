@@ -19,6 +19,13 @@ class Admin::LoansController < Admin::BaseController
       principal += entry.amount if entry.principal_affecting?
       @principal_at_entry[entry.id] = principal
     end
+    last_accrual_date = @loan.loan_ledger_entries.where(entry_type: "interest_accrual").maximum(:effective_date)
+    @next_accrual_month = if last_accrual_date
+      last_accrual_date.next_month.beginning_of_month
+    else
+      @loan.origination_date.beginning_of_month
+    end
+
     @payments = @loan.payments.recent
     @statements = @loan.loan_statements.recent
     @draws = @loan.loan_draws.recent
