@@ -1,6 +1,6 @@
 class Admin::LoanLedgerEntriesController < Admin::BaseController
   before_action :set_loan
-  before_action :set_entry, only: [:reverse, :destroy]
+  before_action :set_entry, only: [:reverse, :destroy, :update]
 
   def create
     entry_type = params[:principal_affecting] == "1" ? "adjustment_principal" : "adjustment"
@@ -53,6 +53,23 @@ class Admin::LoanLedgerEntriesController < Admin::BaseController
     redirect_to ledger_path, notice: "Interest accrual of #{ActionController::Base.helpers.number_to_currency(interest)} posted (#{display_days} days on #{ActionController::Base.helpers.number_to_currency(balance)} balance)."
   rescue => e
     redirect_to ledger_path, alert: "Could not post interest accrual: #{e.message}"
+  end
+
+  def update
+    attrs = {}
+    attrs[:effective_date] = params[:effective_date].to_date if params[:effective_date].present?
+    attrs[:description] = params[:description] if params.key?(:description)
+    attrs[:amount] = params[:amount].to_d if params.key?(:amount)
+
+    @entry.update!(attrs)
+
+    if attrs[:effective_date] || attrs[:amount]
+      LoanLedger::PostingService.new(@loan).rebalance!
+    end
+
+    head :ok
+  rescue => e
+    render json: { error: e.message }, status: :unprocessable_entity
   end
 
   def reverse

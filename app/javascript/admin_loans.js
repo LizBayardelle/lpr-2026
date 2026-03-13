@@ -289,3 +289,79 @@ document.addEventListener("DOMContentLoaded", () => {
   tab.classList.add("active")
   panel.classList.add("active")
 })
+
+// Inline editing for ledger cells
+document.addEventListener("click", (e) => {
+  const span = e.target.closest("[data-inline-edit]")
+  if (!span || span.querySelector("input")) return
+
+  const field = span.dataset.field
+  const type = span.dataset.type
+  const value = span.dataset.value
+  const url = span.dataset.url
+  const originalText = span.textContent
+
+  const sign = parseInt(span.dataset.sign || "1", 10)
+  const inputType = type === "number" ? "text" : type
+
+  const input = document.createElement("input")
+  input.type = inputType
+  input.value = type === "number" ? parseFloat(value).toFixed(2) : value
+  if (type === "number") input.inputMode = "decimal"
+  input.style.cssText = "font-size: inherit; font-family: inherit; padding: 2px 4px; border: 1px solid var(--color-navy); border-radius: 3px; outline: none; width: 100%; box-sizing: border-box;" + (type === "number" ? " text-align: right;" : "")
+
+  span.textContent = ""
+  span.style.borderBottom = "none"
+  span.appendChild(input)
+  input.focus()
+  input.select()
+
+  const fmtCurrency = (n) => "$" + parseFloat(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+
+  const save = () => {
+    let newValue = input.value
+    if (type === "number") newValue = newValue.replace(/[^0-9.\-]/g, "")
+    if (newValue === value || (type === "number" && parseFloat(newValue) === parseFloat(value))) {
+      cancel()
+      return
+    }
+
+    const sendValue = type === "number" ? (parseFloat(newValue) * sign).toString() : newValue
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content
+    fetch(url, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken },
+      body: JSON.stringify({ [field]: sendValue })
+    }).then((res) => {
+      if (res.ok) {
+        span.dataset.value = type === "number" ? parseFloat(newValue).toString() : newValue
+        if (type === "date") {
+          const d = new Date(newValue + "T00:00:00")
+          span.textContent = d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+        } else if (type === "number") {
+          span.textContent = fmtCurrency(newValue)
+        } else {
+          span.textContent = newValue
+        }
+        span.style.borderBottom = "1px dashed var(--color-concrete)"
+        if (field === "effective_date" || field === "amount") {
+          setTimeout(() => location.reload(), 300)
+        }
+      } else {
+        res.json().then(data => alert(data.error || "Save failed")).catch(() => alert("Save failed"))
+        cancel()
+      }
+    }).catch(() => { alert("Save failed"); cancel() })
+  }
+
+  const cancel = () => {
+    span.textContent = originalText
+    span.style.borderBottom = "1px dashed var(--color-concrete)"
+  }
+
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { e.preventDefault(); save() }
+    if (e.key === "Escape") { e.preventDefault(); cancel() }
+  })
+  input.addEventListener("blur", save)
+})

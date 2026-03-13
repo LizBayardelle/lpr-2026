@@ -220,7 +220,9 @@
                     end
                 %>
                 <tr style="<%= 'opacity: 0.5;' if entry.reversed? %>">
-                  <td style="white-space: nowrap; padding-left: 2rem;"><%= entry.effective_date.strftime("%b %-d, %Y") %></td>
+                  <td style="white-space: nowrap; padding-left: 2rem;">
+                    <span data-inline-edit data-field="effective_date" data-type="date" data-value="<%= entry.effective_date %>" data-url="<%= admin_loan_loan_ledger_entry_path(@loan, entry) %>" style="cursor: pointer; border-bottom: 1px dashed var(--color-concrete);"><%= entry.effective_date.strftime("%b %-d, %Y") %></span>
+                  </td>
                   <td style="white-space: nowrap;">
                     <span class="badge badge-<%= type_color %>"><%= entry.human_type %></span>
                     <% if entry.reversed? %>
@@ -229,9 +231,19 @@
                       <span class="badge badge-neutral" style="margin-left: 0.25rem;">Reversal</span>
                     <% end %>
                   </td>
-                  <td class="text-small"><%= entry.description %></td>
-                  <td class="text-money"><%= entry.amount > 0 ? number_to_currency(entry.amount) : "" %></td>
-                  <td class="text-money"><%= entry.amount < 0 ? number_to_currency(entry.amount.abs) : "" %></td>
+                  <td class="text-small">
+                    <span data-inline-edit data-field="description" data-type="text" data-value="<%= entry.description %>" data-url="<%= admin_loan_loan_ledger_entry_path(@loan, entry) %>" style="cursor: pointer; border-bottom: 1px dashed var(--color-concrete);"><%= entry.description %></span>
+                  </td>
+                  <td class="text-money">
+                    <% if entry.amount > 0 %>
+                      <span data-inline-edit data-field="amount" data-type="number" data-value="<%= entry.amount %>" data-url="<%= admin_loan_loan_ledger_entry_path(@loan, entry) %>" style="cursor: pointer; border-bottom: 1px dashed var(--color-concrete);"><%= number_to_currency(entry.amount) %></span>
+                    <% end %>
+                  </td>
+                  <td class="text-money">
+                    <% if entry.amount < 0 %>
+                      <span data-inline-edit data-field="amount" data-type="number" data-value="<%= entry.amount.abs %>" data-sign="-1" data-url="<%= admin_loan_loan_ledger_entry_path(@loan, entry) %>" style="cursor: pointer; border-bottom: 1px dashed var(--color-concrete);"><%= number_to_currency(entry.amount.abs) %></span>
+                    <% end %>
+                  </td>
                   <td class="text-money" style="font-weight: 500;"><%= number_to_currency(entry.running_balance) %></td>
                   <td class="text-money" style="color: var(--color-steel);">
                     <% if entry.principal_affecting? %>
