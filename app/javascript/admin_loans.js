@@ -246,6 +246,31 @@ document.addEventListener("click", (e) => {
   })
 })
 
+// Interest accrual month picker — populate date fields from month select
+document.addEventListener("change", (e) => {
+  const picker = e.target.closest("[data-interest-month-picker]")
+  if (!picker) return
+
+  const modal = picker.closest(".modal")
+  const startInput = modal.querySelector("[data-interest-start]")
+  const endInput = modal.querySelector("[data-interest-end]")
+  const customRange = modal.querySelector("[data-interest-custom-range]")
+
+  if (picker.value === "") {
+    customRange.style.display = ""
+    return
+  }
+
+  const [year, month] = picker.value.split("-").map(Number)
+  const start = new Date(year, month - 1, 1)
+  const end = new Date(year, month, 0) // last day of month
+
+  const fmt = (d) => d.toISOString().split("T")[0]
+  startInput.value = fmt(start)
+  endInput.value = fmt(end)
+  customRange.style.display = "none"
+})
+
 // Restore tab from URL on page load
 document.addEventListener("DOMContentLoaded", () => {
   const params = new URLSearchParams(window.location.search)

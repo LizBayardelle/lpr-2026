@@ -255,12 +255,17 @@ class Loan < ApplicationRecord
     end
   end
 
-  # 30/360 US (NASD) day count convention
+  # 30/360 US day count convention
   def calc_30_360_days(start_date, end_date)
+    # Full calendar month (1st to end of same month) = 30 days
+    if start_date.day == 1 && end_date == end_date.end_of_month &&
+       start_date.month == end_date.month && start_date.year == end_date.year
+      return 30
+    end
+
     d1 = [start_date.day, 30].min
     d2 = end_date.day
     d2 = 30 if d2 == 31 && d1 >= 30
-    # Treat end-of-Feb as 30 for full-month periods
     d2 = 30 if end_date.month == 2 && end_date == end_date.end_of_month
     (end_date.year - start_date.year) * 360 + (end_date.month - start_date.month) * 30 + (d2 - d1)
   end

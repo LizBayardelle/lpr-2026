@@ -274,12 +274,27 @@
                 Calculates interest from the principal balance as of the period start date using the loan's rate (<%= @loan.effective_interest_rate %>%) and calculation method (<%= @loan.interest_calc_method.gsub("_", "/") %>).
               </p>
               <div>
-                <label class="field-label">Period Start</label>
-                <input type="date" name="period_start" value="<%= @loan.origination_date %>" class="field-input" required>
+                <label class="field-label">For the Month of</label>
+                <select class="field-input" data-interest-month-picker>
+                  <option value="">Custom range...</option>
+                  <% date = @loan.origination_date.beginning_of_month %>
+                  <% while date <= Date.current %>
+                    <option value="<%= date.strftime('%Y-%m') %>"><%= date.strftime('%B %Y') %></option>
+                    <% date = date.next_month %>
+                  <% end %>
+                </select>
               </div>
-              <div>
-                <label class="field-label">Period End</label>
-                <input type="date" name="period_end" value="<%= @loan.origination_date.end_of_month %>" class="field-input" required>
+              <div data-interest-custom-range>
+                <div style="display: flex; gap: 1rem;">
+                  <div style="flex: 1;">
+                    <label class="field-label">Period Start</label>
+                    <input type="date" name="period_start" value="<%= @loan.origination_date %>" class="field-input" required data-interest-start>
+                  </div>
+                  <div style="flex: 1;">
+                    <label class="field-label">Period End</label>
+                    <input type="date" name="period_end" value="<%= @loan.origination_date.end_of_month %>" class="field-input" required data-interest-end>
+                  </div>
+                </div>
               </div>
             </div>
             <div class="modal-footer">
