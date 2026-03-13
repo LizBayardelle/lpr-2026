@@ -11,15 +11,15 @@ class LoanLedgerEntry < ApplicationRecord
     payment_principal payment_interest payment_late_fee
     fee_assessed fee_paid
     late_fee_assessed
-    adjustment
+    adjustment adjustment_principal
     extension_fee
   ].freeze
 
   # All entry types affect the total amount owed (running_balance)
   BALANCE_AFFECTING_TYPES = ENTRY_TYPES
 
-  # Only these affect the principal balance
-  PRINCIPAL_AFFECTING_TYPES = %w[disbursement draw payment_principal adjustment].freeze
+  # Only these affect the principal balance (not plain "adjustment" which is for fee waivers etc.)
+  PRINCIPAL_AFFECTING_TYPES = %w[disbursement draw payment_principal adjustment_principal].freeze
 
   validates :entry_type, inclusion: { in: ENTRY_TYPES }
   validates :effective_date, :amount, :running_balance, presence: true

@@ -326,6 +326,12 @@
                 <label class="field-label">Description</label>
                 <input type="text" name="description" class="field-input" required placeholder="Reason for adjustment">
               </div>
+              <div>
+                <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: var(--color-steel); cursor: pointer;">
+                  <input type="checkbox" name="principal_affecting" value="1">
+                  Affects principal balance
+                </label>
+              </div>
             </div>
             <div class="modal-footer">
               <%= btn_filled_tag "Post Adjustment", nil, type: "submit" %>

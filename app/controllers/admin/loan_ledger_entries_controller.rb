@@ -3,9 +3,10 @@ class Admin::LoanLedgerEntriesController < Admin::BaseController
   before_action :set_entry, only: [:reverse, :destroy]
 
   def create
+    entry_type = params[:principal_affecting] == "1" ? "adjustment_principal" : "adjustment"
     service = LoanLedger::PostingService.new(@loan, posted_by: current_user)
     service.post!({
-      entry_type: "adjustment",
+      entry_type: entry_type,
       effective_date: params[:effective_date].to_date,
       amount: params[:amount].to_d,
       description: params[:description]
