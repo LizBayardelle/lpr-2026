@@ -168,11 +168,11 @@
 
     @period_draws.each do |draw|
       running_balance += draw.amount
-      activity << { date: draw.draw_date, item: "Draw Funded#{draw.description.present? ? " — #{draw.description}" : ""}", amount: draw.amount, balance: running_balance }
+      activity << { date: draw.draw_date, item: "Draw Funded", description: draw.description, amount: draw.amount, balance: running_balance }
     end
 
     @period_fees.each do |fee|
-      activity << { date: fee.fee_date, item: "Fee — #{fee.fee_type.titleize}#{fee.description.present? ? " (#{fee.description})" : ""}", amount: fee.amount, balance: running_balance }
+      activity << { date: fee.fee_date, item: "Fee — #{fee.fee_type.titleize}", description: fee.description, amount: fee.amount, balance: running_balance }
     end
 
     if @statement.late_fee > 0
@@ -181,7 +181,12 @@
 
     @period_payments.each do |payment|
       running_balance -= payment.principal_amount
-      activity << { date: payment.payment_date, item: "Payment Received#{payment.reference_number.present? ? " (#{payment.reference_number})" : ""}", amount: -payment.amount, balance: running_balance }
+      desc_parts = []
+      desc_parts << payment.notes if payment.notes.present?
+      desc_parts << "Ref: #{payment.reference_number}" if payment.reference_number.present?
+      desc_parts << "From reserve" if payment.loan_reserve_id.present?
+
+      activity << { date: payment.payment_date, item: "Payment Received", description: desc_parts.join(" · "), amount: -payment.amount, balance: running_balance }
     end
 
     activity = activity.sort_by.with_index { |a, i| [a[:date], i] }
@@ -205,7 +210,12 @@
           <% activity.each do |entry| %>
             <tr>
               <td style="white-space: nowrap; padding-left: 2rem;"><%= entry[:date].strftime("%b %-d, %Y") %></td>
-              <td><%= entry[:item] %></td>
+              <td>
+                <div style="font-weight: 600;"><%= entry[:item] %></div>
+                <% if entry[:description].present? %>
+                  <div style="font-size: 0.75rem; color: var(--color-steel); margin-top: 1px;"><%= entry[:description] %></div>
+                <% end %>
+              </td>
               <td class="text-money">
                 <% if entry[:amount].nil? %>
                   &mdash;
@@ -264,7 +274,8 @@
               <th class="text-right">Principal</th>
               <th class="text-right">Late Fee</th>
               <th style="padding-left: 1.25rem;">Method</th>
-              <th style="padding-right: 2rem;">Reference</th>
+              <th>Reference</th>
+              <th style="padding-right: 2rem;">Notes</th>
             </tr>
           </thead>
           <tbody>
@@ -276,7 +287,13 @@
                 <td class="text-money"><%= number_to_currency(payment.principal_amount) %></td>
                 <td class="text-money"><%= number_to_currency(payment.late_fee_amount) %></td>
                 <td style="padding-left: 1.25rem;"><%= payment.payment_method&.titleize %></td>
-                <td style="padding-right: 2rem;"><%= payment.reference_number %></td>
+                <td><%= payment.reference_number %></td>
+                <td class="text-small" style="padding-right: 2rem;">
+                  <%= payment.notes %>
+                  <% if payment.loan_reserve_id.present? %>
+                    <span class="badge badge-neutral" style="margin-left: 0.25rem;">Reserve</span>
+                  <% end %>
+                </td>
               </tr>
             <% end %>
           </tbody>
@@ -287,7 +304,7 @@
               <td class="text-money"><%= number_to_currency(@period_payments.sum(:interest_amount)) %></td>
               <td class="text-money"><%= number_to_currency(@period_payments.sum(:principal_amount)) %></td>
               <td class="text-money"><%= number_to_currency(@period_payments.sum(:late_fee_amount)) %></td>
-              <td colspan="2"></td>
+              <td colspan="3"></td>
             </tr>
           </tfoot>
         </table>

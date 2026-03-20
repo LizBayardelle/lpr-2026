@@ -26,7 +26,7 @@ class StatementPdf
   def render
     Prawn::Document.new(page_size: "LETTER", margin: [40, 48, 56, 48]) do |pdf|
       register_fonts(pdf)
-      pdf.font "BarlowCondensed"
+      pdf.font "Helvetica"
       pdf.default_leading 1
 
       header(pdf)
@@ -62,7 +62,7 @@ class StatementPdf
       pdf.fill_color SOOT
     end
     pdf.move_down 4
-    pdf.font("BarlowCondensed", style: :normal, size: 8) do
+    pdf.font("Helvetica", size: 8) do
       pdf.fill_color STEEL
       pdf.text "#{COMPANY_NAME}  \u00B7  #{COMPANY_DRE}  \u00B7  #{COMPANY_NMLS}"
       pdf.fill_color SOOT
@@ -87,19 +87,19 @@ class StatementPdf
     pdf.bounding_box([0, top], width: left_w) do
       label_text(pdf, "BILL TO")
       pdf.move_down 4
-      pdf.font("BarlowCondensed", style: :semi_bold, size: 11) do
+      pdf.font("Helvetica", size: 10, style: :bold) do
         pdf.text @loan.borrower_name
       end
       if @loan.borrower_address.present?
         pdf.move_down 2
-        pdf.font("BarlowCondensed", style: :normal, size: 9) do
+        pdf.font("Helvetica", size: 9) do
           pdf.fill_color STEEL
           pdf.text @loan.borrower_address, leading: 2
           pdf.fill_color SOOT
         end
       end
       pdf.move_down 2
-      pdf.font("BarlowCondensed", style: :normal, size: 9) do
+      pdf.font("Helvetica", size: 9) do
         pdf.fill_color STEEL
         pdf.text @loan.property_address
         pdf.fill_color SOOT
@@ -115,7 +115,7 @@ class StatementPdf
       ].each do |lbl, val|
         label_text(pdf, lbl, align: :right)
         pdf.move_down 2
-        pdf.font("BarlowCondensed", style: :semi_bold, size: 9) { pdf.text val, align: :right }
+        pdf.font("Helvetica", size: 8, style: :bold) { pdf.text val, align: :right }
         pdf.move_down 8
       end
     end
@@ -210,24 +210,24 @@ class StatementPdf
 
     children.each do |label, value|
       draw_corner_arrow(pdf, 6, pdf.cursor - 4, CONCRETE)
-      pdf.font("BarlowCondensed", style: :normal, size: 9) do
+      pdf.font("Helvetica", size: 8) do
         pdf.fill_color CONCRETE
         pdf.text_box label, at: [16, pdf.cursor], width: inner * 0.6 - 16
         pdf.text_box value, at: [inner * 0.6, pdf.cursor], width: inner * 0.4, align: :right
         pdf.fill_color SOOT
       end
-      pdf.move_down 14
+      pdf.move_down 13
     end
 
     if @statement.late_fee > 0
       draw_corner_arrow(pdf, 6, pdf.cursor - 4, MAROON)
-      pdf.font("BarlowCondensed", style: :normal, size: 9) do
+      pdf.font("Helvetica", size: 8) do
         pdf.fill_color MAROON
         pdf.text_box "Late Fee", at: [16, pdf.cursor], width: inner * 0.6 - 16
         pdf.text_box number_to_currency(@statement.late_fee), at: [inner * 0.6, pdf.cursor], width: inner * 0.4, align: :right
         pdf.fill_color SOOT
       end
-      pdf.move_down 14
+      pdf.move_down 13
     end
 
     # Payments Received
@@ -273,9 +273,15 @@ class StatementPdf
 
       amount_color = entry[:amount].present? && entry[:amount] < 0 ? SLATE_BLUE : SOOT
 
+      item_content = if entry[:description].present?
+        "<b>#{entry[:item]}</b>\n<font size='7'><color rgb='#{STEEL}'>#{entry[:description]}</color></font>"
+      else
+        "<b>#{entry[:item]}</b>"
+      end
+
       table_data << [
         entry[:date].strftime("%b %-d, %Y"),
-        entry[:item],
+        { content: item_content, inline_format: true },
         { content: amount_text, text_color: amount_color },
         number_to_currency(entry[:balance])
       ]
@@ -293,9 +299,9 @@ class StatementPdf
     # First measure table height
     dummy = Prawn::Document.new(page_size: "LETTER", margin: [40, 48, 56, 48])
     register_fonts(dummy)
-    dummy.font "BarlowCondensed"
+    dummy.font "Helvetica"
     tbl = dummy.make_table(table_data, width: pdf.bounds.width - 16, column_widths: col_widths,
-      cell_style: { size: 8, font: "BarlowCondensed", padding: [6, 8], border_width: 0 })
+      cell_style: { size: 8, font: "Helvetica", padding: [6, 8], border_width: 0 })
     table_h = tbl.height
 
     card_h = table_h + 52  # heading + padding
@@ -312,7 +318,7 @@ class StatementPdf
     # Table inside card
     pdf.bounding_box([8, section_top - 40], width: pdf.bounds.width - 16) do
       pdf.table(table_data, width: pdf.bounds.width, column_widths: col_widths,
-        cell_style: { size: 8, font: "BarlowCondensed", padding: [6, 8], border_width: 0, text_color: SOOT }
+        cell_style: { size: 8, font: "Helvetica", padding: [6, 8], border_width: 0, text_color: SOOT }
       ) do |t|
         t.row(0).background_color = LIGHT_GRAY
         t.row(0).size = 7
@@ -351,7 +357,7 @@ class StatementPdf
       pdf.fill_color SOOT
     end
     pdf.move_down 2
-    pdf.font("BarlowCondensed", style: :normal, size: 9) do
+    pdf.font("Helvetica", size: 9) do
       pdf.fill_color STEEL
       pdf.text "by #{@loan.next_payment_date.strftime('%b %-d, %Y')}"
       pdf.fill_color SOOT
@@ -359,7 +365,7 @@ class StatementPdf
 
     if @loan.late_fee_percent.present? && @loan.late_fee_percent > 0 && @loan.grace_period_days.present?
       pdf.move_down 6
-      pdf.font("BarlowCondensed", style: :normal, size: 7.5) do
+      pdf.font("Helvetica", size: 7.5) do
         pdf.fill_color STEEL
         pdf.text "A late fee of #{@loan.late_fee_percent}% will be charged if payment is not received within #{@loan.grace_period_days} days of the due date."
         pdf.fill_color SOOT
@@ -379,7 +385,7 @@ class StatementPdf
           pdf.stroke_color RULE_GRAY
           pdf.stroke_horizontal_rule
           pdf.move_down 6
-          pdf.font("BarlowCondensed", style: :normal, size: 7) do
+          pdf.font("Helvetica", size: 7) do
             pdf.fill_color STEEL
             pdf.text "#{COMPANY_NAME}  \u00B7  #{COMPANY_EMAIL}  \u00B7  #{COMPANY_DRE}  \u00B7  #{COMPANY_NMLS}", align: :center
             pdf.fill_color SOOT
@@ -431,24 +437,24 @@ class StatementPdf
 
   def kv_rows(pdf, width, rows)
     rows.each do |label, value|
-      pdf.font("BarlowCondensed", style: :normal, size: 9) do
+      pdf.font("Helvetica", size: 8) do
         pdf.fill_color STEEL
         pdf.text_box label, at: [0, pdf.cursor], width: width * 0.6
         pdf.fill_color SOOT
         pdf.text_box value, at: [width * 0.6, pdf.cursor], width: width * 0.4, align: :right
       end
-      pdf.move_down 15
+      pdf.move_down 14
     end
   end
 
   def kv_row_bold(pdf, width, label, value, color: SOOT)
-    pdf.font("BarlowCondensed", style: :semi_bold, size: 9) do
+    pdf.font("Helvetica", size: 8, style: :bold) do
       pdf.fill_color color
       pdf.text_box label, at: [0, pdf.cursor], width: width * 0.6
       pdf.text_box value, at: [width * 0.6, pdf.cursor], width: width * 0.4, align: :right
       pdf.fill_color SOOT
     end
-    pdf.move_down 15
+    pdf.move_down 14
   end
 
   # ────────────────────────────────────────────────────────────────
@@ -477,14 +483,12 @@ class StatementPdf
     period = @statement.period_start..@statement.period_end
 
     @loan.loan_draws.funded.where(draw_date: period).order(:draw_date).each do |draw|
-      desc = draw.description.present? ? " - #{draw.description}" : ""
       running_balance += draw.amount
-      activity << { date: draw.draw_date, item: "Draw Funded#{desc}", amount: draw.amount, balance: running_balance }
+      activity << { date: draw.draw_date, item: "Draw Funded", description: draw.description, amount: draw.amount, balance: running_balance }
     end
 
     @loan.loan_fees.where(fee_date: period).order(:fee_date).each do |fee|
-      desc = fee.description.present? ? " (#{fee.description})" : ""
-      activity << { date: fee.fee_date, item: "Fee - #{fee.fee_type.titleize}#{desc}", amount: fee.amount, balance: running_balance }
+      activity << { date: fee.fee_date, item: "Fee — #{fee.fee_type.titleize}", description: fee.description, amount: fee.amount, balance: running_balance }
     end
 
     if @statement.late_fee > 0
@@ -493,8 +497,12 @@ class StatementPdf
 
     period_payments.order(:payment_date).each do |payment|
       running_balance -= payment.principal_amount
-      ref = payment.reference_number.present? ? " (#{payment.reference_number})" : ""
-      activity << { date: payment.payment_date, item: "Payment Received#{ref}", amount: -payment.amount, balance: running_balance }
+      desc_parts = []
+      desc_parts << payment.notes if payment.notes.present?
+      desc_parts << "Ref: #{payment.reference_number}" if payment.reference_number.present?
+      desc_parts << "From reserve" if payment.loan_reserve_id.present?
+
+      activity << { date: payment.payment_date, item: "Payment Received", description: desc_parts.join(" \u00B7 "), amount: -payment.amount, balance: running_balance }
     end
 
     activity.sort_by.with_index { |a, i| [a[:date], i] }
