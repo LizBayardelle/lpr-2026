@@ -1,5 +1,8 @@
 export const PRINCIPAL_AFFECTING_TYPES = ["disbursement", "draw", "payment_principal", "adjustment_principal"]
 
+// Memo types don't affect running balance — they're informational markers
+export const MEMO_TYPES = ["reserve_withholding", "reserve_release", "memo"]
+
 export const TYPE_COLORS = {
   disbursement: "navy", draw: "navy",
   interest_accrual: "warning",
@@ -7,6 +10,7 @@ export const TYPE_COLORS = {
   fee_assessed: "danger", late_fee_assessed: "danger", extension_fee: "danger",
   fee_paid: "success",
   adjustment: "neutral", adjustment_principal: "neutral",
+  reserve_withholding: "neutral", reserve_release: "neutral", memo: "neutral",
 }
 
 export const ENTRY_TYPE_LABELS = {
@@ -16,6 +20,7 @@ export const ENTRY_TYPE_LABELS = {
   fee_assessed: "Fee Assessed", late_fee_assessed: "Late Fee Assessed", extension_fee: "Extension Fee",
   fee_paid: "Fee Paid",
   adjustment: "Adjustment", adjustment_principal: "Adjustment (Principal)",
+  reserve_withholding: "Reserve Established", reserve_release: "Reserve Released", memo: "Memo",
 }
 
 export const ADDABLE_TYPES = [
@@ -31,6 +36,7 @@ export const ADDABLE_TYPES = [
   { value: "late_fee_assessed", label: "Late Fee Assessed" },
   { value: "extension_fee", label: "Extension Fee" },
   { value: "fee_paid", label: "Fee Paid" },
+  { value: "memo", label: "Memo / Note" },
 ]
 
 export function rebalance(entries) {
@@ -42,7 +48,8 @@ export function rebalance(entries) {
   let principal = 0
   for (const entry of sorted) {
     const amt = parseFloat(entry.amount)
-    running += amt
+    const isMemo = MEMO_TYPES.includes(entry.entryType)
+    if (!isMemo) running += amt
     entry.runningBalance = running.toFixed(2)
     if (PRINCIPAL_AFFECTING_TYPES.includes(entry.entryType)) {
       principal += amt

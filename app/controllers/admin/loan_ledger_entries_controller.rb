@@ -20,7 +20,27 @@ class Admin::LoanLedgerEntriesController < Admin::BaseController
          amount: amount, description: description }]
     end
 
-    service.post!(entries)
+    # When auto-splitting a payment, create a Payment record so it appears on the Payments tab
+    payment = if entry_type == "payment_interest" && amount < 0
+      interest_portion = entries.select { |e| e[:entry_type] == "payment_interest" }.sum { |e| e[:amount].abs }
+      principal_portion = entries.select { |e| e[:entry_type] == "payment_principal" }.sum { |e| e[:amount].abs }
+
+      @loan.payments.create!(
+        payment_date: effective_date,
+        amount: amount.abs,
+        interest_amount: interest_portion,
+        principal_amount: principal_portion,
+        notes: description,
+        skip_ledger_posting: true
+      )
+    end
+
+    created = service.post!(entries)
+
+    # Link ledger entries back to the Payment source
+    if payment
+      created.each { |entry| entry.update_column(:source_id, payment.id); entry.update_column(:source_type, "Payment") }
+    end
 
     respond_to do |format|
       format.json { render json: { entries: entries_json } }

@@ -35,6 +35,13 @@
           <%= f.text_area :notes, class: "field-input", rows: 3 %>
         </div>
 
+        <div class="section-label" style="margin-top: 1.25rem;">Interest Reserve (Optional)</div>
+        <div class="field">
+          <label class="field-label">Reserve Amount</label>
+          <input type="number" name="reserve_amount" step="0.01" class="field-input" placeholder="Leave blank for no reserve">
+        </div>
+        <%= render "admin/loans/reserves/type_picker" %>
+
         <div class="modal-actions">
           <%= btn_filled_tag "Create Extension", nil, type: "submit" %>
           <a href="#" data-modal-close>Cancel</a>

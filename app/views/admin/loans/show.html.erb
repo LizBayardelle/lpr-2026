@@ -110,6 +110,13 @@
           <td style="padding: 0.375rem 0; color: var(--color-steel);">Total Payments</td>
           <td class="text-money" style="padding: 0.375rem 0; font-size: inherit;">(<%= number_to_currency(@loan.total_payments_received) %>)</td>
         </tr>
+        <% active_reserves = @loan.loan_reserves.active %>
+        <% if active_reserves.any? %>
+          <tr>
+            <td style="padding: 0.375rem 0; color: var(--color-steel);">Reserve Balance</td>
+            <td class="text-money" style="padding: 0.375rem 0; font-size: inherit;"><%= number_to_currency(active_reserves.sum(&:remaining_balance)) %></td>
+          </tr>
+        <% end %>
         <tr style="border-top: 2px solid #000;">
           <td style="padding: 0.625rem 0 0; font-weight: 600;">Amount Owed</td>
           <td class="text-money" style="padding: 0.625rem 0 0; font-weight: 600; font-size: inherit;"><%= number_to_currency(@loan.current_balance) %></td>
@@ -171,6 +178,7 @@
       <button data-tab="draws" class="loan-tab">Draws</button>
       <button data-tab="fees" class="loan-tab">Fees</button>
       <button data-tab="documents" class="loan-tab">Documents</button>
+      <button data-tab="reserves" class="loan-tab">Reserves</button>
       <button data-tab="extensions" class="loan-tab">Extensions</button>
     </div>
 
@@ -602,6 +610,112 @@
           <% end %>
         </div>
       </div>
+    </div>
+
+    <%# Reserves Tab %>
+    <div data-tab-panel="reserves" class="loan-tab-panel">
+      <div class="card" style="padding: 0; margin-top: 1.5rem;">
+        <div style="padding: 1.5rem 2rem 0; display: flex; justify-content: space-between; align-items: center;">
+          <h3 class="heading-3">Reserves</h3>
+          <%= btn_filled_tag "New Reserve", "#", data: { modal_target: "new-reserve-modal" } %>
+        </div>
+        <div class="table-container" style="padding: 1rem 0 0;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="padding-left: 2rem;">Established</th>
+                <th>Type</th>
+                <th class="text-right">Original Amount</th>
+                <th class="text-right">Remaining</th>
+                <th>Source</th>
+                <th>Status</th>
+                <th>Notes</th>
+                <th style="padding-right: 2rem;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @reserves.each do |reserve| %>
+                <tr>
+                  <td style="white-space: nowrap; padding-left: 2rem;"><%= reserve.established_date.strftime("%b %-d, %Y") %></td>
+                  <td><%= reserve.display_type %></td>
+                  <td class="text-money"><%= number_to_currency(reserve.amount) %></td>
+                  <td class="text-money"><%= number_to_currency(reserve.remaining_balance) %></td>
+                  <td>
+                    <% if reserve.source_type == "LoanExtension" %>
+                      <span class="badge badge-warning">Extension</span>
+                    <% else %>
+                      <span class="badge badge-neutral">Origination</span>
+                    <% end %>
+                  </td>
+                  <td>
+                    <% status_badge = case reserve.status
+                       when "active" then "success"
+                       when "depleted" then "neutral"
+                       when "released" then "navy"
+                       when "forfeited" then "danger"
+                       else "neutral"
+                       end %>
+                    <span class="badge badge-<%= status_badge %>"><%= reserve.status.titleize %></span>
+                  </td>
+                  <td class="text-small"><%= reserve.notes %></td>
+                  <td style="display: flex; gap: 0.5rem; flex-wrap: wrap; padding-right: 2rem;">
+                    <% if reserve.status == "active" && reserve.remaining_balance > 0 %>
+                      <%= btn_filled_tag "Draw", "#", data: { modal_target: "draw-reserve-modal-#{reserve.id}" }, style: "font-size: 11px; padding: 4px 10px;" %>
+                      <%= button_to "Release", release_admin_loan_loan_reserve_path(@loan, reserve), method: :post, class: "btn-filled", style: "font-size: 11px; padding: 4px 10px;", data: { turbo_confirm: "Release remaining #{number_to_currency(reserve.remaining_balance)} back to borrower?" } %>
+                      <%= button_to "Forfeit", forfeit_admin_loan_loan_reserve_path(@loan, reserve), method: :post, class: "btn-filled btn-filled-danger", style: "font-size: 11px; padding: 4px 10px;", data: { turbo_confirm: "Forfeit remaining #{number_to_currency(reserve.remaining_balance)}? Lender keeps these funds." } %>
+                    <% end %>
+                    <%= button_to "Delete", admin_loan_loan_reserve_path(@loan, reserve), method: :delete, class: "btn-filled btn-filled-danger", style: "font-size: 11px; padding: 4px 10px;", data: { turbo_confirm: "Delete this reserve?" } %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+        <% if @reserves.empty? %>
+          <div style="padding: 2rem; text-align: center; color: var(--color-steel); font-size: 0.875rem;">
+            No reserves established for this loan.
+          </div>
+        <% end %>
+      </div>
+
+      <%# Draw modals for each active reserve %>
+      <% @reserves.select { |r| r.status == "active" && r.remaining_balance > 0 }.each do |reserve| %>
+        <div class="modal-overlay" id="draw-reserve-modal-<%= reserve.id %>">
+          <div class="modal">
+            <div class="modal-header">
+              <h2 class="heading-2">Draw from Reserve</h2>
+              <button type="button" data-modal-close>&times;</button>
+            </div>
+            <div class="modal-body">
+              <div style="background: var(--color-smoke); border-radius: 6px; padding: 1rem; margin-bottom: 1.25rem; font-size: 0.8125rem;">
+                <strong><%= reserve.display_type %> Reserve</strong> — <%= number_to_currency(reserve.remaining_balance) %> remaining of <%= number_to_currency(reserve.amount) %> original
+              </div>
+              <%= form_with url: draw_admin_loan_loan_reserve_path(@loan, reserve), method: :post, local: true do |f| %>
+                <div class="field-row">
+                  <div class="field">
+                    <label class="field-label">Draw Amount</label>
+                    <input type="number" name="amount" step="0.01" max="<%= reserve.remaining_balance %>" class="field-input" required>
+                  </div>
+                  <div class="field">
+                    <label class="field-label">Payment Date</label>
+                    <input type="date" name="payment_date" value="<%= Date.current %>" class="field-input">
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label">Notes</label>
+                  <input type="text" name="notes" class="field-input" placeholder="Reserve draw - <%= reserve.display_type %>">
+                </div>
+                <div class="modal-actions">
+                  <%= btn_filled_tag "Draw from Reserve", nil, type: "submit" %>
+                  <a href="#" data-modal-close>Cancel</a>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+
+      <%= render "admin/loans/reserves/new_modal" %>
     </div>
 
     <%# Extensions Tab %>

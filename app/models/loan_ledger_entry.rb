@@ -13,10 +13,15 @@ class LoanLedgerEntry < ApplicationRecord
     late_fee_assessed
     adjustment adjustment_principal
     extension_fee
+    reserve_withholding reserve_release
+    memo
   ].freeze
 
-  # All entry types affect the total amount owed (running_balance)
-  BALANCE_AFFECTING_TYPES = ENTRY_TYPES
+  # Memo-only entry types — appear on the ledger but don't affect balances
+  MEMO_TYPES = %w[reserve_withholding reserve_release memo].freeze
+
+  # All entry types except memos affect the total amount owed (running_balance)
+  BALANCE_AFFECTING_TYPES = (ENTRY_TYPES - MEMO_TYPES).freeze
 
   # Only these affect the principal balance (not plain "adjustment" which is for fee waivers etc.)
   PRINCIPAL_AFFECTING_TYPES = %w[disbursement draw payment_principal adjustment_principal].freeze
@@ -40,7 +45,7 @@ class LoanLedgerEntry < ApplicationRecord
   end
 
   def balance_affecting?
-    true
+    !MEMO_TYPES.include?(entry_type)
   end
 
   def principal_affecting?

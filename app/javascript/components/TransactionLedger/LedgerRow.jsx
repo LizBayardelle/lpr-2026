@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react"
 import EditableCell from "./EditableCell"
 import TypeBadge from "./TypeBadge"
-import { formatCurrency, formatDate, monthlyInterestDue } from "./ledgerUtils"
+import { formatCurrency, formatDate, monthlyInterestDue, MEMO_TYPES } from "./ledgerUtils"
 
 const EDITABLE_FIELDS = ["date", "description", "debit", "credit"]
 
@@ -18,10 +18,47 @@ export default function LedgerRow({ entry, loan, godpowers, onUpdate, onReverse,
 
   const reversed = !!entry.reversedById
   const reversal = !!entry.reversalOfId
+  const isMemo = MEMO_TYPES.includes(entry.entryType)
   const isDebit = parseFloat(entry.amount) > 0
   const isCredit = parseFloat(entry.amount) < 0
   const isPayment = entry.entryType.startsWith("payment_")
   const moInterest = monthlyInterestDue(entry.principalAtEntry, loan.interestRate, loan.interestCalcMethod)
+
+  if (isMemo) {
+    const colSpan = godpowers ? 9 : 8
+    const isWithholding = entry.entryType === "reserve_withholding"
+    const isGenericMemo = entry.entryType === "memo"
+    const amtLabel = formatCurrency(Math.abs(parseFloat(entry.amount)))
+    const fallback = isGenericMemo ? "" : isWithholding ? `${amtLabel} reserve established` : `Reserve released — ${amtLabel}`
+    const showDelete = isGenericMemo || godpowers
+    return (
+      <tr ref={rowRef} style={{ background: "var(--color-smoke)" }}>
+        <td style={{ whiteSpace: "nowrap", paddingLeft: "2rem", color: "var(--color-steel)", fontSize: "0.8125rem" }}>{formatDate(entry.effectiveDate)}</td>
+        <td style={{ whiteSpace: "nowrap" }}>
+          <TypeBadge entryType={entry.entryType} reversed={reversed} reversal={reversal} />
+        </td>
+        <td colSpan={5} style={{ fontSize: "0.8125rem", color: "var(--color-steel)" }}>{entry.description || fallback}</td>
+        <td style={{ textAlign: "right", paddingRight: godpowers || isGenericMemo ? 0 : "2rem" }}>
+          {!isGenericMemo && !reversed && !reversal && (
+            <button
+              onClick={() => { if (confirm("Reverse this entry?")) onReverse(entry.id) }}
+              className="btn-filled btn-filled-danger"
+              style={{ fontSize: "10px", padding: "2px 8px" }}
+            >Reverse</button>
+          )}
+          {!isGenericMemo && reversed && <span className="badge badge-danger">Reversed</span>}
+        </td>
+        {showDelete && (
+          <td style={{ textAlign: "center", verticalAlign: "middle" }}>
+            <button
+              onClick={() => { if (confirm(isGenericMemo ? "Delete this memo?" : "Delete this entry?")) onDelete(entry.id) }}
+              style={{ background: "none", border: "none", cursor: "pointer", color: "#ccc", fontSize: "14px", padding: "2px 4px", lineHeight: 1 }}
+            >&#x2715;</button>
+          </td>
+        )}
+      </tr>
+    )
+  }
 
   const makeTabHandler = (fieldIndex) => (shiftKey) => {
     const row = rowRef.current

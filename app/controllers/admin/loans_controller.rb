@@ -33,6 +33,7 @@ class Admin::LoansController < Admin::BaseController
     @draws = @loan.loan_draws.recent
     @fees = @loan.loan_fees.recent
     @extensions = @loan.loan_extensions.order(created_at: :desc)
+    @reserves = @loan.loan_reserves.order(created_at: :desc)
     @documents = @loan.loan_documents
   end
 
@@ -49,6 +50,7 @@ class Admin::LoansController < Admin::BaseController
   def create
     @loan = Loan.new(loan_params)
     if @loan.save
+      create_reserve_if_requested(@loan)
       redirect_to admin_loan_path(@loan), notice: "Loan created."
     else
       render :new, status: :unprocessable_entity
@@ -94,6 +96,18 @@ class Admin::LoansController < Admin::BaseController
 
   def set_loan
     @loan = Loan.find(params[:id])
+  end
+
+  def create_reserve_if_requested(loan, source: nil)
+    return unless params[:reserve_amount].present? && params[:reserve_amount].to_d > 0
+
+    loan.loan_reserves.create!(
+      amount: params[:reserve_amount].to_d,
+      reserve_type: params[:reserve_type].presence || "interest",
+      established_date: source&.respond_to?(:created_at) ? Date.current : loan.origination_date,
+      source: source || loan,
+      notes: params[:reserve_notes]
+    )
   end
 
   def loan_params

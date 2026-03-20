@@ -6,10 +6,11 @@ module LoanLedger
     end
 
     # Post one or more entries atomically. Accepts a hash or array of hashes.
+    # Automatically rebalances if any entry is backdated before existing entries.
     def post!(entries_attrs)
       entries_attrs = Array.wrap(entries_attrs)
 
-      LoanLedgerEntry.transaction do
+      created = LoanLedgerEntry.transaction do
         last_entry = @loan.loan_ledger_entries.order(id: :desc).lock("FOR UPDATE").first
         current_balance = last_entry&.running_balance || BigDecimal("0")
 
@@ -30,6 +31,15 @@ module LoanLedger
           )
         end
       end
+
+      # Rebalance if any posted entry falls before the latest existing entry,
+      # which means chronological order changed and interest accruals may need recalculation.
+      latest_existing = @loan.loan_ledger_entries.where.not(id: created.map(&:id)).maximum(:effective_date)
+      if latest_existing && created.any? { |e| e.effective_date < latest_existing }
+        rebalance!
+      end
+
+      created
     end
 
     # Reverse an existing entry
@@ -90,7 +100,7 @@ module LoanLedger
           end
 
           principal += entry.amount if entry.principal_affecting?
-          running += entry.amount
+          running += entry.amount if entry.balance_affecting?
           entry.update_column(:running_balance, running) if entry.running_balance != running
         end
       end

@@ -600,6 +600,12 @@ a:hover {
   margin-top: 0.25rem;
 }
 
+.reserve-type-option { border-color: #e5e7eb; }
+.reserve-type-option:has(input:checked) {
+  border-color: var(--color-navy);
+  background: rgba(3, 29, 85, 0.03);
+}
+
 .form-actions {
   margin-top: 2rem;
 }

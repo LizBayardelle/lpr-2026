@@ -100,6 +100,21 @@
     <div class="field"></div>
   </div>
 
+  <% unless loan.persisted? %>
+    <div class="section-label">Interest Reserve</div>
+    <div class="field-row">
+      <div class="field">
+        <label class="field-label">Reserve Amount</label>
+        <input type="number" name="reserve_amount" step="0.01" class="field-input" placeholder="Leave blank for no reserve">
+      </div>
+      <div class="field">
+        <label class="field-label">Reserve Notes</label>
+        <input type="text" name="reserve_notes" class="field-input" placeholder="Optional">
+      </div>
+    </div>
+    <%= render "admin/loans/reserves/type_picker" %>
+  <% end %>
+
   <div class="section-label">Dates</div>
   <div class="field-row-3">
     <div class="field">

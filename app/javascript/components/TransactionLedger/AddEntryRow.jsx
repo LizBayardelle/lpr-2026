@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react"
-import { ADDABLE_TYPES } from "./ledgerUtils"
+import { ADDABLE_TYPES, MEMO_TYPES } from "./ledgerUtils"
 
 const CREDIT_TYPES = ["payment_interest", "payment_principal", "payment_late_fee", "fee_paid"]
 
@@ -23,9 +23,10 @@ export default function AddEntryRow({ onAdd, godpowers }) {
   const isCredit = CREDIT_TYPES.includes(entryType)
   const isAdjustment = entryType === "adjustment"
   const isPayment = entryType === "payment"
+  const isMemo = MEMO_TYPES.includes(entryType)
 
   const handleSubmit = async () => {
-    if (!entryType || !date || !amount) return
+    if (!entryType || !date || (!amount && !isMemo)) return
     setSubmitting(true)
     try {
       let type = entryType
@@ -33,10 +34,12 @@ export default function AddEntryRow({ onAdd, godpowers }) {
       // "payment" is our convenience type — server splits into interest + principal
       if (type === "payment") type = "payment_interest"
 
-      // Credits get sent as negative amounts
-      const sendAmount = (isCredit || isPayment)
-        ? (-Math.abs(parseFloat(amount))).toString()
-        : amount
+      // Memos have no financial amount; credits get sent as negative
+      const sendAmount = isMemo
+        ? "0"
+        : (isCredit || isPayment)
+          ? (-Math.abs(parseFloat(amount))).toString()
+          : amount
 
       await onAdd({ entryType: type, effectiveDate: date, amount: sendAmount, description })
       reset()
@@ -111,9 +114,9 @@ export default function AddEntryRow({ onAdd, godpowers }) {
       <td style={{ paddingRight: godpowers ? 0 : "2rem" }}>
         <button
           onClick={handleSubmit}
-          disabled={submitting || !entryType || !date || !amount}
+          disabled={submitting || !entryType || !date || (!amount && !isMemo)}
           className="btn-filled btn-filled-primary"
-          style={{ fontSize: "11px", padding: "4px 10px", opacity: (!entryType || !date || !amount) ? 0.4 : 1 }}
+          style={{ fontSize: "11px", padding: "4px 10px", opacity: (!entryType || !date || (!amount && !isMemo)) ? 0.4 : 1 }}
         >Add</button>
       </td>
       {godpowers && <td></td>}

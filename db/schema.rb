@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_13_191139) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_20_151908) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -173,6 +173,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_13_191139) do
     t.index ["source_type", "source_id"], name: "index_loan_ledger_entries_on_source_type_and_source_id"
   end
 
+  create_table "loan_reserves", force: :cascade do |t|
+    t.decimal "amount", precision: 12, scale: 2, null: false
+    t.datetime "created_at", null: false
+    t.date "established_date", null: false
+    t.bigint "loan_id", null: false
+    t.text "notes"
+    t.string "reserve_type", default: "interest", null: false
+    t.bigint "source_id"
+    t.string "source_type"
+    t.string "status", default: "active", null: false
+    t.datetime "updated_at", null: false
+    t.index ["loan_id"], name: "index_loan_reserves_on_loan_id"
+    t.index ["source_type", "source_id"], name: "index_loan_reserves_on_source"
+  end
+
   create_table "loan_roles", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "loan_id", null: false
@@ -242,6 +257,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_13_191139) do
     t.decimal "interest_amount", precision: 12, scale: 2, default: "0.0"
     t.decimal "late_fee_amount", precision: 12, scale: 2, default: "0.0"
     t.bigint "loan_id", null: false
+    t.bigint "loan_reserve_id"
     t.text "notes"
     t.date "payment_date", null: false
     t.string "payment_method"
@@ -249,6 +265,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_13_191139) do
     t.string "reference_number"
     t.datetime "updated_at", null: false
     t.index ["loan_id"], name: "index_payments_on_loan_id"
+    t.index ["loan_reserve_id"], name: "index_payments_on_loan_reserve_id"
     t.index ["payment_date"], name: "index_payments_on_payment_date"
   end
 
@@ -284,8 +301,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_13_191139) do
   add_foreign_key "loan_fees", "loans"
   add_foreign_key "loan_ledger_entries", "loans"
   add_foreign_key "loan_ledger_entries", "users", column: "posted_by_id"
+  add_foreign_key "loan_reserves", "loans"
   add_foreign_key "loan_roles", "loans"
   add_foreign_key "loan_roles", "users"
   add_foreign_key "loan_statements", "loans"
+  add_foreign_key "payments", "loan_reserves", column: "loan_reserve_id"
   add_foreign_key "payments", "loans"
 end

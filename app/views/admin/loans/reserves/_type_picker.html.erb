@@ -1,0 +1,27 @@
+<%# Reserve type radio cards — include inside a form %>
+<div class="field">
+  <label class="field-label" style="margin-bottom: 0.625rem;">Reserve Type</label>
+  <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+    <label style="display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer; padding: 0.75rem 1rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; transition: border-color 0.15s;" class="reserve-type-option">
+      <input type="radio" name="<%= local_assigns[:field_name] || 'reserve_type' %>" value="interest" checked style="margin-top: 0.2rem; accent-color: var(--color-navy);">
+      <div>
+        <div style="font-weight: 600; font-size: 0.875rem; color: var(--color-navy);">Interest Reserve</div>
+        <div style="font-size: 0.75rem; color: var(--color-steel); font-weight: 400; margin-top: 0.125rem;">Covers monthly interest payments. Common in bridge and construction loans where the borrower isn't yet generating income.</div>
+      </div>
+    </label>
+    <label style="display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer; padding: 0.75rem 1rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; transition: border-color 0.15s;" class="reserve-type-option">
+      <input type="radio" name="<%= local_assigns[:field_name] || 'reserve_type' %>" value="debt_service" style="margin-top: 0.2rem; accent-color: var(--color-navy);">
+      <div>
+        <div style="font-weight: 600; font-size: 0.875rem; color: var(--color-navy);">Debt Service Reserve</div>
+        <div style="font-size: 0.75rem; color: var(--color-steel); font-weight: 400; margin-top: 0.125rem;">Covers full principal + interest payments. Used in project finance or fully amortizing loans.</div>
+      </div>
+    </label>
+    <label style="display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer; padding: 0.75rem 1rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; transition: border-color 0.15s;" class="reserve-type-option">
+      <input type="radio" name="<%= local_assigns[:field_name] || 'reserve_type' %>" value="holdback" style="margin-top: 0.2rem; accent-color: var(--color-navy);">
+      <div>
+        <div style="font-weight: 600; font-size: 0.875rem; color: var(--color-navy);">Holdback</div>
+        <div style="font-size: 0.75rem; color: var(--color-steel); font-weight: 400; margin-top: 0.125rem;">Funds withheld for repairs, renovations, or contingencies. Released when conditions are met, not necessarily for payments.</div>
+      </div>
+    </label>
+  </div>
+</div>

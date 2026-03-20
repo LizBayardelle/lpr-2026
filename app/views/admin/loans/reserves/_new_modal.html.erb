@@ -1,0 +1,35 @@
+<div class="modal-overlay" id="new-reserve-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="heading-2">New Reserve</h2>
+      <button type="button" data-modal-close>&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <%= form_with model: [:admin, @loan, LoanReserve.new], local: true do |f| %>
+        <div class="field-row">
+          <div class="field">
+            <%= f.label :amount, "Reserve Amount" %>
+            <%= f.number_field :amount, step: 0.01, class: "field-input" %>
+          </div>
+          <div class="field">
+            <%= f.label :established_date, "Established Date" %>
+            <%= f.date_field :established_date, value: Date.current, class: "field-input" %>
+          </div>
+        </div>
+
+        <%= render "admin/loans/reserves/type_picker", field_name: "loan_reserve[reserve_type]" %>
+
+        <div class="field">
+          <%= f.label :notes, "Notes" %>
+          <%= f.text_area :notes, class: "field-input", rows: 3 %>
+        </div>
+
+        <div class="modal-actions">
+          <%= btn_filled_tag "Create Reserve", nil, type: "submit" %>
+          <a href="#" data-modal-close>Cancel</a>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

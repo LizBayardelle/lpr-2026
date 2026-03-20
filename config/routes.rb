@@ -92,6 +92,13 @@ Rails.application.routes.draw do
       end
       resources :loan_documents, only: [:create, :destroy]
       resources :loan_extensions, only: [:new, :create, :destroy]
+      resources :loan_reserves, only: [:create, :destroy] do
+        member do
+          post :draw
+          post :release
+          post :forfeit
+        end
+      end
     end
   end
 
