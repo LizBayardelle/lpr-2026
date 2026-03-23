@@ -302,6 +302,9 @@
                     <% if statement.stale? %>
                       <span class="badge badge-warning" style="margin-left: 0.375rem;">Stale</span>
                     <% end %>
+                    <% if statement.statement_sends.any? %>
+                      <span class="badge badge-success" style="margin-left: 0.375rem;" title="Last sent <%= statement.statement_sends.maximum(:created_at).strftime('%b %-d, %Y') %>">Sent</span>
+                    <% end %>
                     <div class="text-small" style="font-size: 0.6875rem; margin-top: 2px;">Generated <%= statement.created_at.strftime("%b %-d, %Y") %></div>
                   </td>
                   <td style="white-space: nowrap;"><%= statement.period_start.strftime("%b %-d") %> &ndash; <%= statement.period_end.strftime("%b %-d, %Y") %></td>
@@ -657,7 +660,20 @@
                        end %>
                     <span class="badge badge-<%= status_badge %>"><%= reserve.status.titleize %></span>
                   </td>
-                  <td class="text-small"><%= reserve.notes %></td>
+                  <td class="text-small" style="min-width: 120px;">
+                    <span
+                      data-reserve-notes-display="<%= reserve.id %>"
+                      style="cursor: pointer; border-bottom: 1px dashed var(--color-concrete); padding-bottom: 1px;"
+                      title="Click to edit"
+                      onclick="this.style.display='none'; this.nextElementSibling.style.display='flex'; this.nextElementSibling.querySelector('input').focus();"
+                    ><%= reserve.notes.present? ? reserve.notes : "<em style='color: var(--color-concrete)'>Add notes…</em>".html_safe %></span>
+                    <%= form_with url: admin_loan_loan_reserve_path(@loan, reserve), method: :patch, style: "display: none; align-items: center; gap: 4px;", data: { reserve_notes_form: reserve.id } do |f| %>
+                      <input type="text" name="loan_reserve[notes]" value="<%= reserve.notes %>" class="field-input" style="font-size: 0.75rem; padding: 2px 6px; flex: 1;"
+                        onkeydown="if(event.key==='Escape'){event.preventDefault(); this.closest('form').style.display='none'; this.closest('form').previousElementSibling.style.display='';}"
+                      >
+                      <button type="submit" class="btn-filled btn-filled-primary" style="font-size: 10px; padding: 2px 8px;">Save</button>
+                    <% end %>
+                  </td>
                   <td style="display: flex; gap: 0.5rem; flex-wrap: wrap; padding-right: 2rem;">
                     <% if reserve.status == "active" && reserve.remaining_balance > 0 %>
                       <%= btn_filled_tag "Draw", "#", data: { modal_target: "draw-reserve-modal-#{reserve.id}" }, style: "font-size: 11px; padding: 4px 10px;" %>

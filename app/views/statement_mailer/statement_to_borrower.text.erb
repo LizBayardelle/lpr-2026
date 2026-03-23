@@ -1,0 +1,18 @@
+LINCHPIN REALTY — LOAN STATEMENT
+================================
+
+Hi <%= @loan.borrower_name %>,
+
+Your loan statement for <%= @statement.period_start.strftime("%b %-d") %> – <%= @statement.period_end.strftime("%b %-d, %Y") %> is attached.
+
+Property:        <%= @loan.property_address %>
+Period:          <%= @statement.period_start.strftime("%b %-d") %> – <%= @statement.period_end.strftime("%b %-d, %Y") %>
+Total Due:       <%= number_to_currency(@statement.total_due) %>
+<% if @statement.past_due_amount > 0 %>Past Due:        <%= number_to_currency(@statement.past_due_amount) %>
+<% end %><% if @statement.late_fee > 0 %>Late Fee:        <%= number_to_currency(@statement.late_fee) %>
+<% end %>Ending Balance:  <%= number_to_currency(@statement.ending_balance) %>
+
+If you have questions, contact us at admin@linchpinrealty.com.
+
+—
+Linchpin Realty — Private Lending Solutions

@@ -1,0 +1,52 @@
+<div style="max-width: 600px; margin: 0 auto; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1a2744;">
+  <div style="padding: 2rem; background: #1a2744; text-align: center;">
+    <h1 style="color: #ffffff; margin: 0; font-size: 1.5rem;">Linchpin Realty</h1>
+  </div>
+
+  <div style="padding: 2rem; background: #ffffff;">
+    <h2 style="margin-top: 0;">Your Loan Statement</h2>
+
+    <p>Hi <%= @loan.borrower_name %>,</p>
+
+    <p>Please find your loan statement for the period of <strong><%= @statement.period_start.strftime("%b %-d") %> &ndash; <%= @statement.period_end.strftime("%b %-d, %Y") %></strong> attached to this email.</p>
+
+    <table style="width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.9375rem;">
+      <tr>
+        <td style="padding: 0.5rem 0; color: #6b7280;">Property</td>
+        <td style="padding: 0.5rem 0; text-align: right; font-weight: 600;"><%= @loan.property_address %></td>
+      </tr>
+      <tr style="border-top: 1px solid #e5e7eb;">
+        <td style="padding: 0.5rem 0; color: #6b7280;">Period</td>
+        <td style="padding: 0.5rem 0; text-align: right; font-weight: 600;"><%= @statement.period_start.strftime("%b %-d") %> &ndash; <%= @statement.period_end.strftime("%b %-d, %Y") %></td>
+      </tr>
+      <tr style="border-top: 1px solid #e5e7eb;">
+        <td style="padding: 0.5rem 0; color: #6b7280;">Total Due</td>
+        <td style="padding: 0.5rem 0; text-align: right; font-weight: 600;"><%= number_to_currency(@statement.total_due) %></td>
+      </tr>
+      <% if @statement.past_due_amount > 0 %>
+        <tr style="border-top: 1px solid #e5e7eb;">
+          <td style="padding: 0.5rem 0; color: #9b1c1c;">Past Due</td>
+          <td style="padding: 0.5rem 0; text-align: right; font-weight: 600; color: #9b1c1c;"><%= number_to_currency(@statement.past_due_amount) %></td>
+        </tr>
+      <% end %>
+      <% if @statement.late_fee > 0 %>
+        <tr style="border-top: 1px solid #e5e7eb;">
+          <td style="padding: 0.5rem 0; color: #9b1c1c;">Late Fee</td>
+          <td style="padding: 0.5rem 0; text-align: right; font-weight: 600; color: #9b1c1c;"><%= number_to_currency(@statement.late_fee) %></td>
+        </tr>
+      <% end %>
+      <tr style="border-top: 1px solid #e5e7eb;">
+        <td style="padding: 0.5rem 0; color: #6b7280;">Ending Balance</td>
+        <td style="padding: 0.5rem 0; text-align: right; font-weight: 600;"><%= number_to_currency(@statement.ending_balance) %></td>
+      </tr>
+    </table>
+
+    <p style="font-size: 0.875rem; color: #6b7280;">
+      The full statement is attached as a PDF. If you have any questions about your statement, please contact us at admin@linchpinrealty.com.
+    </p>
+  </div>
+
+  <div style="padding: 1rem 2rem; background: #f3f4f6; text-align: center; font-size: 0.75rem; color: #9ca3af;">
+    Linchpin Realty &mdash; Private Lending Solutions
+  </div>
+</div>

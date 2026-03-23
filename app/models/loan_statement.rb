@@ -1,6 +1,7 @@
 class LoanStatement < ApplicationRecord
   belongs_to :loan
   has_one_attached :pdf
+  has_many :statement_sends, dependent: :destroy
 
   validates :statement_date, presence: true
   validates :period_start, presence: true

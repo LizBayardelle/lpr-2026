@@ -1,6 +1,6 @@
 class Admin::LoanReservesController < Admin::BaseController
   before_action :set_loan
-  before_action :set_reserve, only: [:draw, :release, :forfeit, :destroy]
+  before_action :set_reserve, only: [:update, :draw, :release, :forfeit, :destroy]
 
   def create
     @reserve = @loan.loan_reserves.build(reserve_params)
@@ -8,6 +8,14 @@ class Admin::LoanReservesController < Admin::BaseController
       redirect_to admin_loan_path(@loan, tab: "reserves"), notice: "#{@reserve.display_type} reserve of #{helpers.number_to_currency(@reserve.amount)} established."
     else
       redirect_to admin_loan_path(@loan, tab: "reserves"), alert: "Could not create reserve: #{@reserve.errors.full_messages.join(', ')}"
+    end
+  end
+
+  def update
+    if @reserve.update(reserve_params)
+      redirect_to admin_loan_path(@loan, tab: "reserves"), notice: "Reserve updated."
+    else
+      redirect_to admin_loan_path(@loan, tab: "reserves"), alert: "Could not update reserve: #{@reserve.errors.full_messages.join(', ')}"
     end
   end
 

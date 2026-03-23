@@ -77,7 +77,9 @@ Rails.application.routes.draw do
         end
       end
       resources :payments, except: [:index, :show]
-      resources :loan_statements, only: [:show, :destroy]
+      resources :loan_statements, only: [:show, :destroy] do
+        post :send_to_client, on: :member
+      end
       resources :loan_draws, except: [:index, :show] do
         member do
           post :fund
@@ -92,7 +94,7 @@ Rails.application.routes.draw do
       end
       resources :loan_documents, only: [:create, :destroy]
       resources :loan_extensions, only: [:new, :create, :destroy]
-      resources :loan_reserves, only: [:create, :destroy] do
+      resources :loan_reserves, only: [:create, :update, :destroy] do
         member do
           post :draw
           post :release

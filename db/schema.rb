@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_20_151908) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_23_153943) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -269,6 +269,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_20_151908) do
     t.index ["payment_date"], name: "index_payments_on_payment_date"
   end
 
+  create_table "statement_sends", force: :cascade do |t|
+    t.string "cc_to"
+    t.datetime "created_at", null: false
+    t.bigint "loan_statement_id", null: false
+    t.bigint "sent_by_id", null: false
+    t.string "sent_to", null: false
+    t.datetime "updated_at", null: false
+    t.index ["loan_statement_id"], name: "index_statement_sends_on_loan_statement_id"
+    t.index ["sent_by_id"], name: "index_statement_sends_on_sent_by_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.boolean "admin", default: false, null: false
     t.datetime "created_at", null: false
@@ -305,6 +316,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_20_151908) do
   add_foreign_key "loan_roles", "loans"
   add_foreign_key "loan_roles", "users"
   add_foreign_key "loan_statements", "loans"
-  add_foreign_key "payments", "loan_reserves", column: "loan_reserve_id"
+  add_foreign_key "payments", "loan_reserves"
   add_foreign_key "payments", "loans"
+  add_foreign_key "statement_sends", "loan_statements"
+  add_foreign_key "statement_sends", "users", column: "sent_by_id"
 end

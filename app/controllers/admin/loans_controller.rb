@@ -29,7 +29,7 @@ class Admin::LoansController < Admin::BaseController
     end
 
     @payments = @loan.payments.recent
-    @statements = @loan.loan_statements.recent
+    @statements = @loan.loan_statements.includes(:statement_sends).recent
     @draws = @loan.loan_draws.recent
     @fees = @loan.loan_fees.recent
     @extensions = @loan.loan_extensions.order(created_at: :desc)
