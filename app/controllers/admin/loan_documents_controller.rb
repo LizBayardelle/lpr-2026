@@ -6,6 +6,21 @@ class Admin::LoanDocumentsController < Admin::BaseController
     @document = @loan.loan_documents.build(document_params)
     @document.uploaded_by_user = current_user
     if @document.save
+      # Mirror to client_uploads so it appears in the Document Portal
+      upload = ClientUpload.new(
+        client_name: current_user.display_name,
+        client_email: current_user.email,
+        document_type: @document.document_type,
+        name: @document.name,
+        description: @document.description,
+        loan: @loan,
+        status: "assigned",
+        assigned_by_user: current_user,
+        assigned_at: Time.current
+      )
+      upload.file.attach(@document.file.blob)
+      upload.save!
+
       redirect_to admin_loan_path(@loan, tab: "documents"), notice: "Document uploaded."
     else
       redirect_to admin_loan_path(@loan, tab: "documents"), alert: "Could not upload document."

@@ -67,6 +67,7 @@ Rails.application.routes.draw do
     resources :loans do
       member do
         post :generate_statement
+        post :send_welcome_email
       end
       resources :loan_ledger_entries, only: [:index, :create, :destroy, :update] do
         collection do

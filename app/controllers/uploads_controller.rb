@@ -17,6 +17,7 @@ class UploadsController < ApplicationController
       @upload.client_phone = current_user.phone_number if @upload.client_phone.blank?
     end
     if @upload.save
+      UploadMailer.upload_notification(@upload).deliver_later
       redirect_to upload_success_path, notice: "Your document has been uploaded successfully."
     else
       render :new, status: :unprocessable_entity

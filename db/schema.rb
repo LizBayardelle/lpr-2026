@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_23_153943) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_24_162751) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -298,6 +298,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_23_153943) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  create_table "welcome_email_sends", force: :cascade do |t|
+    t.string "cc_to"
+    t.datetime "created_at", null: false
+    t.bigint "loan_id", null: false
+    t.bigint "sent_by_id", null: false
+    t.string "sent_to", null: false
+    t.datetime "updated_at", null: false
+    t.index ["loan_id"], name: "index_welcome_email_sends_on_loan_id"
+    t.index ["sent_by_id"], name: "index_welcome_email_sends_on_sent_by_id"
+  end
+
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "blogs", "users"
@@ -320,4 +331,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_23_153943) do
   add_foreign_key "payments", "loans"
   add_foreign_key "statement_sends", "loan_statements"
   add_foreign_key "statement_sends", "users", column: "sent_by_id"
+  add_foreign_key "welcome_email_sends", "loans"
+  add_foreign_key "welcome_email_sends", "users", column: "sent_by_id"
 end

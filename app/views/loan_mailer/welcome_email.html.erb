@@ -1,0 +1,105 @@
+<div style="max-width: 600px; margin: 0 auto; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1a2744;">
+  <div style="padding: 2rem; background: #1a2744; text-align: center;">
+    <h1 style="color: #ffffff; margin: 0; font-size: 1.5rem;">Linchpin Realty</h1>
+  </div>
+
+  <div style="padding: 2rem; background: #ffffff;">
+    <h2 style="margin-top: 0;">Welcome!</h2>
+
+    <p>Hi <%= @loan.borrower_name %>,</p>
+
+    <p>Thank you for choosing Linchpin Realty. Below you'll find the details of your loan along with all available payment options.</p>
+
+    <%# ── Loan Summary ── %>
+    <table style="width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.9375rem;">
+      <tr>
+        <td style="padding: 0.5rem 0; color: #6b7280;">Property</td>
+        <td style="padding: 0.5rem 0; text-align: right; font-weight: 600;"><%= @loan.property_address %></td>
+      </tr>
+      <tr style="border-top: 1px solid #e5e7eb;">
+        <td style="padding: 0.5rem 0; color: #6b7280;">Loan Amount</td>
+        <td style="padding: 0.5rem 0; text-align: right; font-weight: 600;"><%= number_to_currency(@loan.loan_amount) %></td>
+      </tr>
+      <tr style="border-top: 1px solid #e5e7eb;">
+        <td style="padding: 0.5rem 0; color: #6b7280;">Interest Rate</td>
+        <td style="padding: 0.5rem 0; text-align: right; font-weight: 600;"><%= @loan.effective_interest_rate %>%</td>
+      </tr>
+      <tr style="border-top: 1px solid #e5e7eb;">
+        <td style="padding: 0.5rem 0; color: #6b7280;">Monthly Payment</td>
+        <td style="padding: 0.5rem 0; text-align: right; font-weight: 600;"><%= number_to_currency(@loan.monthly_payment_amount) %></td>
+      </tr>
+      <tr style="border-top: 1px solid #e5e7eb;">
+        <td style="padding: 0.5rem 0; color: #6b7280;">Origination Date</td>
+        <td style="padding: 0.5rem 0; text-align: right; font-weight: 600;"><%= @loan.origination_date.strftime("%b %-d, %Y") %></td>
+      </tr>
+      <tr style="border-top: 1px solid #e5e7eb;">
+        <td style="padding: 0.5rem 0; color: #6b7280;">Maturity Date</td>
+        <td style="padding: 0.5rem 0; text-align: right; font-weight: 600;"><%= @loan.effective_maturity_date.strftime("%b %-d, %Y") %></td>
+      </tr>
+      <% if @loan.first_payment_date.present? %>
+        <tr style="border-top: 1px solid #e5e7eb;">
+          <td style="padding: 0.5rem 0; color: #6b7280;">First Payment Due</td>
+          <td style="padding: 0.5rem 0; text-align: right; font-weight: 600;"><%= @loan.first_payment_date.strftime("%b %-d, %Y") %></td>
+        </tr>
+      <% end %>
+    </table>
+
+    <%# ── Payment Options ── %>
+    <h3 style="margin: 2rem 0 1rem; font-size: 1.125rem; border-bottom: 2px solid #1a2744; padding-bottom: 0.5rem;">Payment Options</h3>
+
+    <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 1.5rem;">
+      Please include the borrower's name and loan number with all payments.
+    </p>
+
+    <%# Zelle %>
+    <h4 style="margin: 1.25rem 0 0.5rem; font-size: 1rem; color: #1a2744;">Zelle</h4>
+    <p style="font-size: 0.9375rem; margin: 0;">
+      Search for <strong>Linchpin Realty</strong> using the email address
+      <strong>anthony@linchpinrealty.com</strong> or <strong>949-524-1246</strong>.
+      Please write the borrower's name and loan number in the memo section.
+    </p>
+
+    <%# ACH Transfer %>
+    <h4 style="margin: 1.5rem 0 0.5rem; font-size: 1rem; color: #1a2744;">ACH Transfer</h4>
+    <p style="font-size: 0.8125rem; color: #6b7280; margin: 0 0 0.5rem; font-style: italic;">
+      Please note the information for ACH transfers and wire transfers have different routing numbers.
+    </p>
+    <table style="width: 100%; border-collapse: collapse; font-size: 0.9375rem; margin-bottom: 0.5rem;">
+      <tr><td style="padding: 0.25rem 0; color: #6b7280; width: 40%;">Pay To</td><td style="padding: 0.25rem 0; font-weight: 600;">Linchpin Realty LLC</td></tr>
+      <tr><td style="padding: 0.25rem 0; color: #6b7280;">Routing Number</td><td style="padding: 0.25rem 0; font-weight: 600;">322271627</td></tr>
+      <tr><td style="padding: 0.25rem 0; color: #6b7280;">Account Number</td><td style="padding: 0.25rem 0; font-weight: 600;">511826676</td></tr>
+      <tr><td style="padding: 0.25rem 0; color: #6b7280;">Bank Name</td><td style="padding: 0.25rem 0; font-weight: 600;">JPMorgan Chase Bank</td></tr>
+      <tr><td style="padding: 0.25rem 0; color: #6b7280;">Bank Address</td><td style="padding: 0.25rem 0; font-weight: 600;">26821 Aliso Creek Road, Aliso Viejo, CA 92656</td></tr>
+    </table>
+
+    <%# Wire Transfer %>
+    <h4 style="margin: 1.5rem 0 0.5rem; font-size: 1rem; color: #1a2744;">Wire Transfer</h4>
+    <p style="font-size: 0.8125rem; color: #6b7280; margin: 0 0 0.5rem; font-style: italic;">
+      Please note the information for ACH transfers and wire transfers have different routing numbers.
+    </p>
+    <table style="width: 100%; border-collapse: collapse; font-size: 0.9375rem; margin-bottom: 0.5rem;">
+      <tr><td style="padding: 0.25rem 0; color: #6b7280; width: 40%;">Pay To</td><td style="padding: 0.25rem 0; font-weight: 600;">Linchpin Realty LLC</td></tr>
+      <tr><td style="padding: 0.25rem 0; color: #6b7280;">Routing Number</td><td style="padding: 0.25rem 0; font-weight: 600;">122235821</td></tr>
+      <tr><td style="padding: 0.25rem 0; color: #6b7280;">Account Number</td><td style="padding: 0.25rem 0; font-weight: 600;">157533834295</td></tr>
+      <tr><td style="padding: 0.25rem 0; color: #6b7280;">Bank Name</td><td style="padding: 0.25rem 0; font-weight: 600;">US Bank</td></tr>
+      <tr><td style="padding: 0.25rem 0; color: #6b7280;">Bank Address</td><td style="padding: 0.25rem 0; font-weight: 600;">800 Nicollet Mall, Minneapolis, MN 55402</td></tr>
+    </table>
+
+    <%# Pay by Check %>
+    <h4 style="margin: 1.5rem 0 0.5rem; font-size: 1rem; color: #1a2744;">Pay by Check</h4>
+    <p style="font-size: 0.9375rem; margin: 0;">
+      Make your check out to <strong>Linchpin Realty</strong> and include the borrower's name and
+      loan number in the memo section. Please mail your check to
+      <strong>26895 Aliso Creek Road, B-62, Aliso Viejo, CA 92656</strong>.
+    </p>
+
+    <p style="font-size: 0.875rem; color: #6b7280; margin-top: 1.5rem;">
+      A PDF with these payment options is also attached for your records. If you have any questions or prefer a different form of payment, please contact us at
+      <a href="mailto:anthony@linchpinrealty.com" style="color: #1a2744;">anthony@linchpinrealty.com</a> or 949-524-1246.
+    </p>
+  </div>
+
+  <div style="padding: 1rem 2rem; background: #f3f4f6; text-align: center; font-size: 0.75rem; color: #9ca3af;">
+    Linchpin Realty &mdash; Private Lending Solutions
+  </div>
+</div>

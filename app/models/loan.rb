@@ -7,6 +7,7 @@ class Loan < ApplicationRecord
   has_many :loan_extensions, dependent: :destroy
   has_many :loan_reserves, dependent: :destroy
   has_many :loan_ledger_entries, dependent: :destroy
+  has_many :welcome_email_sends, dependent: :destroy
   has_many :client_uploads
   has_many :loan_roles, dependent: :destroy
   has_many :users, through: :loan_roles

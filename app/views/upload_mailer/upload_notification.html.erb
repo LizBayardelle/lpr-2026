@@ -1,0 +1,53 @@
+<div style="max-width: 600px; margin: 0 auto; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1a2744;">
+  <div style="padding: 2rem; background: #1a2744; text-align: center;">
+    <h1 style="color: #ffffff; margin: 0; font-size: 1.5rem;">Linchpin Realty</h1>
+  </div>
+
+  <div style="padding: 2rem; background: #ffffff;">
+    <h2 style="margin-top: 0;">New Document Upload</h2>
+
+    <p>A new document has been uploaded and is awaiting review.</p>
+
+    <table style="width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.9375rem;">
+      <tr>
+        <td style="padding: 0.5rem 0; color: #6b7280;">Uploaded by</td>
+        <td style="padding: 0.5rem 0; text-align: right; font-weight: 600;"><%= @upload.client_name %></td>
+      </tr>
+      <tr style="border-top: 1px solid #e5e7eb;">
+        <td style="padding: 0.5rem 0; color: #6b7280;">Email</td>
+        <td style="padding: 0.5rem 0; text-align: right; font-weight: 600;"><%= @upload.client_email %></td>
+      </tr>
+      <% if @upload.client_phone.present? %>
+        <tr style="border-top: 1px solid #e5e7eb;">
+          <td style="padding: 0.5rem 0; color: #6b7280;">Phone</td>
+          <td style="padding: 0.5rem 0; text-align: right; font-weight: 600;"><%= @upload.client_phone %></td>
+        </tr>
+      <% end %>
+      <tr style="border-top: 1px solid #e5e7eb;">
+        <td style="padding: 0.5rem 0; color: #6b7280;">Document Type</td>
+        <td style="padding: 0.5rem 0; text-align: right; font-weight: 600;"><%= @upload.document_type_label %></td>
+      </tr>
+      <% if @upload.name.present? %>
+        <tr style="border-top: 1px solid #e5e7eb;">
+          <td style="padding: 0.5rem 0; color: #6b7280;">Name</td>
+          <td style="padding: 0.5rem 0; text-align: right; font-weight: 600;"><%= @upload.name %></td>
+        </tr>
+      <% end %>
+      <% if @upload.description.present? %>
+        <tr style="border-top: 1px solid #e5e7eb;">
+          <td style="padding: 0.5rem 0; color: #6b7280;">Description</td>
+          <td style="padding: 0.5rem 0; text-align: right; font-weight: 600;"><%= @upload.description %></td>
+        </tr>
+      <% end %>
+    </table>
+
+    <p style="font-size: 0.875rem; color: #6b7280;">
+      The uploaded file is attached to this email. You can also review and assign it in the
+      <a href="<%= admin_client_uploads_url %>" style="color: #1a2744; font-weight: 600;">admin portal</a>.
+    </p>
+  </div>
+
+  <div style="padding: 1rem 2rem; background: #f3f4f6; text-align: center; font-size: 0.75rem; color: #9ca3af;">
+    Linchpin Realty &mdash; Private Lending Solutions
+  </div>
+</div>

@@ -1,0 +1,16 @@
+LINCHPIN REALTY — NEW DOCUMENT UPLOAD
+=====================================
+
+A new document has been uploaded and is awaiting review.
+
+Uploaded by:   <%= @upload.client_name %>
+Email:         <%= @upload.client_email %>
+<% if @upload.client_phone.present? %>Phone:         <%= @upload.client_phone %>
+<% end %>Document Type: <%= @upload.document_type_label %>
+<% if @upload.name.present? %>Name:          <%= @upload.name %>
+<% end %><% if @upload.description.present? %>Description:   <%= @upload.description %>
+<% end %>
+The uploaded file is attached to this email.
+
+—
+Linchpin Realty — Private Lending Solutions

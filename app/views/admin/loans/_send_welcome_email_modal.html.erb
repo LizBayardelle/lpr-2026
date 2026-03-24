@@ -1,0 +1,32 @@
+<div class="modal-overlay" id="send-welcome-email-modal">
+  <div class="modal" style="max-width: 30rem;">
+    <div class="modal-header">
+      <h2 class="heading-2">Send Welcome Email</h2>
+      <button type="button" data-modal-close>&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <%= form_with url: send_welcome_email_admin_loan_path(@loan), method: :post do |f| %>
+
+        <div class="field" style="margin-bottom: 1.25rem;">
+          <%= f.label :sent_to, "Email welcome letter to" %>
+          <%= f.email_field :sent_to, value: @default_recipient_email, class: "field-input", required: true %>
+        </div>
+
+        <div class="field" style="margin-bottom: 1.5rem;">
+          <%= f.label :cc_to, "Copy to" %>
+          <%= f.email_field :cc_to, value: "admin@linchpinrealty.com", class: "field-input" %>
+        </div>
+
+        <p class="text-small" style="margin-bottom: 1.5rem; color: var(--color-steel);">
+          This will send loan details and payment options (Zelle, ACH, wire, check) to the borrower, with the Payment Options PDF attached.
+        </p>
+
+        <div class="modal-actions">
+          <%= btn_filled_tag "Send Welcome Email", nil, type: "submit", variant: "primary" %>
+          <a href="#" data-modal-close style="font-size: 0.8125rem; color: var(--color-steel);">Cancel</a>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

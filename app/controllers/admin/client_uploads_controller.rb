@@ -3,14 +3,23 @@ class Admin::ClientUploadsController < Admin::BaseController
 
   def index
     @status = params[:status].presence || "pending"
-    @uploads = ClientUpload.recent
+    @uploads = ClientUpload.includes(:loan, :assigned_by_user, file_attachment: :blob).recent
     @uploads = @uploads.where(status: @status) if ClientUpload::STATUSES.include?(@status)
-    @loans = Loan.order(:borrower_name) if @status == "pending"
+    @uploads = @uploads.where("client_name ILIKE :q OR client_email ILIKE :q", q: "%#{params[:client]}%") if params[:client].present?
+    @uploads = @uploads.where(loan_id: params[:loan_id]) if params[:loan_id].present?
+    @uploads = @uploads.where(document_type: params[:doc_type]) if params[:doc_type].present?
+
+    @all_loans = Loan.order(:borrower_name)
+    @loans = @all_loans.where(status: "active") if @status == "pending"
     @pending_count = ClientUpload.pending.count
+
+    # For filter dropdowns
+    @uploaders = ClientUpload.where(status: @status).distinct.order(:client_name).pluck(:client_name, :client_email)
+    @used_doc_types = ClientUpload.where(status: @status).distinct.order(:document_type).pluck(:document_type)
   end
 
   def show
-    @loans = Loan.order(:borrower_name)
+    @loans = Loan.where(status: "active").order(:borrower_name)
   end
 
   def assign

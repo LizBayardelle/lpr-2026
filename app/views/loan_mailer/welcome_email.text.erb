@@ -1,0 +1,60 @@
+LINCHPIN REALTY — WELCOME
+=========================
+
+Hi <%= @loan.borrower_name %>,
+
+Thank you for choosing Linchpin Realty. Below you'll find the details of your loan along with all available payment options.
+
+LOAN DETAILS
+------------
+Property:         <%= @loan.property_address %>
+Loan Amount:      <%= number_to_currency(@loan.loan_amount) %>
+Interest Rate:    <%= @loan.effective_interest_rate %>%
+Monthly Payment:  <%= number_to_currency(@loan.monthly_payment_amount) %>
+Origination Date: <%= @loan.origination_date.strftime("%b %-d, %Y") %>
+Maturity Date:    <%= @loan.effective_maturity_date.strftime("%b %-d, %Y") %>
+<% if @loan.first_payment_date.present? %>First Payment:    <%= @loan.first_payment_date.strftime("%b %-d, %Y") %>
+<% end %>
+
+Please include the borrower's name and loan number with all payments.
+
+PAYMENT OPTIONS
+===============
+
+ZELLE
+-----
+Search for Linchpin Realty using the email address anthony@linchpinrealty.com
+or 949-524-1246. Please write the borrower's name and loan number in the memo.
+
+ACH TRANSFER
+-------------
+(Note: ACH and wire transfers have DIFFERENT routing numbers.)
+
+Pay To:          Linchpin Realty LLC
+Routing Number:  322271627
+Account Number:  511826676
+Bank Name:       JPMorgan Chase Bank
+Bank Address:    26821 Aliso Creek Road, Aliso Viejo, CA 92656
+
+WIRE TRANSFER
+-------------
+(Note: ACH and wire transfers have DIFFERENT routing numbers.)
+
+Pay To:          Linchpin Realty LLC
+Routing Number:  122235821
+Account Number:  157533834295
+Bank Name:       US Bank
+Bank Address:    800 Nicollet Mall, Minneapolis, MN 55402
+
+PAY BY CHECK
+-------------
+Make your check out to Linchpin Realty and include the borrower's name and
+loan number in the memo section. Mail to:
+26895 Aliso Creek Road, B-62, Aliso Viejo, CA 92656
+
+A PDF with these payment options is also attached for your records.
+
+Questions? Contact us at anthony@linchpinrealty.com or 949-524-1246.
+
+—
+Linchpin Realty — Private Lending Solutions

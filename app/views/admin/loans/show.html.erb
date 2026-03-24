@@ -13,7 +13,10 @@
 <div class="container-wide" style="padding-top: 6rem; padding-bottom: 6rem;">
   <div class="admin-breadcrumbs-inline loan-breadcrumb-bar">
     <%= render "admin/breadcrumbs", crumbs: [{ label: "Loans", path: admin_loans_path }, { label: @loan.borrower_name }] %>
-    <%= btn_tag "Edit Loan", "#", data: { modal_target: "edit-loan-modal" } %>
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <%= btn_filled_tag "Send Welcome Email", "#", data: { modal_target: "send-welcome-email-modal" }, style: "font-size: 11px; padding: 6px 14px;" %>
+      <%= btn_tag "Edit Loan", "#", data: { modal_target: "edit-loan-modal" } %>
+    </div>
   </div>
 
   <%# ── Navy Header ── %>
@@ -776,4 +779,5 @@
   </div>
 
   <%= render "admin/loans/edit_modal" %>
+  <%= render "admin/loans/send_welcome_email_modal" %>
 </div>

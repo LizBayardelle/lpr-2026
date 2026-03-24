@@ -1,8 +1,10 @@
-<div class="container-wide" style="padding-top: 6rem;">
-  <%= render "admin/breadcrumbs", crumbs: [{ label: "Documents" }] %>
+<% content_for :title, "Document Portal" %>
+
+<div class="container-wide" style="padding-top: 6rem; padding-bottom: 6rem;">
+  <%= render "admin/breadcrumbs", crumbs: [{ label: "Document Portal" }] %>
 
   <div style="display: flex; justify-content: space-between; align-items: center;">
-    <h1 class="heading-1" style="color: var(--color-navy);">Client Uploads</h1>
+    <h1 class="heading-1" style="color: var(--color-navy);">Document Portal</h1>
     <% if @pending_count > 0 %>
       <span class="badge badge-warning"><%= @pending_count %> pending</span>
     <% end %>
@@ -21,80 +23,197 @@
     <% end %>
   </div>
 
-  <%# ── Table ── %>
+  <%# ── Filters ── %>
+  <%
+    has_filters = params[:client].present? || params[:loan_id].present? || params[:doc_type].present?
+  %>
+  <%= form_with url: admin_client_uploads_path, method: :get, html: { style: "display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; margin-top: 1.5rem; align-items: center;" } do |f| %>
+    <%= f.hidden_field :status, value: @status %>
+
+    <%= f.select :client,
+        @uploaders.map { |name, email| ["#{name} (#{email})", name] },
+        { include_blank: "All clients", selected: params[:client] },
+        class: "field-input", style: "font-size: 0.8125rem; padding: 0.4375rem 0.625rem;", onchange: "this.form.requestSubmit()" %>
+
+    <%= f.select :loan_id,
+        @all_loans.map { |l| ["#{l.borrower_name} — #{l.property_address}", l.id] },
+        { include_blank: "All loans", selected: params[:loan_id] },
+        class: "field-input", style: "font-size: 0.8125rem; padding: 0.4375rem 0.625rem;", onchange: "this.form.requestSubmit()" %>
+
+    <div style="display: flex; gap: 0.5rem; align-items: center;">
+      <%= f.select :doc_type,
+          @used_doc_types.map { |dt| [LoanDocument::DOCUMENT_TYPES[dt] || dt.titleize, dt] },
+          { include_blank: "All types", selected: params[:doc_type] },
+          class: "field-input", style: "font-size: 0.8125rem; padding: 0.4375rem 0.625rem; flex: 1;", onchange: "this.form.requestSubmit()" %>
+      <% if has_filters %>
+        <%= link_to "Clear", admin_client_uploads_path(status: @status), style: "font-size: 0.75rem; color: var(--color-steel); white-space: nowrap;" %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# ── Cards ── %>
   <% if @uploads.any? %>
-    <div class="card" style="padding: 0; margin-top: 1.5rem;">
-      <div class="table-container" style="padding: 1rem 0 0; overflow-x: auto; -webkit-overflow-scrolling: touch;">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th style="padding-left: 2rem;">Client</th>
-              <th>Document</th>
-              <th>Type</th>
-              <th>Uploaded</th>
-              <th style="padding-right: 2rem;"></th>
-            </tr>
-          </thead>
-          <tbody>
-            <% @uploads.each do |upload| %>
-              <tr>
-                <td style="padding-left: 2rem;">
-                  <div style="font-weight: 600;"><%= upload.client_name %></div>
-                  <div class="text-small" style="color: var(--color-steel);"><%= upload.client_email %></div>
-                  <% if upload.client_phone.present? %>
-                    <div class="text-small" style="color: var(--color-steel);"><%= upload.client_phone %></div>
-                  <% end %>
-                </td>
-                <td>
-                  <% if upload.file.attached? %>
-                    <%= link_to (upload.name.presence || upload.file.filename), rails_blob_path(upload.file, disposition: "inline"), target: "_blank", style: "font-weight: 500;" %>
-                  <% else %>
-                    <span style="color: var(--color-steel);">No file</span>
-                  <% end %>
-                  <% if upload.description.present? %>
-                    <div class="text-small" style="color: var(--color-steel); margin-top: 0.25rem;"><%= truncate(upload.description, length: 80) %></div>
-                  <% end %>
-                </td>
-                <td>
-                  <span class="badge badge-navy" style="white-space: nowrap;"><%= upload.document_type_label %></span>
-                </td>
-                <td class="text-small">
-                  <%= upload.created_at.strftime("%b %-d, %Y") %>
-                  <div style="color: var(--color-steel);"><%= upload.created_at.strftime("%-I:%M %p") %></div>
-                </td>
-                <td style="padding-right: 2rem; text-align: right; white-space: nowrap;">
-                  <% if upload.pending? %>
-                    <%# ── Assign form ── %>
-                    <%= form_with url: assign_admin_client_upload_path(upload), method: :post, style: "display: inline-flex; gap: 0.5rem; align-items: center;" do |f| %>
-                      <%= f.select :loan_id, @loans.map { |l| ["#{l.borrower_name} — #{l.property_address}", l.id] },
-                          { include_blank: "Assign to loan..." },
-                          class: "field-input", style: "font-size: 0.75rem; padding: 0.375rem 0.5rem; width: auto; max-width: 14rem;" %>
-                      <%= f.submit "Assign", class: "btn-filled", style: "font-size: 0.75rem; padding: 0.375rem 0.75rem;" %>
-                    <% end %>
-                    <%= button_to "Reject", reject_admin_client_upload_path(upload), method: :post,
-                        class: "btn-filled btn-filled-ghost",
-                        style: "font-size: 0.75rem; padding: 0.375rem 0.75rem; color: var(--color-maroon); display: inline;",
-                        data: { turbo_confirm: "Reject this upload?" } %>
-                  <% elsif upload.assigned? %>
-                    <span class="badge badge-success">Assigned</span>
-                    <% if upload.loan %>
-                      <div class="text-small" style="margin-top: 0.25rem;">
-                        <%= link_to upload.loan.borrower_name, admin_loan_path(upload.loan) %>
-                      </div>
-                    <% end %>
-                  <% elsif upload.rejected? %>
-                    <span class="badge badge-danger">Rejected</span>
-                  <% end %>
-                </td>
-              </tr>
-            <% end %>
-          </tbody>
-        </table>
-      </div>
+    <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem;">
+      <% @uploads.each do |upload| %>
+        <%
+          days_ago = ((Time.current - upload.created_at) / 1.day).floor
+          age_color = if days_ago >= 7
+            "var(--color-maroon)"
+          elsif days_ago >= 2
+            "var(--color-warning-text, #92400e)"
+          else
+            "var(--color-steel)"
+          end
+        %>
+        <div class="card" style="padding: 0; overflow: hidden;">
+          <%# ── Top row: client info + document info ── %>
+          <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 2rem; padding: 1.5rem 2rem; align-items: start;">
+
+            <%# Client column %>
+            <div>
+              <div style="font-family: 'Barlow Condensed', sans-serif; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em; color: var(--color-steel); margin-bottom: 0.5rem;">Client</div>
+              <div style="font-weight: 600; font-size: 1rem;"><%= upload.client_name %></div>
+              <div style="font-size: 0.8125rem; color: var(--color-steel); margin-top: 0.125rem;"><%= upload.client_email %></div>
+              <% if upload.client_phone.present? %>
+                <div style="font-size: 0.8125rem; color: var(--color-steel); margin-top: 0.125rem;"><%= upload.client_phone %></div>
+              <% end %>
+            </div>
+
+            <%# Document column %>
+            <div>
+              <div style="font-family: 'Barlow Condensed', sans-serif; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em; color: var(--color-steel); margin-bottom: 0.5rem;">Document</div>
+              <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                <% if upload.file.attached? %>
+                  <a href="#" data-modal-target="upload-preview-<%= upload.id %>" style="font-weight: 600; font-size: 0.9375rem; color: var(--color-navy);">
+                    <%= upload.name.presence || upload.file.filename %>
+                  </a>
+                <% else %>
+                  <span style="color: var(--color-steel); font-size: 0.9375rem;">No file</span>
+                <% end %>
+                <span class="badge badge-navy"><%= upload.document_type_label %></span>
+              </div>
+              <% if upload.description.present? %>
+                <div style="font-size: 0.8125rem; color: var(--color-steel); margin-top: 0.375rem; line-height: 1.4;"><%= upload.description %></div>
+              <% end %>
+            </div>
+
+            <%# Date + age column %>
+            <div style="text-align: right; white-space: nowrap;">
+              <div style="font-family: 'Barlow Condensed', sans-serif; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em; color: var(--color-steel); margin-bottom: 0.5rem;">Uploaded</div>
+              <div style="font-size: 0.875rem; font-weight: 500;"><%= upload.created_at.strftime("%b %-d, %Y") %></div>
+              <div style="font-size: 0.75rem; color: var(--color-steel);"><%= upload.created_at.strftime("%-I:%M %p") %></div>
+              <% if upload.pending? %>
+                <div style="font-size: 0.6875rem; font-weight: 600; color: <%= age_color %>; margin-top: 0.375rem;">
+                  <%= days_ago == 0 ? "Today" : "#{days_ago} #{"day".pluralize(days_ago)} ago" %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+
+          <%# ── Action bar ── %>
+          <% if upload.pending? %>
+            <div style="padding: 0.875rem 2rem; background: var(--color-smoke, #f9fafb); border-top: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
+              <%= form_with url: assign_admin_client_upload_path(upload), method: :post, style: "display: flex; gap: 0.625rem; align-items: center; flex: 1;" do |f| %>
+                <%= f.select :loan_id,
+                    @loans.map { |l|
+                      label = "#{l.borrower_name} — #{l.property_address}"
+                      label += " (#{number_to_currency(l.loan_amount, precision: 0)})" if l.loan_amount.present?
+                      [label, l.id]
+                    },
+                    { include_blank: "Select a loan..." },
+                    class: "field-input", style: "font-size: 0.8125rem; padding: 0.5rem 0.75rem; flex: 1; max-width: 32rem;" %>
+                <%= f.submit "Assign to Loan", class: "btn-filled", style: "font-size: 0.75rem; padding: 0.5rem 1rem; white-space: nowrap;" %>
+              <% end %>
+              <%= button_to "Reject", reject_admin_client_upload_path(upload), method: :post,
+                  class: "btn-filled btn-filled-ghost",
+                  style: "font-size: 0.75rem; padding: 0.5rem 1rem; color: var(--color-maroon); margin-left: 0.75rem;",
+                  data: { turbo_confirm: "Reject this upload?" } %>
+            </div>
+          <% elsif upload.assigned? %>
+            <div style="padding: 0.875rem 2rem; background: var(--color-smoke, #f9fafb); border-top: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span class="badge badge-success">Assigned</span>
+                <% if upload.loan %>
+                  <span style="font-size: 0.8125rem;">
+                    <%= link_to upload.loan.borrower_name, admin_loan_path(upload.loan), style: "font-weight: 600; color: var(--color-navy);" %>
+                    <span style="color: var(--color-steel);">&mdash; <%= upload.loan.property_address %></span>
+                  </span>
+                <% end %>
+              </div>
+              <div style="font-size: 0.75rem; color: var(--color-steel); text-align: right;">
+                <% if upload.assigned_by_user %>
+                  Assigned by <%= upload.assigned_by_user.display_name %>
+                <% end %>
+                <% if upload.assigned_at %>
+                  on <%= upload.assigned_at.strftime("%b %-d, %Y at %-I:%M %p") %>
+                <% end %>
+              </div>
+            </div>
+          <% elsif upload.rejected? %>
+            <div style="padding: 0.875rem 2rem; background: var(--color-smoke, #f9fafb); border-top: 1px solid #e5e7eb; display: flex; align-items: center; gap: 0.75rem;">
+              <span class="badge badge-danger">Rejected</span>
+              <span style="font-size: 0.75rem; color: var(--color-steel);">
+                <%= upload.updated_at.strftime("%b %-d, %Y at %-I:%M %p") %>
+              </span>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
     </div>
   <% else %>
     <div class="card" style="margin-top: 1.5rem; text-align: center; padding: 3rem;">
-      <p style="color: var(--color-steel);">No <%= @status %> uploads.</p>
+      <p style="color: var(--color-steel);">
+        <% if has_filters %>
+          No <%= @status %> uploads matching your filters.
+          <%= link_to "Clear filters", admin_client_uploads_path(status: @status), style: "color: var(--color-navy); font-weight: 600;" %>
+        <% else %>
+          No <%= @status %> uploads.
+        <% end %>
+      </p>
     </div>
   <% end %>
 </div>
+
+<%# ── Preview Modals ── %>
+<% @uploads.each do |upload| %>
+  <% next unless upload.file.attached? %>
+  <div class="modal-overlay" id="upload-preview-<%= upload.id %>">
+    <div class="modal" style="max-width: 56rem; height: 85vh; display: flex; flex-direction: column; padding: 0;">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; flex-shrink: 0;">
+        <div>
+          <h3 class="heading-3" style="margin: 0;"><%= upload.name.presence || upload.file.filename %></h3>
+          <div style="font-size: 0.75rem; color: var(--color-steel); margin-top: 0.25rem;">
+            <%= upload.document_type_label %>
+            <% if upload.description.present? %> &middot; <%= upload.description %><% end %>
+            &middot; Uploaded by <%= upload.client_name %>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <%= link_to rails_blob_path(upload.file, disposition: "attachment"), title: "Download", style: "color: var(--color-navy); display: inline-flex;" do %>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <% end %>
+          <%= link_to rails_blob_path(upload.file, disposition: "inline"), target: "_blank", title: "Open in new tab", style: "color: var(--color-navy); display: inline-flex;" do %>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          <% end %>
+          <button data-modal-close style="font-size: 1.5rem; color: var(--color-steel); background: none; border: none; cursor: pointer; line-height: 1;">&times;</button>
+        </div>
+      </div>
+      <div style="flex: 1; overflow: hidden;">
+        <% if upload.file.content_type&.start_with?("image/") %>
+          <div style="height: 100%; display: flex; align-items: center; justify-content: center; padding: 1rem; background: var(--color-smoke, #f5f5f5);">
+            <%= image_tag rails_blob_path(upload.file), style: "max-width: 100%; max-height: 100%; object-fit: contain;" %>
+          </div>
+        <% elsif upload.file.content_type == "application/pdf" %>
+          <iframe src="<%= rails_blob_path(upload.file, disposition: "inline") %>" style="width: 100%; height: 100%; border: none;"></iframe>
+        <% else %>
+          <div style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--color-steel); gap: 1rem;">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <div style="font-size: 0.875rem;"><%= upload.file.filename %></div>
+            <div style="font-size: 0.75rem;">Preview not available for this file type</div>
+            <%= link_to "Download File", rails_blob_path(upload.file, disposition: "attachment"), class: "btn-filled", style: "font-size: 0.8125rem; padding: 0.5rem 1.25rem;" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>

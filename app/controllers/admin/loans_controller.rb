@@ -1,5 +1,5 @@
 class Admin::LoansController < Admin::BaseController
-  before_action :set_loan, only: [:show, :edit, :update, :destroy, :generate_statement]
+  before_action :set_loan, only: [:show, :edit, :update, :destroy, :generate_statement, :send_welcome_email]
 
   def index
     @loans = Loan.order(created_at: :desc)
@@ -27,6 +27,10 @@ class Admin::LoansController < Admin::BaseController
     else
       @loan.origination_date.beginning_of_month
     end
+
+    borrower_emails = @loan.borrowers.map(&:email).reject(&:blank?)
+    @default_recipient_email = borrower_emails.first.presence || @loan.borrower_email
+    @welcome_email_sends = @loan.welcome_email_sends.includes(:sent_by).order(created_at: :desc)
 
     @payments = @loan.payments.recent
     @statements = @loan.loan_statements.includes(:statement_sends).recent
@@ -70,6 +74,17 @@ class Admin::LoansController < Admin::BaseController
   def destroy
     @loan.destroy
     redirect_to admin_loans_path, notice: "Loan deleted."
+  end
+
+  def send_welcome_email
+    welcome_send = @loan.welcome_email_sends.create!(
+      sent_by: current_user,
+      sent_to: params[:sent_to],
+      cc_to: params[:cc_to]
+    )
+
+    LoanMailer.welcome_email(welcome_send).deliver_later
+    redirect_to admin_loan_path(@loan), notice: "Welcome email sent to #{welcome_send.sent_to}."
   end
 
   def generate_statement
