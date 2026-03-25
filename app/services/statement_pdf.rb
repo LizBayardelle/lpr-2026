@@ -102,6 +102,10 @@ class StatementPdf
       pdf.font("Helvetica", size: 9) do
         pdf.fill_color STEEL
         pdf.text @loan.property_address
+        if @loan.loan_number.present?
+          pdf.move_down 2
+          pdf.text "Loan #{@loan.loan_number}"
+        end
         pdf.fill_color SOOT
       end
     end

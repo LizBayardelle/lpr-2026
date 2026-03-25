@@ -8,7 +8,8 @@ Thank you for choosing Linchpin Realty. Below you'll find the details of your lo
 LOAN DETAILS
 ------------
 Property:         <%= @loan.property_address %>
-Loan Amount:      <%= number_to_currency(@loan.loan_amount) %>
+<% if @loan.loan_number.present? %>Loan Number:      <%= @loan.loan_number %>
+<% end %>Loan Amount:      <%= number_to_currency(@loan.loan_amount) %>
 Interest Rate:    <%= @loan.effective_interest_rate %>%
 Monthly Payment:  <%= number_to_currency(@loan.monthly_payment_amount) %>
 Origination Date: <%= @loan.origination_date.strftime("%b %-d, %Y") %>

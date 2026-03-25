@@ -2311,6 +2311,20 @@ a:hover {
   .wizard-step-label {
     font-size: 9px;
   }
+
+  /* Client dashboard responsive */
+  .dashboard-hero {
+    grid-template-columns: 1fr !important;
+    padding: 1.5rem !important;
+  }
+
+  .dashboard-hero-stats {
+    justify-content: flex-start !important;
+  }
+
+  .dashboard-actions {
+    grid-template-columns: 1fr !important;
+  }
 }
 
 /* ================================================================

@@ -16,7 +16,10 @@ class DashboardController < ApplicationController
     @uploads = ClientUpload.where(client_email: email).recent.limit(10)
 
     # Quick stats
-    @active_loans_count = @loans.where(status: "active").count
+    active_loans = @loans.where(status: "active")
+    @active_loans_count = active_loans.count
+    @total_balance = active_loans.sum { |l| l.current_balance }
+    @next_payment = active_loans.min_by(&:next_payment_date)
     @pending_uploads_count = @uploads.select(&:pending?).count
   end
 end

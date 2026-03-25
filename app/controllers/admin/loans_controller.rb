@@ -83,7 +83,8 @@ class Admin::LoansController < Admin::BaseController
       cc_to: params[:cc_to]
     )
 
-    LoanMailer.welcome_email(welcome_send).deliver_later
+    document_ids = Array(params[:document_ids]).map(&:to_i)
+    LoanMailer.welcome_email(welcome_send, document_ids: document_ids).deliver_later
     redirect_to admin_loan_path(@loan), notice: "Welcome email sent to #{welcome_send.sent_to}."
   end
 
@@ -127,7 +128,7 @@ class Admin::LoansController < Admin::BaseController
 
   def loan_params
     params.require(:loan).permit(
-      :borrower_name, :borrower_email, :borrower_phone, :borrower_address,
+      :borrower_name, :borrower_email, :borrower_phone, :borrower_address, :loan_number,
       :property_address, :loan_amount, :interest_rate, :loan_term_months,
       :origination_fee_percent, :origination_fee_flat, :origination_fee_type, :origination_fee_handling,
       :payment_type, :interest_calc_method,

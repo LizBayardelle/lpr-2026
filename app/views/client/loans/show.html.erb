@@ -1,0 +1,344 @@
+<% content_for :title, @loan.property_address %>
+
+<%
+  status_color = case @loan.status
+    when "active" then "success"
+    when "paid_off" then "neutral"
+    when "default", "foreclosure" then "danger"
+    when "extended" then "warning"
+    else "neutral"
+    end
+%>
+
+<div class="container-wide" style="padding-top: 6rem; padding-bottom: 6rem;">
+
+  <%# ── Breadcrumb ── %>
+  <div style="margin-bottom: 1.5rem;">
+    <a href="<%= dashboard_path %>" style="font-family: 'Barlow Condensed', sans-serif; font-size: 0.8125rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-steel); text-decoration: none;">
+      &larr; Back to Dashboard
+    </a>
+  </div>
+
+  <%# ── Navy Header ── %>
+  <div class="card-navy ctx-navy loan-header-grid" style="padding: 2rem 2.5rem; margin-bottom: 2rem;">
+    <div>
+      <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+        <h1 style="font-family: 'Barlow Condensed', sans-serif; font-size: 1.75rem; font-weight: 700; letter-spacing: 0.01em; text-transform: uppercase; color: #fff; margin: 0;">
+          <%= @loan.property_address %>
+        </h1>
+        <span class="badge badge-<%= status_color %>"><%= @loan.status.titleize %></span>
+      </div>
+      <div style="font-size: 0.8125rem; color: var(--color-concrete);"><%= @loan.borrower_name %></div>
+      <% if @loan.loan_number.present? %>
+        <div style="font-size: 0.8125rem; color: var(--color-concrete); margin-top: 0.25rem;">Loan #<%= @loan.loan_number %></div>
+      <% end %>
+    </div>
+    <div class="loan-header-dates">
+      <div>
+        <div style="font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em; color: var(--color-concrete); margin-bottom: 0.375rem;">Origination</div>
+        <div style="font-size: 1.0625rem; font-weight: 600; color: #fff; white-space: nowrap;"><%= @loan.origination_date.strftime("%b %-d, %Y") %></div>
+      </div>
+      <div>
+        <div style="font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em; color: var(--color-concrete); margin-bottom: 0.375rem;">Maturity</div>
+        <div style="font-size: 1.0625rem; font-weight: 600; color: #fff; white-space: nowrap;"><%= @loan.effective_maturity_date.strftime("%b %-d, %Y") %></div>
+      </div>
+    </div>
+  </div>
+
+  <%# ── Maturity Warning ── %>
+  <% if @loan.status == "active" && @loan.effective_maturity_date <= 60.days.from_now.to_date %>
+    <div class="card" style="padding: 1rem 1.5rem; margin-bottom: 2rem; border-left: 3px solid var(--color-caution); background: rgba(138, 109, 43, 0.04);">
+      <p style="color: var(--color-caution); font-weight: 600; font-size: 0.875rem; margin: 0;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 0.25rem;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Your loan matures on <%= @loan.effective_maturity_date.strftime("%B %-d, %Y") %>. Please contact us to discuss extension options.
+      </p>
+    </div>
+  <% end %>
+
+  <%# ── 3-Column Cards ── %>
+  <div class="loan-cards-row">
+
+    <%# Loan Details %>
+    <div class="card" style="padding: 1.75rem 2rem;">
+      <h3 class="heading-3" style="margin-bottom: 1.25rem;">Loan Details</h3>
+      <table style="width: 100%; font-size: 0.8125rem;">
+        <tr>
+          <td style="padding: 0.375rem 0; color: var(--color-steel);">Principal</td>
+          <td style="padding: 0.375rem 0; text-align: right; font-weight: 500;"><%= number_to_currency(@loan.loan_amount) %></td>
+        </tr>
+        <tr>
+          <td style="padding: 0.375rem 0; color: var(--color-steel);">Interest Rate</td>
+          <td style="padding: 0.375rem 0; text-align: right; font-weight: 500;"><%= @loan.effective_interest_rate %>%</td>
+        </tr>
+        <tr>
+          <td style="padding: 0.375rem 0; color: var(--color-steel);">Payment Type</td>
+          <td style="padding: 0.375rem 0; text-align: right; font-weight: 500;"><%= @loan.payment_type.titleize %></td>
+        </tr>
+        <tr>
+          <td style="padding: 0.375rem 0; color: var(--color-steel);">Term</td>
+          <td style="padding: 0.375rem 0; text-align: right; font-weight: 500;"><%= @loan.loan_term_months %> months</td>
+        </tr>
+      </table>
+    </div>
+
+    <%# Balance Summary %>
+    <div class="card" style="padding: 1.75rem 2rem;">
+      <h3 class="heading-3" style="margin-bottom: 1.25rem;">Balance Summary</h3>
+      <table style="width: 100%; font-size: 0.8125rem;">
+        <tr>
+          <td style="padding: 0.375rem 0; color: var(--color-steel);">Original Amount</td>
+          <td class="text-money" style="padding: 0.375rem 0; font-size: inherit;"><%= number_to_currency(@loan.loan_amount) %></td>
+        </tr>
+        <tr>
+          <td style="padding: 0.375rem 0; color: var(--color-steel);">Interest Accrued</td>
+          <td class="text-money" style="padding: 0.375rem 0; font-size: inherit;"><%= number_to_currency(@loan.total_interest_accrued) %></td>
+        </tr>
+        <tr>
+          <td style="padding: 0.375rem 0; color: var(--color-steel);">Total Payments</td>
+          <td class="text-money" style="padding: 0.375rem 0; font-size: inherit;">(<%= number_to_currency(@loan.total_payments_received) %>)</td>
+        </tr>
+        <tr style="border-top: 2px solid #000;">
+          <td style="padding: 0.625rem 0 0; font-weight: 600;">Current Balance</td>
+          <td class="text-money" style="padding: 0.625rem 0 0; font-weight: 600; font-size: inherit;"><%= number_to_currency(@loan.current_balance) %></td>
+        </tr>
+      </table>
+    </div>
+
+    <%# Next Payment %>
+    <div class="card" style="padding: 1.75rem 2rem;">
+      <h3 class="heading-3" style="margin-bottom: 1.25rem;">Next Payment</h3>
+      <table style="width: 100%; font-size: 0.8125rem;">
+        <% if @loan.status == "active" && @loan.next_payment_date.present? %>
+          <tr>
+            <td style="padding: 0.375rem 0; color: var(--color-steel);">Due Date</td>
+            <td style="padding: 0.375rem 0; text-align: right; font-weight: 500;"><%= @loan.next_payment_date.strftime("%b %-d, %Y") %></td>
+          </tr>
+        <% end %>
+        <tr>
+          <td style="padding: 0.375rem 0; color: var(--color-steel);">Amount Due</td>
+          <td class="text-money" style="padding: 0.375rem 0; font-size: inherit;"><%= number_to_currency(@loan.monthly_payment_amount) %></td>
+        </tr>
+        <tr>
+          <td style="padding: 0.25rem 0 0.25rem 0.75rem; color: var(--color-concrete);"><span style="color: var(--color-concrete); margin-right: 0.375rem;">&#x2514;</span> Interest</td>
+          <td class="text-money" style="padding: 0.25rem 0; font-size: inherit; color: var(--color-concrete);"><%= number_to_currency(@loan.monthly_interest_due) %></td>
+        </tr>
+        <% if @loan.payment_type == "fully_amortizing" %>
+          <tr>
+            <td style="padding: 0.25rem 0 0.25rem 0.75rem; color: var(--color-concrete);"><span style="color: var(--color-concrete); margin-right: 0.375rem;">&#x2514;</span> Principal</td>
+            <td class="text-money" style="padding: 0.25rem 0; font-size: inherit; color: var(--color-concrete);"><%= number_to_currency(@loan.monthly_payment_amount - @loan.monthly_interest_due) %></td>
+          </tr>
+        <% end %>
+        <% if @loan.grace_period_days.present? && @loan.late_fee_percent.present? && @loan.late_fee_percent > 0 %>
+          <tr>
+            <td colspan="2" style="padding: 0.75rem 0 0; color: var(--color-steel); font-size: 0.75rem; line-height: 1.4;">
+              Late fee of <%= @loan.late_fee_percent %>% applies after <%= @loan.grace_period_days %>-day grace period.
+            </td>
+          </tr>
+        <% end %>
+      </table>
+    </div>
+  </div>
+
+  <%# ── Tabbed Sections ── %>
+  <div data-tabs>
+    <div class="loan-tabs">
+      <button data-tab="payments" class="loan-tab active">Payments</button>
+      <button data-tab="statements" class="loan-tab">Statements</button>
+      <button data-tab="documents" class="loan-tab">Documents</button>
+    </div>
+
+    <%# Payments Tab %>
+    <div data-tab-panel="payments" class="loan-tab-panel active">
+      <div class="card" style="padding: 0; margin-top: 1.5rem;">
+        <div style="padding: 1.5rem 2rem 0;">
+          <h3 class="heading-3">Payment History</h3>
+        </div>
+        <% if @payments.any? %>
+          <div class="table-container" style="padding: 1rem 0 0; overflow-x: auto; -webkit-overflow-scrolling: touch;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="padding-left: 2rem;">Date</th>
+                  <th class="text-right">Amount</th>
+                  <th class="text-right">Interest</th>
+                  <th class="text-right">Principal</th>
+                  <th style="padding-left: 1.25rem;">Method</th>
+                  <th style="padding-right: 2rem;">Reference</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @payments.each do |payment| %>
+                  <tr>
+                    <td style="white-space: nowrap; padding-left: 2rem;"><%= payment.payment_date.strftime("%b %-d, %Y") %></td>
+                    <td class="text-money"><%= number_to_currency(payment.amount) %></td>
+                    <td class="text-money"><%= number_to_currency(payment.interest_amount) %></td>
+                    <td class="text-money"><%= number_to_currency(payment.principal_amount) %></td>
+                    <td style="padding-left: 1.25rem;"><%= payment.payment_method&.titleize %></td>
+                    <td style="padding-right: 2rem;"><%= payment.reference_number %></td>
+                  </tr>
+                <% end %>
+              </tbody>
+              <tfoot>
+                <tr style="font-weight: 600;">
+                  <td style="padding-left: 2rem;">Totals</td>
+                  <td class="text-money"><%= number_to_currency(@payments.sum(&:amount)) %></td>
+                  <td class="text-money"><%= number_to_currency(@payments.sum(&:interest_amount)) %></td>
+                  <td class="text-money"><%= number_to_currency(@payments.sum(&:principal_amount)) %></td>
+                  <td colspan="2"></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        <% else %>
+          <div style="padding: 2rem; text-align: center; color: var(--color-steel); font-size: 0.875rem;">
+            No payments recorded yet.
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <%# Statements Tab %>
+    <div data-tab-panel="statements" class="loan-tab-panel">
+      <div class="card" style="padding: 0; margin-top: 1.5rem;">
+        <div style="padding: 1.5rem 2rem 0;">
+          <h3 class="heading-3">Statements</h3>
+        </div>
+        <% if @statements.any? %>
+          <div class="table-container" style="padding: 1rem 0 0; overflow-x: auto; -webkit-overflow-scrolling: touch;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="padding-left: 2rem;">Period</th>
+                  <th class="text-right">Beginning Balance</th>
+                  <th class="text-right">Interest Due</th>
+                  <th class="text-right">Payments Received</th>
+                  <th class="text-right">Ending Balance</th>
+                  <th style="padding-right: 2rem;"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @statements.each do |statement| %>
+                  <tr style="cursor: pointer;" onclick="window.location='<%= client_loan_loan_statement_path(@loan, statement) %>'">
+                    <td style="white-space: nowrap; padding-left: 2rem; font-weight: 500;">
+                      <%= statement.period_start.strftime("%b %-d") %> &ndash; <%= statement.period_end.strftime("%b %-d, %Y") %>
+                    </td>
+                    <td class="text-money"><%= number_to_currency(statement.beginning_balance) %></td>
+                    <td class="text-money"><%= number_to_currency(statement.interest_due) %></td>
+                    <td class="text-money"><%= number_to_currency(statement.payments_received) %></td>
+                    <td class="text-money"><%= number_to_currency(statement.ending_balance) %></td>
+                    <td style="padding-right: 2rem; text-align: right; white-space: nowrap;" onclick="event.stopPropagation();">
+                      <a href="<%= client_loan_loan_statement_path(@loan, statement) %>" style="font-size: 0.8125rem; color: var(--color-navy); margin-right: 0.75rem;">View</a>
+                      <% if statement.pdf.attached? %>
+                        <%= link_to rails_blob_path(statement.pdf, disposition: "attachment"), style: "font-size: 0.8125rem; color: var(--color-navy); display: inline-flex; align-items: center; gap: 0.25rem;" do %>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                          PDF
+                        <% end %>
+                      <% end %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% else %>
+          <div style="padding: 2rem; text-align: center; color: var(--color-steel); font-size: 0.875rem;">
+            No statements available yet.
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <%# Documents Tab %>
+    <div data-tab-panel="documents" class="loan-tab-panel">
+      <div class="card" style="padding: 0; margin-top: 1.5rem;">
+        <div style="padding: 1.5rem 2rem 0;">
+          <h3 class="heading-3">Documents</h3>
+        </div>
+        <% if @documents.any? %>
+          <div class="table-container" style="padding: 1rem 0 0; overflow-x: auto; -webkit-overflow-scrolling: touch;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="padding-left: 2rem;">Name</th>
+                  <th>Type</th>
+                  <th>Description</th>
+                  <th>Date</th>
+                  <th style="padding-right: 2rem;"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @documents.each do |document| %>
+                  <tr>
+                    <td style="padding-left: 2rem; font-weight: 500;">
+                      <% if document.file.attached? %>
+                        <a href="#" data-modal-target="client-doc-<%= document.id %>" style="color: inherit; text-decoration: none; border-bottom: 1px dashed var(--color-concrete);">
+                          <%= document.name.presence || document.document_type.titleize %>
+                        </a>
+                      <% else %>
+                        <%= document.name.presence || document.document_type.titleize %>
+                      <% end %>
+                    </td>
+                    <td style="white-space: nowrap;"><span class="badge badge-neutral"><%= LoanDocument::DOCUMENT_TYPES[document.document_type] || document.document_type.titleize %></span></td>
+                    <td class="text-small"><%= document.description %></td>
+                    <td style="white-space: nowrap;"><%= document.created_at.strftime("%-m/%-d/%y") %></td>
+                    <td style="padding-right: 2rem; text-align: right;">
+                      <% if document.file.attached? %>
+                        <%= link_to rails_blob_path(document.file, disposition: "attachment"), style: "font-size: 0.8125rem; color: var(--color-navy); display: inline-flex; align-items: center; gap: 0.25rem;" do %>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                          Download
+                        <% end %>
+                      <% end %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% else %>
+          <div style="padding: 2rem; text-align: center; color: var(--color-steel); font-size: 0.875rem;">
+            No documents available yet.
+          </div>
+        <% end %>
+      </div>
+
+      <%# Document Preview Modals %>
+      <% @documents.select { |d| d.file.attached? }.each do |document| %>
+        <div class="modal-overlay" id="client-doc-<%= document.id %>">
+          <div class="modal" style="max-width: 56rem; height: 85vh; display: flex; flex-direction: column; padding: 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; flex-shrink: 0;">
+              <div>
+                <h3 class="heading-3" style="margin: 0;"><%= document.name.presence || document.document_type.titleize %></h3>
+                <div style="font-size: 0.75rem; color: var(--color-steel); margin-top: 0.25rem;">
+                  <%= LoanDocument::DOCUMENT_TYPES[document.document_type] || document.document_type.titleize %>
+                  <% if document.description.present? %> &middot; <%= document.description %><% end %>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <a href="<%= rails_blob_path(document.file, disposition: "attachment") %>" title="Download" style="color: var(--color-steel); text-decoration: none; font-size: 1.125rem; line-height: 1;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                </a>
+                <button data-modal-close style="background: none; border: none; cursor: pointer; color: var(--color-steel); font-size: 1.25rem; line-height: 1;">&times;</button>
+              </div>
+            </div>
+            <div style="flex: 1; overflow: hidden;">
+              <% content_type = document.file.content_type %>
+              <% if content_type.start_with?("image/") %>
+                <div style="height: 100%; display: flex; align-items: center; justify-content: center; padding: 1rem; background: var(--color-smoke);">
+                  <%= image_tag rails_blob_path(document.file), style: "max-width: 100%; max-height: 100%; object-fit: contain; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); border-radius: 4px;" %>
+                </div>
+              <% elsif content_type == "application/pdf" %>
+                <iframe src="<%= rails_blob_path(document.file, disposition: "inline") %>" style="width: 100%; height: 100%; border: none;"></iframe>
+              <% else %>
+                <div style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--color-steel); gap: 1rem;">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  <div style="font-size: 0.875rem;"><%= document.file.filename %></div>
+                  <a href="<%= rails_blob_path(document.file, disposition: "attachment") %>" class="btn-filled">Download File</a>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

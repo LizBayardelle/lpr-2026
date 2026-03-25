@@ -16,6 +16,12 @@
         <td style="padding: 0.5rem 0; color: #6b7280;">Property</td>
         <td style="padding: 0.5rem 0; text-align: right; font-weight: 600;"><%= @loan.property_address %></td>
       </tr>
+      <% if @loan.loan_number.present? %>
+        <tr style="border-top: 1px solid #e5e7eb;">
+          <td style="padding: 0.5rem 0; color: #6b7280;">Loan Number</td>
+          <td style="padding: 0.5rem 0; text-align: right; font-weight: 600;"><%= @loan.loan_number %></td>
+        </tr>
+      <% end %>
       <tr style="border-top: 1px solid #e5e7eb;">
         <td style="padding: 0.5rem 0; color: #6b7280;">Loan Amount</td>
         <td style="padding: 0.5rem 0; text-align: right; font-weight: 600;"><%= number_to_currency(@loan.loan_amount) %></td>

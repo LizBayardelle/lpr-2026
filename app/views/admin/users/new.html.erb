@@ -33,7 +33,7 @@
 
       <div class="field">
         <%= f.label :email %>
-        <%= f.email_field :email, class: "field-input", placeholder: "jane@example.com", required: true %>
+        <%= f.email_field :email, class: "field-input", placeholder: "jane@example.com", required: true, value: @user.email.presence || params[:email] %>
       </div>
 
       <div class="field">
@@ -82,7 +82,7 @@
             <select name="loan_id" id="loan_id" class="field-input">
               <option value="">None</option>
               <% @available_loans.each do |loan| %>
-                <option value="<%= loan.id %>"><%= loan.borrower_name %> - <%= loan.property_address %></option>
+                <option value="<%= loan.id %>" <%= "selected" if params[:loan_id].to_s == loan.id.to_s %>><%= loan.borrower_name %> - <%= loan.property_address %></option>
               <% end %>
             </select>
           </div>
@@ -91,7 +91,7 @@
             <select name="loan_role" id="loan_role" class="field-input">
               <option value="">Select role...</option>
               <% LoanRole::ROLES.each do |role| %>
-                <option value="<%= role %>"><%= role.titleize.gsub("_", " ") %></option>
+                <option value="<%= role %>" <%= "selected" if params[:loan_role] == role %>><%= role.titleize.gsub("_", " ") %></option>
               <% end %>
             </select>
           </div>

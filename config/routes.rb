@@ -22,6 +22,13 @@ Rails.application.routes.draw do
   # Client dashboard (requires login)
   get "dashboard", to: "dashboard#show", as: :dashboard
 
+  # Client loan views
+  namespace :client, path: "" do
+    resources :loans, only: [:show], path: "my-loans" do
+      resources :loan_statements, only: [:show], path: "statements"
+    end
+  end
+
   # Public document upload (no auth required)
   get "upload", to: "uploads#new", as: :upload
   post "upload", to: "uploads#create"

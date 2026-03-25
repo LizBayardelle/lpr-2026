@@ -14,6 +14,7 @@
   <div class="admin-breadcrumbs-inline loan-breadcrumb-bar">
     <%= render "admin/breadcrumbs", crumbs: [{ label: "Loans", path: admin_loans_path }, { label: @loan.borrower_name }] %>
     <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <%= btn_filled_tag "Invite Borrower", new_admin_user_path(loan_id: @loan.id, loan_role: "borrower", email: @loan.borrower_email), variant: "ghost", style: "font-size: 11px; padding: 6px 14px;" %>
       <%= btn_filled_tag "Send Welcome Email", "#", data: { modal_target: "send-welcome-email-modal" }, style: "font-size: 11px; padding: 6px 14px;" %>
       <%= btn_tag "Edit Loan", "#", data: { modal_target: "edit-loan-modal" } %>
     </div>
@@ -32,6 +33,9 @@
         <div style="font-size: 0.8125rem; color: var(--color-concrete); white-space: pre-line; line-height: 1.5;"><%= @loan.borrower_address %></div>
       <% end %>
       <div style="font-size: 0.8125rem; color: var(--color-concrete); margin-top: 0.25rem;"><%= @loan.property_address %></div>
+      <% if @loan.loan_number.present? %>
+        <div style="font-size: 0.8125rem; color: var(--color-concrete); margin-top: 0.25rem;">Loan <%= @loan.loan_number %></div>
+      <% end %>
     </div>
     <div class="loan-header-dates">
       <div>
@@ -668,14 +672,31 @@
                       data-reserve-notes-display="<%= reserve.id %>"
                       style="cursor: pointer; border-bottom: 1px dashed var(--color-concrete); padding-bottom: 1px;"
                       title="Click to edit"
-                      onclick="this.style.display='none'; this.nextElementSibling.style.display='flex'; this.nextElementSibling.querySelector('input').focus();"
+                      onclick="this.style.display='none'; this.nextElementSibling.style.display=''; this.nextElementSibling.focus();"
                     ><%= reserve.notes.present? ? reserve.notes : "<em style='color: var(--color-concrete)'>Add notes…</em>".html_safe %></span>
-                    <%= form_with url: admin_loan_loan_reserve_path(@loan, reserve), method: :patch, style: "display: none; align-items: center; gap: 4px;", data: { reserve_notes_form: reserve.id } do |f| %>
-                      <input type="text" name="loan_reserve[notes]" value="<%= reserve.notes %>" class="field-input" style="font-size: 0.75rem; padding: 2px 6px; flex: 1;"
-                        onkeydown="if(event.key==='Escape'){event.preventDefault(); this.closest('form').style.display='none'; this.closest('form').previousElementSibling.style.display='';}"
-                      >
-                      <button type="submit" class="btn-filled btn-filled-primary" style="font-size: 10px; padding: 2px 8px;">Save</button>
-                    <% end %>
+                    <input type="text" value="<%= reserve.notes %>" class="field-input" style="display: none; font-size: 0.75rem; padding: 2px 6px; width: 100%;"
+                      data-original-value="<%= reserve.notes %>"
+                      data-update-url="<%= admin_loan_loan_reserve_path(@loan, reserve) %>"
+                      onblur="
+                        var input = this;
+                        var display = input.previousElementSibling;
+                        if (input.value !== input.dataset.originalValue) {
+                          var token = document.querySelector('meta[name=csrf-token]').content;
+                          fetch(input.dataset.updateUrl, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token },
+                            body: JSON.stringify({ loan_reserve: { notes: input.value } })
+                          }).then(function() {
+                            display.textContent = input.value || '';
+                            if (!input.value) display.innerHTML = '<em style=\'color: var(--color-concrete)\'>Add notes…</em>';
+                            input.dataset.originalValue = input.value;
+                          });
+                        }
+                        input.style.display = 'none';
+                        display.style.display = '';
+                      "
+                      onkeydown="if(event.key==='Escape'){this.value=this.dataset.originalValue; this.blur();} if(event.key==='Enter'){this.blur();}"
+                    >
                   </td>
                   <td style="display: flex; gap: 0.5rem; flex-wrap: wrap; padding-right: 2rem;">
                     <% if reserve.status == "active" && reserve.remaining_balance > 0 %>
