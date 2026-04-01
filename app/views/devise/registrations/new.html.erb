@@ -43,6 +43,8 @@
         <%= f.password_field :password_confirmation, autocomplete: "new-password", class: "field-input" %>
       </div>
 
+      <%= recaptcha_v3(action: "signup", site_key: ENV.fetch("RECAPTCHA_SITE_KEY", "")) if ENV["RECAPTCHA_SITE_KEY"].present? %>
+
       <div class="form-actions">
         <button type="submit" class="btn" style="width: 100%; justify-content: center;">
           <span class="corners-t"></span>

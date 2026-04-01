@@ -106,9 +106,9 @@ class Loan < ApplicationRecord
     payments.sum(:amount)
   end
 
-  # Monthly interest due based on current balance
+  # Monthly interest due based on principal balance (not total owed)
   def monthly_interest_due(balance = nil)
-    balance ||= current_balance
+    balance ||= funded_amount - total_principal_paid
     case interest_calc_method
     when "30_360"
       (balance * interest_rate / 100 / 12).round(2)
@@ -134,13 +134,13 @@ class Loan < ApplicationRecord
 
   # Monthly payment amount (interest-only or amortized)
   def monthly_payment_amount
+    bal = funded_amount - total_principal_paid
     if payment_type == "interest_only"
-      monthly_interest_due
+      monthly_interest_due(bal)
     else
       # Standard amortization formula
       r = interest_rate / 100 / 12
       n = loan_term_months
-      bal = current_balance
       (bal * r * (1 + r)**n / ((1 + r)**n - 1)).round(2)
     end
   end
