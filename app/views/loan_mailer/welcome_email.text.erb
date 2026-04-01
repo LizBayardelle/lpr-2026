@@ -1,12 +1,16 @@
-LINCHPIN REALTY — WELCOME
+LINCHPIN REALTY
 =========================
 
 Hi <%= @loan.borrower_name %>,
 
 Thank you for choosing Linchpin Realty. Below you'll find the details of your loan along with all available payment options.
+<% if @custom_message.present? %>
 
-LOAN DETAILS
-------------
+<%= @custom_message %>
+<% end %>
+
+LOAN INFORMATION
+================
 Property:         <%= @loan.property_address %>
 <% if @loan.loan_number.present? %>Loan Number:      <%= @loan.loan_number %>
 <% end %>Loan Amount:      <%= number_to_currency(@loan.loan_amount) %>
@@ -17,10 +21,9 @@ Maturity Date:    <%= @loan.effective_maturity_date.strftime("%b %-d, %Y") %>
 <% if @loan.first_payment_date.present? %>First Payment:    <%= @loan.first_payment_date.strftime("%b %-d, %Y") %>
 <% end %>
 
-Please include the borrower's name and loan number with all payments.
-
 PAYMENT OPTIONS
 ===============
+Please include the borrower's name and loan number with all payments.
 
 ZELLE
 -----
@@ -53,9 +56,27 @@ Make your check out to Linchpin Realty and include the borrower's name and
 loan number in the memo section. Mail to:
 26895 Aliso Creek Road, B-62, Aliso Viejo, CA 92656
 
-A PDF with these payment options is also attached for your records.
+ATTACHED DOCUMENTS
+==================
+The following documents are attached to this email for your records:
+- Payment Options
+<% @attached_documents.each do |doc_name| %>- <%= doc_name %>
+<% end %>
 
-Questions? Contact us at anthony@linchpinrealty.com or 949-524-1246.
+CLIENT PORTAL
+=============
+If you haven't already, you'll receive an invitation to create an account
+on our client portal. Once set up, you'll be able to view your loan details,
+track your transaction history, and access your statements and documents
+at any time.
+
+We appreciate your business and are here to help every step of the way.
+If you have any questions about your loan, payments, or anything else,
+don't hesitate to reach out.
+
+Best regards,
+The Linchpin Realty Team
+anthony@linchpinrealty.com | 949-524-1246
 
 —
 Linchpin Realty — Private Lending Solutions

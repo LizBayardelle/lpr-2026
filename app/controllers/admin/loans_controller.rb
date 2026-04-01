@@ -29,7 +29,7 @@ class Admin::LoansController < Admin::BaseController
     end
 
     borrower_emails = @loan.borrowers.map(&:email).reject(&:blank?)
-    @default_recipient_email = borrower_emails.first.presence || @loan.borrower_email
+    @default_recipient_email = borrower_emails.first.presence || @loan.contact_email
     @welcome_email_sends = @loan.welcome_email_sends.includes(:sent_by).order(created_at: :desc)
 
     @payments = @loan.payments.recent
@@ -80,7 +80,8 @@ class Admin::LoansController < Admin::BaseController
     welcome_send = @loan.welcome_email_sends.create!(
       sent_by: current_user,
       sent_to: params[:sent_to],
-      cc_to: params[:cc_to]
+      cc_to: params[:cc_to],
+      custom_message: params[:custom_message]
     )
 
     document_ids = Array(params[:document_ids]).map(&:to_i)
@@ -129,7 +130,10 @@ class Admin::LoansController < Admin::BaseController
   def loan_params
     params.require(:loan).permit(
       :borrower_name, :borrower_email, :borrower_phone, :borrower_address, :loan_number,
-      :property_address, :loan_amount, :interest_rate, :loan_term_months,
+      :responsible_party_name, :responsible_party_email, :responsible_party_phone, :responsible_party_address,
+      :property_address, :property_type, :property_subtype, :property_valuation,
+      :property_taxes_last_paid_on, :property_taxes_next_due_on, :property_tax_notes,
+      :loan_amount, :interest_rate, :loan_term_months,
       :origination_fee_percent, :origination_fee_flat, :origination_fee_type, :origination_fee_handling,
       :payment_type, :interest_calc_method,
       :origination_date, :maturity_date, :first_payment_date,

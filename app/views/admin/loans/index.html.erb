@@ -55,9 +55,17 @@
             <tr>
               <td style="padding-left: 2rem;">
                 <%= link_to loan.borrower_name, admin_loan_path(loan), style: "font-weight: 700;" %>
+                <% if loan.responsible_party_name.present? %>
+                  <div class="text-small" style="color: var(--color-steel); margin-top: 1px;">c/o <%= loan.responsible_party_name %></div>
+                <% end %>
               </td>
               <td class="text-small"><%= loan.loan_number %></td>
-              <td class="text-small"><%= loan.property_address %></td>
+              <td class="text-small">
+                <%= loan.property_address %>
+                <% if loan.property_type.present? %>
+                  <div style="margin-top: 2px;"><span class="badge badge-neutral"><%= loan.property_type_label %></span></div>
+                <% end %>
+              </td>
               <td class="text-money"><%= number_to_currency(loan.current_balance) %></td>
               <td class="text-right"><%= loan.effective_interest_rate %>%</td>
               <td style="white-space: nowrap;">

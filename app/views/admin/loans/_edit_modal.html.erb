@@ -1,7 +1,10 @@
 <div class="modal-overlay" id="edit-loan-modal">
   <div class="modal modal-wide">
     <div class="modal-header">
-      <h2 class="heading-2">Edit Loan</h2>
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <h2 class="heading-2">Edit Loan</h2>
+        <a href="#" class="btn-filled btn-filled-danger" style="font-size: 10px; padding: 4px 10px;" data-delete-loan="<%= admin_loan_path(@loan) %>">Delete Loan</a>
+      </div>
       <button type="button" data-modal-close>&times;</button>
     </div>
 
@@ -16,23 +19,32 @@
             </button>
             <button type="button" data-wizard-step class="wizard-step">
               <span class="wizard-step-number">2</span>
-              <span class="wizard-step-label">Loan Terms</span>
+              <span class="wizard-step-label">Contact</span>
             </button>
             <button type="button" data-wizard-step class="wizard-step">
               <span class="wizard-step-number">3</span>
-              <span class="wizard-step-label">Dates & Fees</span>
+              <span class="wizard-step-label">Property</span>
             </button>
             <button type="button" data-wizard-step class="wizard-step">
               <span class="wizard-step-number">4</span>
+              <span class="wizard-step-label">Loan Terms</span>
+            </button>
+            <button type="button" data-wizard-step class="wizard-step">
+              <span class="wizard-step-number">5</span>
+              <span class="wizard-step-label">Dates & Fees</span>
+            </button>
+            <button type="button" data-wizard-step class="wizard-step">
+              <span class="wizard-step-number">6</span>
               <span class="wizard-step-label">Status & Notes</span>
             </button>
           </div>
 
-          <%# ── Step 1: Borrower ── %>
+          <%# ── Step 1: Borrower (Legal Entity) ── %>
           <div data-wizard-panel class="wizard-panel active">
+            <p class="field-hint" style="margin-bottom: 1rem;">Legal borrower name as shown on the settlement statement.</p>
             <div class="field-row">
               <div class="field">
-                <%= f.label :borrower_name, "Borrower Name" %>
+                <%= f.label :borrower_name, "Legal Borrower Name" %>
                 <%= f.text_field :borrower_name, class: "field-input" %>
               </div>
               <div class="field">
@@ -54,18 +66,85 @@
               <%= f.label :borrower_address, "Mailing Address" %>
               <%= f.text_field :borrower_address, class: "field-input" %>
             </div>
+
+            <div class="wizard-nav">
+              <div class="wizard-nav-spacer"></div>
+              <button type="button" class="btn-filled btn-filled-primary" data-wizard-nav="next">Continue</button>
+            </div>
+          </div>
+
+          <%# ── Step 2: Responsible Party ── %>
+          <div data-wizard-panel class="wizard-panel">
+            <p class="field-hint" style="margin-bottom: 1rem;">The individual to contact about this loan. Leave blank if same as borrower.</p>
+            <div class="field-row">
+              <div class="field">
+                <%= f.label :responsible_party_name, "Name" %>
+                <%= f.text_field :responsible_party_name, class: "field-input" %>
+              </div>
+              <div class="field">
+                <%= f.label :responsible_party_email, "Email" %>
+                <%= f.email_field :responsible_party_email, class: "field-input" %>
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <%= f.label :responsible_party_phone, "Phone" %>
+                <%= f.text_field :responsible_party_phone, class: "field-input" %>
+              </div>
+              <div class="field">
+                <%= f.label :responsible_party_address, "Mailing Address" %>
+                <%= f.text_field :responsible_party_address, class: "field-input" %>
+              </div>
+            </div>
+
+            <div class="wizard-nav">
+              <button type="button" class="btn-filled btn-filled-ghost" data-wizard-nav="prev">Back</button>
+              <button type="button" class="btn-filled btn-filled-primary" data-wizard-nav="next">Continue</button>
+            </div>
+          </div>
+
+          <%# ── Step 3: Property ── %>
+          <div data-wizard-panel class="wizard-panel">
             <div class="field">
               <%= f.label :property_address, "Property Address" %>
               <%= f.text_field :property_address, class: "field-input" %>
             </div>
+            <div class="field-row-3">
+              <div class="field">
+                <%= f.label :property_type, "Type" %>
+                <%= f.select :property_type, Loan::PROPERTY_TYPES.map { |k, v| [v, k] }, { include_blank: "Select..." }, class: "field-input" %>
+              </div>
+              <div class="field">
+                <%= f.label :property_subtype, "Subtype" %>
+                <%= f.select :property_subtype, Loan::PROPERTY_SUBTYPES.map { |k, v| [v, k] }, { include_blank: "Select..." }, class: "field-input" %>
+              </div>
+              <div class="field">
+                <%= f.label :property_valuation, "Valuation ($)" %>
+                <%= f.number_field :property_valuation, step: 0.01, class: "field-input" %>
+              </div>
+            </div>
+            <div class="field-row-3">
+              <div class="field">
+                <%= f.label :property_taxes_last_paid_on, "Taxes Last Paid" %>
+                <%= f.date_field :property_taxes_last_paid_on, class: "field-input" %>
+              </div>
+              <div class="field">
+                <%= f.label :property_taxes_next_due_on, "Taxes Next Due" %>
+                <%= f.date_field :property_taxes_next_due_on, class: "field-input" %>
+              </div>
+              <div class="field">
+                <%= f.label :property_tax_notes, "Tax Notes" %>
+                <%= f.text_field :property_tax_notes, class: "field-input" %>
+              </div>
+            </div>
 
             <div class="wizard-nav">
-              <div class="wizard-nav-spacer"></div>
-              <button type="button" class="btn-filled" data-wizard-nav="next">Continue</button>
+              <button type="button" class="btn-filled btn-filled-ghost" data-wizard-nav="prev">Back</button>
+              <button type="button" class="btn-filled btn-filled-primary" data-wizard-nav="next">Continue</button>
             </div>
           </div>
 
-          <%# ── Step 2: Loan Terms ── %>
+          <%# ── Step 4: Loan Terms ── %>
           <div data-wizard-panel class="wizard-panel">
             <div class="field-row-3">
               <div class="field">
@@ -94,11 +173,11 @@
 
             <div class="wizard-nav">
               <button type="button" class="btn-filled btn-filled-ghost" data-wizard-nav="prev">Back</button>
-              <button type="button" class="btn-filled" data-wizard-nav="next">Continue</button>
+              <button type="button" class="btn-filled btn-filled-primary" data-wizard-nav="next">Continue</button>
             </div>
           </div>
 
-          <%# ── Step 3: Dates & Fees ── %>
+          <%# ── Step 5: Dates & Fees ── %>
           <div data-wizard-panel class="wizard-panel">
             <div class="field-row-3">
               <div class="field">
@@ -155,11 +234,11 @@
 
             <div class="wizard-nav">
               <button type="button" class="btn-filled btn-filled-ghost" data-wizard-nav="prev">Back</button>
-              <button type="button" class="btn-filled" data-wizard-nav="next">Continue</button>
+              <button type="button" class="btn-filled btn-filled-primary" data-wizard-nav="next">Continue</button>
             </div>
           </div>
 
-          <%# ── Step 4: Status & Notes ── %>
+          <%# ── Step 6: Status & Notes ── %>
           <div data-wizard-panel class="wizard-panel">
             <div class="field">
               <%= f.label :status, "Loan Status" %>
@@ -178,9 +257,20 @@
         </div>
       <% end %>
 
-      <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
-        <%= button_to "Delete Loan", admin_loan_path(@loan), method: :delete, class: "btn-filled btn-filled-danger", style: "font-size: 11px; padding: 6px 14px;", data: { turbo_confirm: "Are you sure? This will delete the loan and all associated records." } %>
-      </div>
+      <script>
+        document.addEventListener("click", function(e) {
+          var el = e.target.closest("[data-delete-loan]");
+          if (!el) return;
+          e.preventDefault();
+          if (!confirm("Are you sure? This will delete the loan and all associated records.")) return;
+          var token = document.querySelector('meta[name="csrf-token"]').content;
+          fetch(el.dataset.deleteLoan, {
+            method: "DELETE",
+            headers: { "X-CSRF-Token": token, "Accept": "text/html" },
+            redirect: "follow"
+          }).then(function() { window.location = "<%= admin_loans_path %>"; });
+        });
+      </script>
     </div>
   </div>
 </div>

@@ -12,6 +12,36 @@ class Loan < ApplicationRecord
   has_many :loan_roles, dependent: :destroy
   has_many :users, through: :loan_roles
 
+  PROPERTY_TYPES = {
+    "residential" => "Residential",
+    "commercial" => "Commercial",
+    "industrial" => "Industrial",
+    "land" => "Land",
+    "mixed_use" => "Mixed Use",
+    "multifamily" => "Multifamily",
+  }.freeze
+
+  PROPERTY_SUBTYPES = {
+    "single_family" => "Single Family",
+    "condo" => "Condo/Townhome",
+    "duplex" => "Duplex",
+    "triplex" => "Triplex",
+    "fourplex" => "Fourplex",
+    "apartment" => "Apartment Complex",
+    "office" => "Office",
+    "retail" => "Retail",
+    "warehouse" => "Warehouse",
+    "hotel" => "Hotel/Hospitality",
+    "restaurant" => "Restaurant",
+    "medical" => "Medical/Healthcare",
+    "self_storage" => "Self Storage",
+    "specialty" => "Specialty",
+    "historical" => "Historical",
+    "vacant_land" => "Vacant Land",
+    "farm" => "Farm/Agricultural",
+    "other" => "Other",
+  }.freeze
+
   after_create_commit :post_disbursement_to_ledger
 
   def users_with_role(role)
@@ -42,6 +72,9 @@ class Loan < ApplicationRecord
   validates :status, inclusion: { in: %w[active paid_off default foreclosure extended] }
   validates :origination_fee_type, inclusion: { in: %w[percent flat] }
   validates :origination_fee_handling, inclusion: { in: %w[net_funded collected_separately] }
+  validates :property_type, inclusion: { in: PROPERTY_TYPES.keys }, allow_blank: true
+  validates :property_subtype, inclusion: { in: PROPERTY_SUBTYPES.keys }, allow_blank: true
+  validates :property_valuation, numericality: { greater_than: 0 }, allow_nil: true
 
   scope :active, -> { where(status: "active") }
   scope :defaulted, -> { where(status: "default") }
@@ -293,6 +326,27 @@ class Loan < ApplicationRecord
 
   def display_name
     "#{borrower_name} - #{property_address}"
+  end
+
+  # The primary contact for this loan — responsible party if set, else borrower info
+  def contact_name
+    responsible_party_name.presence || borrower_name
+  end
+
+  def contact_email
+    responsible_party_email.presence || borrower_email
+  end
+
+  def contact_phone
+    responsible_party_phone.presence || borrower_phone
+  end
+
+  def property_type_label
+    PROPERTY_TYPES[property_type] || property_type&.titleize
+  end
+
+  def property_subtype_label
+    PROPERTY_SUBTYPES[property_subtype] || property_subtype&.titleize
   end
 
   private

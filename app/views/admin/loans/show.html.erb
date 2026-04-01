@@ -13,8 +13,8 @@
 <div class="container-wide" style="padding-top: 6rem; padding-bottom: 6rem;">
   <div class="admin-breadcrumbs-inline loan-breadcrumb-bar">
     <%= render "admin/breadcrumbs", crumbs: [{ label: "Loans", path: admin_loans_path }, { label: @loan.borrower_name }] %>
-    <div style="display: flex; align-items: center; gap: 0.75rem;">
-      <%= btn_filled_tag "Invite Borrower", new_admin_user_path(loan_id: @loan.id, loan_role: "borrower", email: @loan.borrower_email), variant: "ghost", style: "font-size: 11px; padding: 6px 14px;" %>
+    <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+      <%= btn_filled_tag "Invite Borrower", new_admin_user_path(loan_id: @loan.id, loan_role: "borrower", email: @loan.contact_email), variant: "ghost", style: "font-size: 11px; padding: 6px 14px;" %>
       <%= btn_filled_tag "Send Welcome Email", "#", data: { modal_target: "send-welcome-email-modal" }, style: "font-size: 11px; padding: 6px 14px;" %>
       <%= btn_tag "Edit Loan", "#", data: { modal_target: "edit-loan-modal" } %>
     </div>
@@ -29,10 +29,27 @@
         </h1>
         <span class="badge badge-<%= status_color %>"><%= @loan.status.titleize %></span>
       </div>
+      <% if @loan.responsible_party_name.present? %>
+        <div style="font-size: 0.8125rem; color: #fff; margin-bottom: 0.5rem;">
+          <span style="color: var(--color-concrete);">Contact:</span>
+          <%= @loan.responsible_party_name %>
+          <% if @loan.responsible_party_phone.present? %>
+            <span style="color: var(--color-concrete); margin: 0 0.25rem;">&middot;</span><%= @loan.responsible_party_phone %>
+          <% end %>
+          <% if @loan.responsible_party_email.present? %>
+            <span style="color: var(--color-concrete); margin: 0 0.25rem;">&middot;</span><%= @loan.responsible_party_email %>
+          <% end %>
+        </div>
+      <% end %>
       <% if @loan.borrower_address.present? %>
         <div style="font-size: 0.8125rem; color: var(--color-concrete); white-space: pre-line; line-height: 1.5;"><%= @loan.borrower_address %></div>
       <% end %>
-      <div style="font-size: 0.8125rem; color: var(--color-concrete); margin-top: 0.25rem;"><%= @loan.property_address %></div>
+      <div style="font-size: 0.8125rem; color: var(--color-concrete); margin-top: 0.25rem;">
+        <%= @loan.property_address %>
+        <% if @loan.property_type.present? %>
+          <span style="margin-left: 0.5rem;" class="badge badge-neutral"><%= @loan.property_type_label %><%= " / #{@loan.property_subtype_label}" if @loan.property_subtype.present? %></span>
+        <% end %>
+      </div>
       <% if @loan.loan_number.present? %>
         <div style="font-size: 0.8125rem; color: var(--color-concrete); margin-top: 0.25rem;">Loan <%= @loan.loan_number %></div>
       <% end %>
@@ -46,8 +63,27 @@
         <div style="font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em; color: var(--color-concrete); margin-bottom: 0.375rem;">Maturity</div>
         <div style="font-size: 1.0625rem; font-weight: 600; color: #fff; white-space: nowrap;"><%= @loan.effective_maturity_date.strftime("%b %-d, %Y") %></div>
       </div>
+      <% if @loan.property_valuation.present? %>
+        <div>
+          <div style="font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em; color: var(--color-concrete); margin-bottom: 0.375rem;">Valuation</div>
+          <div style="font-size: 1.0625rem; font-weight: 600; color: #fff; white-space: nowrap;"><%= number_to_currency(@loan.property_valuation) %></div>
+        </div>
+      <% end %>
     </div>
   </div>
+
+  <%# ── Property Tax Alert ── %>
+  <% if @loan.property_taxes_next_due_on.present? && @loan.property_taxes_next_due_on <= 30.days.from_now.to_date %>
+    <div class="card tax-alert-bar" style="padding: 0.875rem 1.5rem; margin-bottom: 1.5rem; border-left: 3px solid var(--color-caution); background: rgba(138, 109, 43, 0.04); display: flex; justify-content: space-between; align-items: center;">
+      <p style="color: var(--color-caution); font-weight: 600; font-size: 0.8125rem; margin: 0;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 0.25rem;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Property taxes due <%= @loan.property_taxes_next_due_on.strftime("%b %-d, %Y") %>
+        <% if @loan.property_tax_notes.present? %>
+          <span style="font-weight: 400; color: var(--color-steel); margin-left: 0.5rem;">&mdash; <%= @loan.property_tax_notes %></span>
+        <% end %>
+      </p>
+    </div>
+  <% end %>
 
   <%# ── Loan Details + Current Balance + Payment Info — 3-column row ── %>
   <div class="loan-cards-row">
@@ -88,35 +124,57 @@
       </table>
     </div>
 
-    <%# Current Balance %>
+    <%# Activity to Date %>
     <% draws_total = @draws.where(status: "funded").sum(:amount) %>
+    <% principal_balance = @loan.funded_amount - @loan.total_principal_paid %>
+    <% interest_earned = @loan.total_interest_accrued %>
+    <% interest_paid = @loan.total_interest_paid %>
+    <% interest_accrued = interest_earned - interest_paid %>
     <div class="card" style="padding: 1.75rem 2rem;">
       <h3 class="heading-3" style="margin-bottom: 1.25rem;">Activity to Date</h3>
       <table style="width: 100%; font-size: 0.8125rem;">
+        <%# ── Principal ── %>
         <tr>
-          <td style="padding: 0.375rem 0; color: var(--color-steel);">Original Amount</td>
-          <td class="text-money" style="padding: 0.375rem 0; font-size: inherit;"><%= number_to_currency(@loan.loan_amount) %></td>
+          <td style="padding: 0.375rem 0; font-weight: 600;">Original Principal</td>
+          <td class="text-money" style="padding: 0.375rem 0; font-weight: 600; font-size: inherit;"><%= number_to_currency(@loan.loan_amount) %></td>
         </tr>
         <% if draws_total > 0 %>
           <tr>
-            <td style="padding: 0.375rem 0; color: var(--color-steel);">Draws Funded</td>
-            <td class="text-money" style="padding: 0.375rem 0; font-size: inherit;">+ <%= number_to_currency(draws_total) %></td>
+            <td style="padding: 0.25rem 0 0.25rem 0.75rem; color: var(--color-concrete); font-size: 0.75rem;"><span style="margin-right: 0.375rem;">&#x2514;</span> Draws Added</td>
+            <td class="text-money" style="padding: 0.25rem 0; font-size: 0.75rem; color: var(--color-steel);">+ <%= number_to_currency(draws_total) %></td>
+          </tr>
+        <% end %>
+        <% if @loan.total_principal_paid > 0 %>
+          <tr>
+            <td style="padding: 0.25rem 0 0.25rem 0.75rem; color: var(--color-concrete); font-size: 0.75rem;"><span style="margin-right: 0.375rem;">&#x2514;</span> Paid Down</td>
+            <td class="text-money" style="padding: 0.25rem 0; font-size: 0.75rem; color: var(--color-steel);">(<%= number_to_currency(@loan.total_principal_paid) %>)</td>
           </tr>
         <% end %>
         <tr>
-          <td style="padding: 0.375rem 0; color: var(--color-steel);">Interest Accrued</td>
-          <td class="text-money" style="padding: 0.375rem 0; font-size: inherit;"><%= number_to_currency(@loan.total_interest_accrued) %></td>
+          <td style="padding: 0.25rem 0 0.25rem 0.75rem; color: var(--color-navy); font-size: 0.75rem; font-weight: 600;"><span style="margin-right: 0.375rem;">&#x2514;</span> Balance</td>
+          <td class="text-money" style="padding: 0.25rem 0; font-size: 0.75rem; color: var(--color-navy); font-weight: 600;"><%= number_to_currency(principal_balance) %></td>
         </tr>
+
+        <%# ── Interest ── %>
+        <tr>
+          <td style="padding: 0.75rem 0 0.375rem; font-weight: 600;">Interest Earned</td>
+          <td class="text-money" style="padding: 0.75rem 0 0.375rem; font-weight: 600; font-size: inherit;"><%= number_to_currency(interest_earned) %></td>
+        </tr>
+        <tr>
+          <td style="padding: 0.25rem 0 0.25rem 0.75rem; color: var(--color-concrete); font-size: 0.75rem;"><span style="margin-right: 0.375rem;">&#x2514;</span> Paid</td>
+          <td class="text-money" style="padding: 0.25rem 0; font-size: 0.75rem; color: var(--color-steel);">(<%= number_to_currency(interest_paid) %>)</td>
+        </tr>
+        <tr>
+          <td style="padding: 0.25rem 0 0.25rem 0.75rem; color: var(--color-navy); font-size: 0.75rem; font-weight: 600;"><span style="margin-right: 0.375rem;">&#x2514;</span> Accrued</td>
+          <td class="text-money" style="padding: 0.25rem 0; font-size: 0.75rem; color: var(--color-navy); font-weight: 600;"><%= number_to_currency(interest_accrued) %></td>
+        </tr>
+
         <% if @loan.total_fees > 0 %>
           <tr>
-            <td style="padding: 0.375rem 0; color: var(--color-steel);">Fees Assessed</td>
-            <td class="text-money" style="padding: 0.375rem 0; font-size: inherit;"><%= number_to_currency(@loan.total_fees) %></td>
+            <td style="padding: 0.75rem 0 0.375rem; color: var(--color-steel);">Fees Assessed</td>
+            <td class="text-money" style="padding: 0.75rem 0 0.375rem; font-size: inherit;"><%= number_to_currency(@loan.total_fees) %></td>
           </tr>
         <% end %>
-        <tr>
-          <td style="padding: 0.375rem 0; color: var(--color-steel);">Total Payments</td>
-          <td class="text-money" style="padding: 0.375rem 0; font-size: inherit;">(<%= number_to_currency(@loan.total_payments_received) %>)</td>
-        </tr>
         <% active_reserves = @loan.loan_reserves.active %>
         <% if active_reserves.any? %>
           <tr>
@@ -124,13 +182,9 @@
             <td class="text-money" style="padding: 0.375rem 0; font-size: inherit;"><%= number_to_currency(active_reserves.sum(&:remaining_balance)) %></td>
           </tr>
         <% end %>
-        <tr style="border-top: 2px solid #000;">
-          <td style="padding: 0.625rem 0 0; font-weight: 600;">Amount Owed</td>
-          <td class="text-money" style="padding: 0.625rem 0 0; font-weight: 600; font-size: inherit;"><%= number_to_currency(@loan.current_balance) %></td>
-        </tr>
         <tr>
-          <td style="padding: 0.25rem 0 0 0.75rem; color: var(--color-concrete); font-size: 0.75rem;"><span style="margin-right: 0.375rem;">&#x2514;</span> Principal</td>
-          <td class="text-money" style="padding: 0.25rem 0 0; font-size: 0.75rem; color: var(--color-steel);"><%= number_to_currency(@loan.principal_balance_as_of(Date.current)) %></td>
+          <td style="padding: 0.75rem 0 0; font-weight: 600;">Current Balance</td>
+          <td class="text-money" style="padding: 0.75rem 0 0; font-weight: 600; font-size: inherit;"><%= number_to_currency(@loan.current_balance) %></td>
         </tr>
       </table>
     </div>

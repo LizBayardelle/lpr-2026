@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_24_194721) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_01_170820) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -244,6 +244,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_24_194721) do
     t.string "origination_fee_type", default: "percent", null: false
     t.string "payment_type", default: "interest_only"
     t.string "property_address", null: false
+    t.string "property_subtype"
+    t.text "property_tax_notes"
+    t.date "property_taxes_last_paid_on"
+    t.date "property_taxes_next_due_on"
+    t.string "property_type"
+    t.decimal "property_valuation", precision: 12, scale: 2
+    t.text "responsible_party_address"
+    t.string "responsible_party_email"
+    t.string "responsible_party_name"
+    t.string "responsible_party_phone"
     t.string "status", default: "active"
     t.datetime "updated_at", null: false
     t.index ["borrower_name"], name: "index_loans_on_borrower_name"
@@ -302,6 +312,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_24_194721) do
   create_table "welcome_email_sends", force: :cascade do |t|
     t.string "cc_to"
     t.datetime "created_at", null: false
+    t.text "custom_message"
     t.bigint "loan_id", null: false
     t.bigint "sent_by_id", null: false
     t.string "sent_to", null: false
