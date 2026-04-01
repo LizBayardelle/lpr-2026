@@ -74,27 +74,29 @@
       <%# ── Loan Assignment (optional) ── %>
       <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb;">
         <span class="section-label" style="margin-bottom: 1rem; display: block;">Loan Assignment</span>
-        <p class="field-hint" style="margin-bottom: 1rem;">Optionally assign this user to a loan right away. You can always add more later.</p>
+        <p class="field-hint" style="margin-bottom: 1rem;">Select one or more loans to assign this user to. You can always add more later.</p>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-          <div class="field">
-            <label for="loan_id" style="display: block; font-family: 'Barlow Condensed', sans-serif; font-size: 0.8125rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-steel); margin-bottom: 0.5rem;">Loan</label>
-            <select name="loan_id" id="loan_id" class="field-input">
-              <option value="">None</option>
-              <% @available_loans.each do |loan| %>
-                <option value="<%= loan.id %>" <%= "selected" if params[:loan_id].to_s == loan.id.to_s %>><%= loan.borrower_name %> - <%= loan.property_address %></option>
+        <div class="field" style="margin-bottom: 1rem;">
+          <label style="display: block; font-family: 'Barlow Condensed', sans-serif; font-size: 0.8125rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-steel); margin-bottom: 0.5rem;">Role</label>
+          <select name="loan_role" id="loan_role" class="field-input" style="max-width: 20rem;">
+            <option value="borrower" <%= "selected" if params[:loan_role] == "borrower" %>>Borrower</option>
+            <% LoanRole::ROLES.reject { |r| r == "borrower" }.each do |role| %>
+              <option value="<%= role %>" <%= "selected" if params[:loan_role] == role %>><%= role.titleize.gsub("_", " ") %></option>
+            <% end %>
+          </select>
+        </div>
+
+        <div style="max-height: 12rem; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 0.375rem; padding: 0.5rem; background: rgba(0,0,0,0.02);">
+          <% @available_loans.each do |loan| %>
+            <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.375rem 0.5rem; font-size: 0.8125rem; cursor: pointer; border-radius: 0.25rem;" onmouseover="this.style.background='var(--color-smoke)'" onmouseout="this.style.background='transparent'">
+              <input type="checkbox" name="loan_ids[]" value="<%= loan.id %>" <%= "checked" if params[:loan_id].to_s == loan.id.to_s %> style="accent-color: var(--color-navy);">
+              <span style="font-weight: 500;"><%= loan.borrower_name %></span>
+              <span style="color: var(--color-steel);">&mdash; <%= loan.property_address %></span>
+              <% if loan.loan_number.present? %>
+                <span class="badge badge-neutral" style="margin-left: auto;"><%= loan.loan_number %></span>
               <% end %>
-            </select>
-          </div>
-          <div class="field">
-            <label for="loan_role" style="display: block; font-family: 'Barlow Condensed', sans-serif; font-size: 0.8125rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-steel); margin-bottom: 0.5rem;">Role</label>
-            <select name="loan_role" id="loan_role" class="field-input">
-              <option value="">Select role...</option>
-              <% LoanRole::ROLES.each do |role| %>
-                <option value="<%= role %>" <%= "selected" if params[:loan_role] == role %>><%= role.titleize.gsub("_", " ") %></option>
-              <% end %>
-            </select>
-          </div>
+            </label>
+          <% end %>
         </div>
       </div>
 

@@ -32,8 +32,10 @@ class Admin::UsersController < Admin::BaseController
     end
 
     if @user.save
-      if params[:loan_id].present? && params[:loan_role].present?
-        @user.loan_roles.create(loan_id: params[:loan_id], role: params[:loan_role])
+      if params[:loan_ids].present? && params[:loan_role].present?
+        Array(params[:loan_ids]).each do |loan_id|
+          @user.loan_roles.create(loan_id: loan_id, role: params[:loan_role])
+        end
       end
 
       if params[:invite_method] == "send_invite"
