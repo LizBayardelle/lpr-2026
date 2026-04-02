@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_02_152502) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_02_160403) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -237,12 +237,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_02_152502) do
     t.string "loan_number"
     t.integer "loan_term_months", null: false
     t.date "maturity_date", null: false
+    t.decimal "monthly_cash_payment", precision: 12, scale: 2
     t.text "notes"
     t.date "origination_date", null: false
     t.decimal "origination_fee_flat", precision: 12, scale: 2
     t.string "origination_fee_handling", default: "net_funded", null: false
     t.decimal "origination_fee_percent", precision: 5, scale: 3, default: "0.0"
     t.string "origination_fee_type", default: "percent", null: false
+    t.bigint "payment_reserve_id"
     t.string "payment_type", default: "interest_only"
     t.string "property_address", null: false
     t.string "property_subtype"
@@ -259,6 +261,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_02_152502) do
     t.datetime "updated_at", null: false
     t.index ["borrower_name"], name: "index_loans_on_borrower_name"
     t.index ["maturity_date"], name: "index_loans_on_maturity_date"
+    t.index ["payment_reserve_id"], name: "index_loans_on_payment_reserve_id"
     t.index ["status"], name: "index_loans_on_status"
   end
 
@@ -340,6 +343,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_02_152502) do
   add_foreign_key "loan_roles", "loans"
   add_foreign_key "loan_roles", "users"
   add_foreign_key "loan_statements", "loans"
+  add_foreign_key "loans", "loan_reserves", column: "payment_reserve_id"
   add_foreign_key "payments", "loan_reserves"
   add_foreign_key "payments", "loans"
   add_foreign_key "statement_sends", "loan_statements"

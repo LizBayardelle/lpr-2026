@@ -135,7 +135,7 @@ class Admin::LoansController < Admin::BaseController
       :property_taxes_last_paid_on, :property_taxes_next_due_on, :property_tax_notes,
       :loan_amount, :interest_rate, :loan_term_months,
       :origination_fee_percent, :origination_fee_flat, :origination_fee_type, :origination_fee_handling,
-      :payment_type, :interest_calc_method,
+      :payment_type, :interest_calc_method, :monthly_cash_payment, :payment_reserve_id,
       :origination_date, :maturity_date, :first_payment_date,
       :closing_interest, :default_interest_rate, :late_fee_percent, :grace_period_days,
       :status, :notes

@@ -87,6 +87,16 @@
                       <td style="padding: 0.375rem 0; color: #6b7280;">Monthly Payment</td>
                       <td style="padding: 0.375rem 0; text-align: right; font-weight: 600;"><%= number_to_currency(@loan.monthly_payment_amount) %></td>
                     </tr>
+                    <% if @loan.split_payment? %>
+                      <tr style="border-top: 1px solid #e5e7eb;">
+                        <td style="padding: 0.375rem 0; color: #6b7280; padding-left: 0.75rem;">Cash Payment</td>
+                        <td style="padding: 0.375rem 0; text-align: right; font-weight: 600;"><%= number_to_currency(@loan.monthly_cash_payment) %></td>
+                      </tr>
+                      <tr style="border-top: 1px solid #e5e7eb;">
+                        <td style="padding: 0.375rem 0; color: #6b7280; padding-left: 0.75rem;">From Reserve</td>
+                        <td style="padding: 0.375rem 0; text-align: right; font-weight: 600;"><%= number_to_currency(@loan.reserve_payment_amount) %></td>
+                      </tr>
+                    <% end %>
                     <tr style="border-top: 1px solid #e5e7eb;">
                       <td style="padding: 0.375rem 0; color: #6b7280;">Maturity</td>
                       <td style="padding: 0.375rem 0; text-align: right; font-weight: 600;"><%= @loan.effective_maturity_date.strftime("%b %-d, %Y") %></td>

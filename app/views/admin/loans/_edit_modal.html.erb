@@ -160,7 +160,7 @@
                 <%= f.number_field :loan_term_months, class: "field-input" %>
               </div>
             </div>
-            <div class="field-row">
+            <div class="field-row-3">
               <div class="field">
                 <%= f.label :payment_type, "Payment Type" %>
                 <%= f.select :payment_type, [["Interest Only", "interest_only"], ["Fully Amortizing", "fully_amortizing"]], {}, class: "field-input" %>
@@ -169,7 +169,22 @@
                 <%= f.label :interest_calc_method, "Interest Calculation" %>
                 <%= f.select :interest_calc_method, [["30/360", "30_360"], ["Actual/360", "actual_360"], ["Actual/365", "actual_365"]], {}, class: "field-input" %>
               </div>
+              <div class="field">
+                <%= f.label :monthly_cash_payment, "Monthly Cash Payment ($)" %>
+                <%= f.number_field :monthly_cash_payment, step: 0.01, class: "field-input", placeholder: "Leave blank if full amount" %>
+              </div>
             </div>
+            <% active_reserves = @loan.loan_reserves.active %>
+            <% if active_reserves.any? %>
+              <div class="field">
+                <%= f.label :payment_reserve_id, "Reserve for Auto-Draw" %>
+                <%= f.select :payment_reserve_id,
+                  active_reserves.map { |r| ["#{r.display_type} — #{number_to_currency(r.remaining_balance)} remaining", r.id] },
+                  { include_blank: "Auto (first interest reserve)", selected: @loan.payment_reserve_id },
+                  class: "field-input" %>
+                <span class="text-small">Which reserve supplements the borrower's cash payment each month</span>
+              </div>
+            <% end %>
 
             <div class="wizard-nav">
               <button type="button" class="btn-filled btn-filled-ghost" data-wizard-nav="prev">Back</button>

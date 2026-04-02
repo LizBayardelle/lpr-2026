@@ -16,7 +16,9 @@ Property:         <%= @loan.property_address %>
 <% end %>Loan Amount:      <%= number_to_currency(@loan.loan_amount) %>
 Interest Rate:    <%= @loan.effective_interest_rate %>%
 Monthly Payment:  <%= number_to_currency(@loan.monthly_payment_amount) %>
-Origination Date: <%= @loan.origination_date.strftime("%b %-d, %Y") %>
+<% if @loan.split_payment? %>  Cash Payment:   <%= number_to_currency(@loan.monthly_cash_payment) %>
+  From Reserve:   <%= number_to_currency(@loan.reserve_payment_amount) %>
+<% end %>Origination Date: <%= @loan.origination_date.strftime("%b %-d, %Y") %>
 Maturity Date:    <%= @loan.effective_maturity_date.strftime("%b %-d, %Y") %>
 <% if @loan.first_payment_date.present? %>First Payment:    <%= @loan.first_payment_date.strftime("%b %-d, %Y") %>
 <% end %>

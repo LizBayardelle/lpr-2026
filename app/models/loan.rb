@@ -6,6 +6,7 @@ class Loan < ApplicationRecord
   has_many :loan_documents, dependent: :destroy
   has_many :loan_extensions, dependent: :destroy
   has_many :loan_reserves, dependent: :destroy
+  belongs_to :payment_reserve, class_name: "LoanReserve", optional: true
   has_many :loan_ledger_entries, dependent: :destroy
   has_many :welcome_email_sends, dependent: :destroy
   has_many :client_uploads
@@ -143,6 +144,26 @@ class Loan < ApplicationRecord
       r = effective_interest_rate / 100 / 12
       n = loan_term_months
       (bal * r * (1 + r)**n / ((1 + r)**n - 1)).round(2)
+    end
+  end
+
+  # Does this loan split payments between cash and reserve?
+  def split_payment?
+    monthly_cash_payment.present? && monthly_cash_payment > 0 && auto_draw_reserve.present?
+  end
+
+  # Amount drawn from reserve each month
+  def reserve_payment_amount
+    return BigDecimal("0") unless split_payment?
+    [monthly_payment_amount - monthly_cash_payment, BigDecimal("0")].max
+  end
+
+  # The reserve used for auto-draws: explicit choice, or fall back to first active interest reserve
+  def auto_draw_reserve
+    if payment_reserve.present? && payment_reserve.status == "active"
+      payment_reserve
+    else
+      loan_reserves.active.where(reserve_type: "interest").order(:created_at).first
     end
   end
 
