@@ -178,10 +178,16 @@ class Loan < ApplicationRecord
     loan_fees.sum(:amount)
   end
 
-  # Total interest earned: ledger accruals + closing statement interest
+  # Total interest earned: ledger accruals + closing statement interest.
+  # When closing_interest is set, it replaces (not supplements) the first-month
+  # system accrual, since that period's interest was paid through escrow.
   def total_interest_accrued
-    accrued = loan_ledger_entries.not_reversed.where(entry_type: "interest_accrual").sum(:amount)
-    accrued += closing_interest
+    entries = loan_ledger_entries.not_reversed.where(entry_type: "interest_accrual")
+    if closing_interest > 0
+      first_month_posting = origination_date.end_of_month + 1.day
+      entries = entries.where.not(effective_date: first_month_posting)
+    end
+    accrued = entries.sum(:amount) + closing_interest
     accrued > 0 ? accrued : total_interest_paid
   end
 
@@ -237,8 +243,12 @@ class Loan < ApplicationRecord
     # If we haven't finished the current month yet, go back to previous month end
     last_month_end = last_month_end.prev_month.end_of_month if last_month_end >= Date.current
 
-    # Only accrue from the month the loan was entered into the system, not from origination
+    # Only accrue from the month the loan was entered into the system, not from origination.
+    # If closing_interest covers the first month, start accruing from the next month.
     earliest_accrual_date = [origination_date, created_at.to_date].max
+    if closing_interest > 0
+      earliest_accrual_date = [earliest_accrual_date, origination_date.end_of_month + 1.day].max
+    end
 
     # Build periods: interest for each month, posted on the 1st of the next month
     periods = []
