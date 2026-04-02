@@ -229,7 +229,7 @@
             <td style="padding: 0.125rem 0 0.125rem 1.75rem; color: var(--color-concrete); font-size: 0.75rem;"><span style="color: var(--color-concrete); margin-right: 0.375rem;">&#x2514;</span> Reserve</td>
             <td class="text-money" style="padding: 0.125rem 0; font-size: 0.75rem; color: var(--color-concrete);">
               <%= number_to_currency(@loan.reserve_payment_amount) %>
-              <span style="font-size: 0.6875rem; color: var(--color-concrete); margin-left: 0.25rem;">(<%= number_to_currency(draw_reserve.remaining_balance) %> remaining)</span>
+              <div style="font-size: 0.6875rem; color: var(--color-concrete); margin-top: 1px;"><%= number_to_currency(draw_reserve.remaining_balance) %> remaining</div>
             </td>
           </tr>
         <% end %>
