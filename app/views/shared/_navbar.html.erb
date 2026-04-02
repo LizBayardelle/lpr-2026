@@ -10,13 +10,16 @@
       <a href="/invest">Invest</a>
       <a href="/knowledge">Knowledge</a>
       <a href="/about">About</a>
+      <% if user_signed_in? && (current_user.admin? || current_user.godpowers?) %>
+        <a href="<%= admin_dashboard_path %>">Admin</a>
+      <% end %>
 
       <div class="main-nav-mobile-user">
         <% if user_signed_in? %>
           <div class="main-nav-mobile-greeting">
             Signed in as <strong><%= current_user.first_name || current_user.email %></strong>
           </div>
-          <% if current_user.admin? %>
+          <% if current_user.admin? || current_user.godpowers? %>
             <a href="<%= admin_dashboard_path %>">Admin Dashboard</a>
           <% end %>
           <a href="<%= dashboard_path %>">Dashboard</a>
@@ -48,7 +51,7 @@
             <div class="main-nav-dropdown-greeting">
               Signed in as <strong><%= current_user.first_name || current_user.email %></strong>
             </div>
-            <% if current_user.admin? %>
+            <% if current_user.admin? || current_user.godpowers? %>
               <a href="<%= admin_dashboard_path %>" class="main-nav-dropdown-item">Admin Dashboard</a>
             <% end %>
             <a href="<%= dashboard_path %>" class="main-nav-dropdown-item">Dashboard</a>

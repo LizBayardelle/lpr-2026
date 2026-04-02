@@ -217,6 +217,10 @@
                 ], {}, class: "field-input" %>
               </div>
             </div>
+            <div class="field">
+              <%= f.label :closing_interest, "Closing Statement Interest ($)" %>
+              <%= f.number_field :closing_interest, step: 0.01, class: "field-input", placeholder: "Interest paid through escrow at closing" %>
+            </div>
             <div class="field-row-3">
               <div class="field">
                 <%= f.label :default_interest_rate, "Default Interest Rate (%)" %>

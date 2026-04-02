@@ -109,13 +109,14 @@ class Loan < ApplicationRecord
   # Monthly interest due based on principal balance (not total owed)
   def monthly_interest_due(balance = nil)
     balance ||= funded_amount - total_principal_paid
+    rate = effective_interest_rate
     case interest_calc_method
     when "30_360"
-      (balance * interest_rate / 100 / 12).round(2)
+      (balance * rate / 100 / 12).round(2)
     when "actual_360"
-      (balance * interest_rate / 100 * 30 / 360).round(2)
+      (balance * rate / 100 * 30 / 360).round(2)
     when "actual_365"
-      (balance * interest_rate / 100 * 30 / 365).round(2)
+      (balance * rate / 100 * 30 / 365).round(2)
     end
   end
 
@@ -139,7 +140,7 @@ class Loan < ApplicationRecord
       monthly_interest_due(bal)
     else
       # Standard amortization formula
-      r = interest_rate / 100 / 12
+      r = effective_interest_rate / 100 / 12
       n = loan_term_months
       (bal * r * (1 + r)**n / ((1 + r)**n - 1)).round(2)
     end
@@ -177,9 +178,10 @@ class Loan < ApplicationRecord
     loan_fees.sum(:amount)
   end
 
-  # Total interest accrued from ledger, or fall back to interest paid
+  # Total interest earned: ledger accruals + closing statement interest
   def total_interest_accrued
     accrued = loan_ledger_entries.not_reversed.where(entry_type: "interest_accrual").sum(:amount)
+    accrued += closing_interest
     accrued > 0 ? accrued : total_interest_paid
   end
 

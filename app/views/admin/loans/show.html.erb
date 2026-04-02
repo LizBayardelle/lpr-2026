@@ -128,7 +128,7 @@
     <% draws_total = @draws.where(status: "funded").sum(:amount) %>
     <% principal_balance = @loan.funded_amount - @loan.total_principal_paid %>
     <% interest_earned = @loan.total_interest_accrued %>
-    <% interest_paid = @loan.total_interest_paid %>
+    <% interest_paid = @loan.total_interest_paid + @loan.closing_interest %>
     <% interest_accrued = interest_earned - interest_paid %>
     <div class="card" style="padding: 1.75rem 2rem;">
       <h3 class="heading-3" style="margin-bottom: 1.25rem;">Activity to Date</h3>

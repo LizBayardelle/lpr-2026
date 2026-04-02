@@ -137,7 +137,7 @@ class Admin::LoansController < Admin::BaseController
       :origination_fee_percent, :origination_fee_flat, :origination_fee_type, :origination_fee_handling,
       :payment_type, :interest_calc_method,
       :origination_date, :maturity_date, :first_payment_date,
-      :default_interest_rate, :late_fee_percent, :grace_period_days,
+      :closing_interest, :default_interest_rate, :late_fee_percent, :grace_period_days,
       :status, :notes
     )
   end
