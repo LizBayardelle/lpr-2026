@@ -239,6 +239,21 @@ class StatementPdf
         pdf.fill_color SOOT
       end
       pdf.move_down 13
+
+      # Nested cash/reserve split under Interest
+      if label == "Interest" && @loan.split_payment?
+        [["Cash", number_to_currency(@loan.monthly_cash_payment)],
+         ["Reserve", number_to_currency(@loan.reserve_payment_amount)]].each do |sub_label, sub_value|
+          draw_corner_arrow(pdf, 20, pdf.cursor - 4, CONCRETE)
+          pdf.font("Helvetica", size: 7) do
+            pdf.fill_color CONCRETE
+            pdf.text_box sub_label, at: [30, pdf.cursor], width: inner * 0.6 - 30
+            pdf.text_box sub_value, at: [inner * 0.6, pdf.cursor], width: inner * 0.4, align: :right
+            pdf.fill_color SOOT
+          end
+          pdf.move_down 11
+        end
+      end
     end
 
     if @statement.late_fee > 0
