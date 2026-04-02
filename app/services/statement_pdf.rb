@@ -133,8 +133,8 @@ class StatementPdf
   def cards_row(pdf)
     gap = 12
     col_w = (pdf.bounds.width - gap * 2) / 3.0
-    # Fixed height — enough for the tallest card (Amount Due with late fee + children)
-    card_h = 185
+    # Fixed height — enough for the tallest card (Amount Due with late fee + children + split payment)
+    card_h = @loan.split_payment? ? 215 : 185
     top = pdf.cursor
 
     card_drawers = [
@@ -165,13 +165,15 @@ class StatementPdf
     card_heading(pdf, "Loan Details")
     calc_method = @loan.interest_calc_method.gsub("_", "/").gsub(/[a-z]+/) { |w| w.capitalize }
 
-    kv_rows(pdf, col_w - 32, [
+    rows = [
       ["Principal", number_to_currency(@loan.loan_amount)],
       ["Interest Rate", "#{@loan.effective_interest_rate}%"],
       ["Calculated", calc_method],
       ["Origination", @loan.origination_date.strftime("%b %-d, %Y")],
       ["Payment Type", @loan.payment_type.titleize]
-    ])
+    ]
+    rows << ["Cash Payment", "#{number_to_currency(@loan.monthly_cash_payment)} / mo"] if @loan.split_payment?
+    kv_rows(pdf, col_w - 32, rows)
   end
 
   def draw_period_summary(pdf, col_w)
@@ -183,13 +185,29 @@ class StatementPdf
     draws = @loan.loan_draws.funded.where(draw_date: @statement.period_start..@statement.period_end)
     rows << ["Draws Funded", "+ #{number_to_currency(draws.sum(:amount))}"] if draws.any?
 
-    rows += [
-      ["Interest Charged", number_to_currency(@statement.interest_due)],
-      ["Interest Paid", "(#{number_to_currency(period_payments.sum(:interest_amount))})"],
-      ["Principal Paid", "(#{number_to_currency(period_payments.sum(:principal_amount))})"]
-    ]
+    rows << ["Interest Charged", number_to_currency(@statement.interest_due)]
+    rows << ["Interest Paid", "(#{number_to_currency(period_payments.sum(:interest_amount))})"]
 
     kv_rows(pdf, inner, rows)
+
+    if @loan.split_payment?
+      cash_payments = period_payments.where(loan_reserve_id: nil)
+      reserve_payments = period_payments.where.not(loan_reserve_id: nil)
+
+      [["Cash", "(#{number_to_currency(cash_payments.sum(:interest_amount))})"],
+       ["Reserve", "(#{number_to_currency(reserve_payments.sum(:interest_amount))})"]].each do |label, value|
+        draw_corner_arrow(pdf, 6, pdf.cursor - 4, CONCRETE)
+        pdf.font("Helvetica", size: 8) do
+          pdf.fill_color CONCRETE
+          pdf.text_box label, at: [16, pdf.cursor], width: inner * 0.6 - 16
+          pdf.text_box value, at: [inner * 0.6, pdf.cursor], width: inner * 0.4, align: :right
+          pdf.fill_color SOOT
+        end
+        pdf.move_down 13
+      end
+    end
+
+    kv_rows(pdf, inner, [["Principal Paid", "(#{number_to_currency(period_payments.sum(:principal_amount))})"]])
 
     pdf.move_down 2
     pdf.stroke_color SOOT
@@ -236,6 +254,20 @@ class StatementPdf
 
     # Payments Received
     kv_rows(pdf, inner, [["Payments Received", "(#{number_to_currency(@statement.payments_received)})"]])
+
+    if @loan.split_payment?
+      [["Cash", number_to_currency(@loan.monthly_cash_payment)],
+       ["Reserve", number_to_currency(@loan.reserve_payment_amount)]].each do |label, value|
+        draw_corner_arrow(pdf, 6, pdf.cursor - 4, CONCRETE)
+        pdf.font("Helvetica", size: 8) do
+          pdf.fill_color CONCRETE
+          pdf.text_box label, at: [16, pdf.cursor], width: inner * 0.6 - 16
+          pdf.text_box value, at: [inner * 0.6, pdf.cursor], width: inner * 0.4, align: :right
+          pdf.fill_color SOOT
+        end
+        pdf.move_down 13
+      end
+    end
 
     pdf.move_down 2
     pdf.stroke_color SOOT
@@ -365,6 +397,15 @@ class StatementPdf
       pdf.fill_color STEEL
       pdf.text "by #{@loan.next_payment_date.strftime('%b %-d, %Y')}"
       pdf.fill_color SOOT
+    end
+
+    if @loan.split_payment?
+      pdf.move_down 4
+      pdf.font("Helvetica", size: 8) do
+        pdf.fill_color STEEL
+        pdf.text "Cash: #{number_to_currency(@loan.monthly_cash_payment)}  \u00B7  From Reserve: #{number_to_currency(@loan.reserve_payment_amount)}"
+        pdf.fill_color SOOT
+      end
     end
 
     if @loan.late_fee_percent.present? && @loan.late_fee_percent > 0 && @loan.grace_period_days.present?

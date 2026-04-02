@@ -81,6 +81,12 @@
           <td style="padding: 0.375rem 0; color: var(--color-steel);">Payment Type</td>
           <td style="padding: 0.375rem 0; text-align: right; font-weight: 500;"><%= @loan.payment_type.titleize %></td>
         </tr>
+        <% if @loan.split_payment? %>
+          <tr>
+            <td style="padding: 0.375rem 0; color: var(--color-steel);">Cash Payment</td>
+            <td style="padding: 0.375rem 0; text-align: right; font-weight: 500;"><%= number_to_currency(@loan.monthly_cash_payment) %> / mo</td>
+          </tr>
+        <% end %>
       </table>
     </div>
 
@@ -106,6 +112,18 @@
           <td style="padding: 0.375rem 0; color: var(--color-steel);">Interest Paid</td>
           <td class="text-money" style="padding: 0.375rem 0; font-size: inherit;">(<%= number_to_currency(@period_payments.sum(:interest_amount)) %>)</td>
         </tr>
+        <% if @loan.split_payment? %>
+          <% cash_payments = @period_payments.where(loan_reserve_id: nil) %>
+          <% reserve_payments = @period_payments.where.not(loan_reserve_id: nil) %>
+          <tr>
+            <td style="padding: 0.25rem 0 0.25rem 0.75rem; color: var(--color-concrete);"><span style="color: var(--color-concrete); margin-right: 0.375rem;">&#x2514;</span> Cash</td>
+            <td class="text-money" style="padding: 0.25rem 0; font-size: inherit; color: var(--color-concrete);">(<%= number_to_currency(cash_payments.sum(:interest_amount)) %>)</td>
+          </tr>
+          <tr>
+            <td style="padding: 0.25rem 0 0.25rem 0.75rem; color: var(--color-concrete);"><span style="color: var(--color-concrete); margin-right: 0.375rem;">&#x2514;</span> Reserve</td>
+            <td class="text-money" style="padding: 0.25rem 0; font-size: inherit; color: var(--color-concrete);">(<%= number_to_currency(reserve_payments.sum(:interest_amount)) %>)</td>
+          </tr>
+        <% end %>
         <tr>
           <td style="padding: 0.375rem 0; color: var(--color-steel);">Principal Paid</td>
           <td class="text-money" style="padding: 0.375rem 0; font-size: inherit;">(<%= number_to_currency(@period_payments.sum(:principal_amount)) %>)</td>
@@ -145,6 +163,16 @@
           <td style="padding: 0.375rem 0; color: var(--color-steel);">Payments Received</td>
           <td class="text-money" style="padding: 0.375rem 0; font-size: inherit;">(<%= number_to_currency(@statement.payments_received) %>)</td>
         </tr>
+        <% if @loan.split_payment? %>
+          <tr>
+            <td style="padding: 0.25rem 0 0.25rem 0.75rem; color: var(--color-concrete);"><span style="color: var(--color-concrete); margin-right: 0.375rem;">&#x2514;</span> Cash</td>
+            <td class="text-money" style="padding: 0.25rem 0; font-size: inherit; color: var(--color-concrete);"><%= number_to_currency(@loan.monthly_cash_payment) %></td>
+          </tr>
+          <tr>
+            <td style="padding: 0.25rem 0 0.25rem 0.75rem; color: var(--color-concrete);"><span style="color: var(--color-concrete); margin-right: 0.375rem;">&#x2514;</span> Reserve</td>
+            <td class="text-money" style="padding: 0.25rem 0; font-size: inherit; color: var(--color-concrete);"><%= number_to_currency(@loan.reserve_payment_amount) %></td>
+          </tr>
+        <% end %>
         <% if @statement.past_due_amount > 0 %>
           <tr style="border-top: 2px solid #000;">
             <td style="padding: 0.625rem 0 0; font-weight: 600; color: var(--color-maroon);">Past Due</td>
@@ -259,6 +287,13 @@
           <%= number_to_currency(@loan.monthly_payment_amount) %>
           <span style="font-weight: 400; font-size: 0.8125rem; color: var(--color-steel); margin-left: 0.375rem;">by <%= @loan.next_payment_date.strftime("%b %-d, %Y") %></span>
         </div>
+        <% if @loan.split_payment? %>
+          <div style="font-size: 0.8125rem; color: var(--color-steel); margin-top: 0.375rem;">
+            Cash: <strong><%= number_to_currency(@loan.monthly_cash_payment) %></strong>
+            <span style="margin: 0 0.25rem;">&middot;</span>
+            From Reserve: <strong><%= number_to_currency(@loan.reserve_payment_amount) %></strong>
+          </div>
+        <% end %>
       </div>
       <% if @loan.late_fee_percent.present? && @loan.late_fee_percent > 0 && @loan.grace_period_days.present? %>
         <div style="font-size: 0.75rem; color: var(--color-steel); max-width: 22rem; text-align: right; line-height: 1.4;">
