@@ -70,7 +70,7 @@ gem "prawn-table", "~> 0.2.2"
 gem "matrix", "~> 0.4.3"
 
 # Google reCAPTCHA v3 for spam protection
-gem "recaptcha", "~> 5.17"
+gem "recaptcha", "~> 5.21"
 
 # SendGrid for transactional email
 gem "sendgrid-ruby", "~> 6.7"
