@@ -198,6 +198,38 @@
     </div>
   </div>
 
+  <%# ── Reserves ── %>
+  <% active_reserves = @loan.loan_reserves.active.order(:established_date) %>
+  <% if active_reserves.any? %>
+    <div class="card" style="padding: 0; margin-bottom: 1.5rem;">
+      <div style="padding: 1.5rem 2rem 0;">
+        <h3 class="heading-3">Reserves</h3>
+      </div>
+      <div class="table-container" style="padding: 1rem 0 0;">
+        <table class="data-table" style="min-width: 600px;">
+          <thead>
+            <tr>
+              <th style="padding-left: 2rem;">Reserve</th>
+              <th>Established</th>
+              <th class="text-right">Original</th>
+              <th class="text-right" style="padding-right: 2rem;">Remaining</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% active_reserves.each do |reserve| %>
+              <tr>
+                <td style="padding-left: 2rem; font-weight: 600;"><%= reserve.display_type %> Reserve</td>
+                <td><%= reserve.established_date.strftime("%b %-d, %Y") %></td>
+                <td class="text-money"><%= number_to_currency(reserve.amount) %></td>
+                <td class="text-money" style="padding-right: 2rem;"><%= number_to_currency(reserve.remaining_balance) %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  <% end %>
+
   <%# ── Loan Activity Ledger ── %>
   <%
     activity = []

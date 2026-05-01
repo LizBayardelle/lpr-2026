@@ -32,6 +32,7 @@ class StatementPdf
       header(pdf)
       borrower_and_period(pdf)
       cards_row(pdf)
+      reserves_section(pdf)
       activity_ledger(pdf)
       next_payment(pdf)
       footer(pdf)
@@ -296,6 +297,70 @@ class StatementPdf
     else
       kv_row_bold(pdf, inner, "Paid in Full", number_to_currency(0), color: SLATE_BLUE)
     end
+  end
+
+  # ────────────────────────────────────────────────────────────────
+  # RESERVES — active reserves with remaining balance
+  # ────────────────────────────────────────────────────────────────
+  def reserves_section(pdf)
+    reserves = @loan.loan_reserves.active.order(:established_date)
+    return if reserves.empty?
+
+    section_top = pdf.cursor
+
+    table_data = [[
+      { content: "RESERVE", font_style: :bold },
+      { content: "ESTABLISHED", font_style: :bold },
+      { content: "ORIGINAL", font_style: :bold },
+      { content: "REMAINING", font_style: :bold }
+    ]]
+
+    reserves.each do |reserve|
+      table_data << [
+        "#{reserve.display_type} Reserve",
+        reserve.established_date.strftime("%b %-d, %Y"),
+        number_to_currency(reserve.amount),
+        number_to_currency(reserve.remaining_balance)
+      ]
+    end
+
+    col_widths = [pdf.bounds.width - 16 - 110 - 100 - 100, 110, 100, 100]
+
+    dummy = Prawn::Document.new(page_size: "LETTER", margin: [40, 48, 56, 48])
+    register_fonts(dummy)
+    dummy.font "Helvetica"
+    tbl = dummy.make_table(table_data, width: pdf.bounds.width - 16, column_widths: col_widths,
+      cell_style: { size: 8, font: "Helvetica", padding: [6, 8], border_width: 0 })
+    table_h = tbl.height
+
+    card_h = table_h + 52
+    pdf.stroke_color RULE_GRAY
+    pdf.line_width = 0.75
+    rounded_rect(pdf, 0, section_top, pdf.bounds.width, card_h, 4)
+    pdf.stroke
+
+    pdf.bounding_box([16, section_top - 14], width: pdf.bounds.width - 32) do
+      card_heading(pdf, "Reserves")
+    end
+
+    pdf.bounding_box([8, section_top - 40], width: pdf.bounds.width - 16) do
+      pdf.table(table_data, width: pdf.bounds.width, column_widths: col_widths,
+        cell_style: { size: 8, font: "Helvetica", padding: [6, 8], border_width: 0, text_color: SOOT }
+      ) do |t|
+        t.row(0).background_color = LIGHT_GRAY
+        t.row(0).size = 7
+        t.row(0).text_color = STEEL
+        t.row(0).padding = [6, 8]
+
+        t.columns(1..3).align = :right
+
+        t.rows(1..-1).borders = [:bottom]
+        t.rows(1..-1).border_color = LIGHT_GRAY
+        t.rows(1..-1).border_width = 0.5
+      end
+    end
+
+    pdf.move_cursor_to section_top - card_h - 16
   end
 
   # ────────────────────────────────────────────────────────────────

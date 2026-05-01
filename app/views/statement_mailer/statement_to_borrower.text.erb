@@ -20,6 +20,13 @@ Total Due:        <%= number_to_currency(@statement.total_due) %>
 <% if @statement.past_due_amount > 0 %>Past Due:         <%= number_to_currency(@statement.past_due_amount) %>
 <% end %><% if @statement.late_fee > 0 %>Late Fee:         <%= number_to_currency(@statement.late_fee) %>
 <% end %>Ending Balance:   <%= number_to_currency(@statement.ending_balance) %>
+<% active_reserves = @loan.loan_reserves.active.order(:established_date) %>
+<% if active_reserves.any? %>
+
+RESERVES
+--------
+<% active_reserves.each do |reserve| %><%= reserve.display_type %> Reserve: <%= number_to_currency(reserve.remaining_balance) %> of <%= number_to_currency(reserve.amount) %>
+<% end %><% end %>
 <% if @loan.split_payment? %>
 
 YOUR PAYMENT IS AUGMENTED BY RESERVE
