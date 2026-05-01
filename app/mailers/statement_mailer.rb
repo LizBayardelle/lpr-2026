@@ -3,6 +3,7 @@ class StatementMailer < ApplicationMailer
     @statement_send = statement_send
     @statement = statement_send.loan_statement
     @loan = @statement.loan
+    @custom_message = statement_send.custom_message
 
     if @statement.pdf.attached?
       attachments[pdf_filename] = {

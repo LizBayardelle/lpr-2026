@@ -3,16 +3,69 @@ LINCHPIN REALTY — LOAN STATEMENT
 
 Hi <%= @loan.borrower_name %>,
 
-Your loan statement for <%= @statement.period_start.strftime("%b %-d") %> – <%= @statement.period_end.strftime("%b %-d, %Y") %> is attached.
+Your loan statement for <%= @statement.period_start.strftime("%b %-d") %> – <%= @statement.period_end.strftime("%b %-d, %Y") %> is attached. A summary is below for your reference.
+<% if @custom_message.present? %>
 
-Property:        <%= @loan.property_address %>
-Period:          <%= @statement.period_start.strftime("%b %-d") %> – <%= @statement.period_end.strftime("%b %-d, %Y") %>
-Total Due:       <%= number_to_currency(@statement.total_due) %>
-<% if @statement.past_due_amount > 0 %>Past Due:        <%= number_to_currency(@statement.past_due_amount) %>
-<% end %><% if @statement.late_fee > 0 %>Late Fee:        <%= number_to_currency(@statement.late_fee) %>
-<% end %>Ending Balance:  <%= number_to_currency(@statement.ending_balance) %>
+---
+<%= @custom_message %>
+---
+<% end %>
 
-If you have questions, contact us at admin@linchpinrealty.com.
+STATEMENT SUMMARY
+-----------------
+Property:         <%= @loan.property_address %>
+<% if @loan.loan_number.present? %>Loan Number:      <%= @loan.loan_number %>
+<% end %>Statement Period: <%= @statement.period_start.strftime("%b %-d") %> – <%= @statement.period_end.strftime("%b %-d, %Y") %>
+Total Due:        <%= number_to_currency(@statement.total_due) %>
+<% if @statement.past_due_amount > 0 %>Past Due:         <%= number_to_currency(@statement.past_due_amount) %>
+<% end %><% if @statement.late_fee > 0 %>Late Fee:         <%= number_to_currency(@statement.late_fee) %>
+<% end %>Ending Balance:   <%= number_to_currency(@statement.ending_balance) %>
+<% if @loan.split_payment? %>
+
+YOUR PAYMENT IS AUGMENTED BY RESERVE
+------------------------------------
+Your loan is set up so that part of each monthly payment is drawn automatically from your interest reserve. You only need to remit the cash portion below — the reserve draw will be applied for you.
+
+Monthly Payment:   <%= number_to_currency(@loan.monthly_payment_amount) %>
+Drawn from Reserve: − <%= number_to_currency(@loan.reserve_payment_amount) %>
+Cash Due From You: <%= number_to_currency(@loan.monthly_cash_payment) %>
+<% end %>
+
+PAYMENT OPTIONS
+---------------
+Please include the borrower's name and loan number with all payments.
+
+Zelle
+  Search for "Linchpin Realty" using anthony@linchpinrealty.com or 949-524-1246.
+  Please write the borrower's name and loan number in the memo.
+
+ACH Transfer (different routing number than wire transfers)
+  Pay To:         Linchpin Realty LLC
+  Routing Number: 322271627
+  Account Number: 511826676
+  Bank Name:      JPMorgan Chase Bank
+  Bank Address:   26821 Aliso Creek Road, Aliso Viejo, CA 92656
+
+Wire Transfer (different routing number than ACH transfers)
+  Pay To:         Linchpin Realty LLC
+  Routing Number: 122235821
+  Account Number: 157533834295
+  Bank Name:      US Bank
+  Bank Address:   800 Nicollet Mall, Minneapolis, MN 55402
+
+Pay by Check
+  Make your check out to Linchpin Realty and include the borrower's name and
+  loan number in the memo. Mail to:
+  1420 E Edinger, Suite 219, Santa Ana, CA 92705
+
+—
+
+The full statement is attached as a PDF. If you have any questions about your
+statement or payment, please don't hesitate to reach out.
+
+Best regards,
+The Linchpin Realty Team
+anthony@linchpinrealty.com · 949-524-1246
 
 —
 Linchpin Realty — Private Lending Solutions

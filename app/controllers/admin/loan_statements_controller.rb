@@ -39,7 +39,8 @@ class Admin::LoanStatementsController < Admin::BaseController
     statement_send = @statement.statement_sends.create!(
       sent_by: current_user,
       sent_to: params[:sent_to],
-      cc_to: params[:cc_to]
+      cc_to: params[:cc_to],
+      custom_message: params[:custom_message]
     )
 
     StatementMailer.statement_to_borrower(statement_send).deliver_later
