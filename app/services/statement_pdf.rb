@@ -32,8 +32,8 @@ class StatementPdf
       header(pdf)
       borrower_and_period(pdf)
       cards_row(pdf)
-      reserves_section(pdf)
       activity_ledger(pdf)
+      reserves_section(pdf)
       next_payment(pdf)
       footer(pdf)
     end.render
@@ -306,8 +306,6 @@ class StatementPdf
     reserves = @loan.loan_reserves.active.order(:established_date)
     return if reserves.empty?
 
-    section_top = pdf.cursor
-
     table_data = [[
       { content: "RESERVE", font_style: :bold },
       { content: "ESTABLISHED", font_style: :bold },
@@ -334,6 +332,11 @@ class StatementPdf
     table_h = tbl.height
 
     card_h = table_h + 52
+    # Move to a new page if the card won't fit in the remaining space —
+    # the rounded border + bounding-box pattern can't paginate cleanly.
+    pdf.start_new_page if pdf.cursor < card_h + 16
+    section_top = pdf.cursor
+
     pdf.stroke_color RULE_GRAY
     pdf.line_width = 0.75
     rounded_rect(pdf, 0, section_top, pdf.bounds.width, card_h, 4)
