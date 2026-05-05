@@ -15,6 +15,7 @@ class LoanReserve < ApplicationRecord
   scope :active, -> { where(status: "active") }
 
   after_create_commit :post_withholding_to_ledger
+  after_update_commit :sync_withholding_ledger_entry, if: :saved_change_to_amount?
 
   def remaining_balance
     amount - payments.sum(:amount)
@@ -59,6 +60,10 @@ class LoanReserve < ApplicationRecord
     reserve_type.titleize
   end
 
+  def display_name
+    name.presence || "#{display_type} Reserve"
+  end
+
   private
 
   def post_withholding_to_ledger
@@ -66,9 +71,20 @@ class LoanReserve < ApplicationRecord
       entry_type: "reserve_withholding",
       effective_date: established_date,
       amount: amount,
-      description: "#{display_type} reserve established — #{ActionController::Base.helpers.number_to_currency(amount)}",
+      description: withholding_description,
       source: self
     })
+  end
+
+  def sync_withholding_ledger_entry
+    entry = loan_ledger_entries.where(entry_type: "reserve_withholding").not_reversed.first
+    return unless entry
+
+    entry.update!(amount: amount, description: withholding_description)
+  end
+
+  def withholding_description
+    "#{display_type} reserve established — #{ActionController::Base.helpers.number_to_currency(amount)}"
   end
 
   def post_release_to_ledger(description)

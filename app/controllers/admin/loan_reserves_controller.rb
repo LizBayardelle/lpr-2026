@@ -68,6 +68,6 @@ class Admin::LoanReservesController < Admin::BaseController
   end
 
   def reserve_params
-    params.require(:loan_reserve).permit(:amount, :reserve_type, :established_date, :notes, :source_type, :source_id)
+    params.require(:loan_reserve).permit(:name, :amount, :reserve_type, :established_date, :notes, :source_type, :source_id)
   end
 end

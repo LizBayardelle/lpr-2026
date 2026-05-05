@@ -708,6 +708,7 @@
             <thead>
               <tr>
                 <th style="padding-left: 2rem;">Established</th>
+                <th>Name</th>
                 <th>Type</th>
                 <th class="text-right">Original Amount</th>
                 <th class="text-right">Remaining</th>
@@ -721,8 +722,69 @@
               <% @reserves.each do |reserve| %>
                 <tr>
                   <td style="white-space: nowrap; padding-left: 2rem;"><%= reserve.established_date.strftime("%b %-d, %Y") %></td>
+                  <td class="text-small" style="min-width: 140px;">
+                    <span
+                      style="cursor: pointer; border-bottom: 1px dashed var(--color-concrete); padding-bottom: 1px;"
+                      title="Click to edit"
+                      onclick="this.style.display='none'; this.nextElementSibling.style.display=''; this.nextElementSibling.focus(); this.nextElementSibling.select();"
+                    ><%= reserve.name.present? ? reserve.name : "<em style='color: var(--color-concrete)'>Add name…</em>".html_safe %></span>
+                    <input type="text" value="<%= reserve.name %>" class="field-input" style="display: none; font-size: 0.8125rem; padding: 2px 6px; width: 100%;"
+                      data-original-value="<%= reserve.name %>"
+                      data-update-url="<%= admin_loan_loan_reserve_path(@loan, reserve) %>"
+                      onblur="
+                        var input = this;
+                        var display = input.previousElementSibling;
+                        if (input.value !== input.dataset.originalValue) {
+                          var token = document.querySelector('meta[name=csrf-token]').content;
+                          fetch(input.dataset.updateUrl, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token },
+                            body: JSON.stringify({ loan_reserve: { name: input.value } })
+                          }).then(function() {
+                            display.textContent = input.value || '';
+                            if (!input.value) display.innerHTML = '<em style=\'color: var(--color-concrete)\'>Add name…</em>';
+                            input.dataset.originalValue = input.value;
+                          });
+                        }
+                        input.style.display = 'none';
+                        display.style.display = '';
+                      "
+                      onkeydown="if(event.key==='Escape'){this.value=this.dataset.originalValue; this.blur();} if(event.key==='Enter'){this.blur();}"
+                    >
+                  </td>
                   <td><%= reserve.display_type %></td>
-                  <td class="text-money"><%= number_to_currency(reserve.amount) %></td>
+                  <td class="text-money" style="min-width: 130px;">
+                    <span
+                      style="cursor: pointer; border-bottom: 1px dashed var(--color-concrete); padding-bottom: 1px;"
+                      title="Click to edit"
+                      onclick="this.style.display='none'; this.nextElementSibling.style.display=''; this.nextElementSibling.focus(); this.nextElementSibling.select();"
+                    ><%= number_to_currency(reserve.amount) %></span>
+                    <input type="number" step="0.01" min="0.01" value="<%= reserve.amount %>" class="field-input" style="display: none; font-size: 0.8125rem; padding: 2px 6px; width: 100%; text-align: right;"
+                      data-original-value="<%= reserve.amount %>"
+                      data-update-url="<%= admin_loan_loan_reserve_path(@loan, reserve) %>"
+                      onblur="
+                        var input = this;
+                        var display = input.previousElementSibling;
+                        if (input.value !== input.dataset.originalValue && parseFloat(input.value) > 0) {
+                          var token = document.querySelector('meta[name=csrf-token]').content;
+                          fetch(input.dataset.updateUrl, {
+                            method: 'PATCH',
+                            headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'X-CSRF-Token': token },
+                            body: JSON.stringify({ loan_reserve: { amount: input.value } })
+                          }).then(function(res) {
+                            if (res.ok || res.redirected) { window.location.reload(); }
+                            else { display.style.display = ''; input.style.display = 'none'; }
+                          });
+                          return;
+                        } else {
+                          input.value = input.dataset.originalValue;
+                        }
+                        input.style.display = 'none';
+                        display.style.display = '';
+                      "
+                      onkeydown="if(event.key==='Escape'){this.value=this.dataset.originalValue; this.blur();} if(event.key==='Enter'){this.blur();}"
+                    >
+                  </td>
                   <td class="text-money"><%= number_to_currency(reserve.remaining_balance) %></td>
                   <td>
                     <% if reserve.source_type == "LoanExtension" %>

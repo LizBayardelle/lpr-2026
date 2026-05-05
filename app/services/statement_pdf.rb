@@ -315,7 +315,7 @@ class StatementPdf
 
     reserves.each do |reserve|
       table_data << [
-        "#{reserve.display_type} Reserve",
+        reserve.display_name,
         reserve.established_date.strftime("%b %-d, %Y"),
         number_to_currency(reserve.amount),
         number_to_currency(reserve.remaining_balance)

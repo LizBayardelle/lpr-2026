@@ -25,7 +25,7 @@ Total Due:        <%= number_to_currency(@statement.total_due) %>
 
 RESERVES
 --------
-<% active_reserves.each do |reserve| %><%= reserve.display_type %> Reserve: <%= number_to_currency(reserve.remaining_balance) %> of <%= number_to_currency(reserve.amount) %>
+<% active_reserves.each do |reserve| %><%= reserve.display_name %>: <%= number_to_currency(reserve.remaining_balance) %> of <%= number_to_currency(reserve.amount) %>
 <% end %><% end %>
 <% if @loan.split_payment? %>
 

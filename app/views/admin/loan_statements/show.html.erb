@@ -218,7 +218,7 @@
           <tbody>
             <% active_reserves.each do |reserve| %>
               <tr>
-                <td style="padding-left: 2rem; font-weight: 600;"><%= reserve.display_type %> Reserve</td>
+                <td style="padding-left: 2rem; font-weight: 600;"><%= reserve.display_name %></td>
                 <td><%= reserve.established_date.strftime("%b %-d, %Y") %></td>
                 <td class="text-money"><%= number_to_currency(reserve.amount) %></td>
                 <td class="text-money" style="padding-right: 2rem;"><%= number_to_currency(reserve.remaining_balance) %></td>

@@ -68,7 +68,7 @@
           <table style="width: 100%; border-collapse: collapse; font-size: 0.9375rem;">
             <% active_reserves.each_with_index do |reserve, i| %>
               <tr<%= i > 0 ? ' style="border-top: 1px solid #e5e7eb;"'.html_safe : ''.html_safe %>>
-                <td style="padding: 0.5rem 0; color: #6b7280;"><%= reserve.display_type %> Reserve</td>
+                <td style="padding: 0.5rem 0; color: #6b7280;"><%= reserve.display_name %></td>
                 <td style="padding: 0.5rem 0; text-align: right; font-weight: 600;"><%= number_to_currency(reserve.remaining_balance) %> <span style="color: #6b7280; font-weight: 400; font-size: 0.8125rem;">of <%= number_to_currency(reserve.amount) %></span></td>
               </tr>
             <% end %>
