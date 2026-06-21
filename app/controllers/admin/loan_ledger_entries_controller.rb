@@ -12,6 +12,7 @@ class Admin::LoanLedgerEntriesController < Admin::BaseController
     amount = params[:amount].to_d
     effective_date = params[:effective_date].to_date
     description = params[:description]
+    pertains_to_month = params[:pertains_to_month].present? ? params[:pertains_to_month].to_date.beginning_of_month : effective_date.beginning_of_month
 
     entries = if entry_type == "payment_interest" && amount < 0
       split_interest_payment(amount, effective_date, description)
@@ -19,6 +20,7 @@ class Admin::LoanLedgerEntriesController < Admin::BaseController
       [{ entry_type: entry_type, effective_date: effective_date,
          amount: amount, description: description }]
     end
+    entries.each { |e| e[:pertains_to_month] = pertains_to_month }
 
     # When auto-splitting a payment, create a Payment record so it appears on the Payments tab
     payment = if entry_type == "payment_interest" && amount < 0
@@ -27,6 +29,7 @@ class Admin::LoanLedgerEntriesController < Admin::BaseController
 
       @loan.payments.create!(
         payment_date: effective_date,
+        pertains_to_month: pertains_to_month,
         amount: amount.abs,
         interest_amount: interest_portion,
         principal_amount: principal_portion,
@@ -113,8 +116,16 @@ class Admin::LoanLedgerEntriesController < Admin::BaseController
     attrs[:effective_date] = params[:effective_date].to_date if params[:effective_date].present?
     attrs[:description] = params[:description] if params.key?(:description)
     attrs[:amount] = params[:amount].to_d if params.key?(:amount)
+    attrs[:pertains_to_month] = params[:pertains_to_month].to_date.beginning_of_month if params[:pertains_to_month].present?
 
-    @entry.update!(attrs)
+    # If this entry came from a payment/draw/fee, the source record drives which
+    # statement it lands on. Update the source so the change reaches statements and
+    # cascades to all of the source's ledger entries (interest + principal, etc.).
+    if attrs[:pertains_to_month] && @entry.source.respond_to?(:pertains_to_month)
+      @entry.source.update!(pertains_to_month: attrs.delete(:pertains_to_month))
+    end
+
+    @entry.update!(attrs) if attrs.any?
 
     if attrs[:effective_date] || attrs[:amount]
       LoanLedger::PostingService.new(@loan).rebalance!
@@ -217,6 +228,7 @@ class Admin::LoanLedgerEntriesController < Admin::BaseController
         id: e.id,
         entryType: e.entry_type,
         effectiveDate: e.effective_date.to_s,
+        pertainsToMonth: e.pertains_to_month&.to_s,
         amount: e.amount.to_s,
         runningBalance: e.running_balance.to_s,
         description: e.description,

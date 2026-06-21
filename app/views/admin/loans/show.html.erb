@@ -271,6 +271,7 @@
             id: e.id,
             entryType: e.entry_type,
             effectiveDate: e.effective_date.to_s,
+            pertainsToMonth: e.pertains_to_month&.to_s,
             amount: e.amount.to_s,
             runningBalance: e.running_balance.to_s,
             description: e.description,
@@ -324,7 +325,12 @@
             <tbody>
               <% @payments.each do |payment| %>
                 <tr>
-                  <td style="white-space: nowrap; padding-left: 2rem;"><%= payment.payment_date.strftime("%b %-d, %Y") %></td>
+                  <td style="white-space: nowrap; padding-left: 2rem;">
+                    <%= payment.payment_date.strftime("%b %-d, %Y") %>
+                    <% if payment.auto_reserve_draw? %>
+                      <span class="badge badge-neutral" style="margin-left: 0.375rem;" title="Auto-generated to cover the reserve portion of a split payment. Managed via its cash payment.">Reserve Draw</span>
+                    <% end %>
+                  </td>
                   <td class="text-money"><%= number_to_currency(payment.amount) %></td>
                   <td class="text-money"><%= number_to_currency(payment.interest_amount) %></td>
                   <td class="text-money"><%= number_to_currency(payment.principal_amount) %></td>
@@ -333,7 +339,11 @@
                   <td><%= payment.reference_number %></td>
                   <td class="text-small"><%= payment.notes %></td>
                   <td style="padding-right: 2rem;">
-                    <%= link_to "Edit", edit_admin_loan_payment_path(@loan, payment) %>
+                    <% if payment.auto_reserve_draw? %>
+                      <span class="text-small" style="color: var(--color-concrete);">Auto</span>
+                    <% else %>
+                      <%= link_to "Edit", edit_admin_loan_payment_path(@loan, payment) %>
+                    <% end %>
                   </td>
                 </tr>
               <% end %>

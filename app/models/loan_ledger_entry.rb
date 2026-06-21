@@ -29,6 +29,8 @@ class LoanLedgerEntry < ApplicationRecord
   validates :entry_type, inclusion: { in: ENTRY_TYPES }
   validates :effective_date, :amount, :running_balance, presence: true
 
+  before_validation :default_pertains_to_month
+
   scope :chronological, -> { order(:effective_date, :id) }
   scope :reverse_chronological, -> { order(effective_date: :desc, id: :desc) }
   scope :balance_affecting, -> { where(entry_type: BALANCE_AFFECTING_TYPES) }
@@ -54,5 +56,14 @@ class LoanLedgerEntry < ApplicationRecord
 
   def human_type
     entry_type.titleize
+  end
+
+  private
+
+  # The month an entry pertains to defaults to the month of its effective date.
+  # An admin can override it (e.g. an April payment received in May still
+  # pertains to April), which controls which statement period the entry lands on.
+  def default_pertains_to_month
+    self.pertains_to_month ||= effective_date&.beginning_of_month
   end
 end

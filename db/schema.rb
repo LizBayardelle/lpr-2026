@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_05_154556) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_19_175257) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -122,8 +122,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_05_154556) do
     t.date "draw_date", null: false
     t.text "inspection_notes"
     t.bigint "loan_id", null: false
+    t.date "pertains_to_month"
     t.string "status", default: "pending"
     t.datetime "updated_at", null: false
+    t.index ["loan_id", "pertains_to_month"], name: "index_loan_draws_on_loan_id_and_pertains_to_month"
     t.index ["loan_id"], name: "index_loan_draws_on_loan_id"
   end
 
@@ -147,7 +149,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_05_154556) do
     t.string "fee_type", null: false
     t.bigint "loan_id", null: false
     t.boolean "paid", default: false
+    t.date "pertains_to_month"
     t.datetime "updated_at", null: false
+    t.index ["loan_id", "pertains_to_month"], name: "index_loan_fees_on_loan_id_and_pertains_to_month"
     t.index ["loan_id"], name: "index_loan_fees_on_loan_id"
   end
 
@@ -159,6 +163,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_05_154556) do
     t.string "entry_type", null: false
     t.bigint "loan_id", null: false
     t.jsonb "metadata", default: {}
+    t.date "pertains_to_month"
     t.bigint "posted_by_id"
     t.bigint "reversal_of_id"
     t.bigint "reversed_by_id"
@@ -167,6 +172,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_05_154556) do
     t.string "source_type"
     t.datetime "updated_at", null: false
     t.index ["loan_id", "effective_date", "id"], name: "index_loan_ledger_entries_on_loan_id_and_effective_date_and_id"
+    t.index ["loan_id", "pertains_to_month"], name: "index_loan_ledger_entries_on_loan_id_and_pertains_to_month"
     t.index ["loan_id"], name: "index_loan_ledger_entries_on_loan_id"
     t.index ["posted_by_id"], name: "index_loan_ledger_entries_on_posted_by_id"
     t.index ["reversal_of_id"], name: "index_loan_ledger_entries_on_reversal_of_id"
@@ -277,12 +283,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_05_154556) do
     t.text "notes"
     t.date "payment_date", null: false
     t.string "payment_method"
+    t.date "pertains_to_month"
     t.decimal "principal_amount", precision: 12, scale: 2, default: "0.0"
     t.string "reference_number"
+    t.bigint "reserve_draw_for_id"
     t.datetime "updated_at", null: false
+    t.index ["loan_id", "pertains_to_month"], name: "index_payments_on_loan_id_and_pertains_to_month"
     t.index ["loan_id"], name: "index_payments_on_loan_id"
     t.index ["loan_reserve_id"], name: "index_payments_on_loan_reserve_id"
     t.index ["payment_date"], name: "index_payments_on_payment_date"
+    t.index ["reserve_draw_for_id"], name: "index_payments_on_reserve_draw_for_id"
   end
 
   create_table "statement_sends", force: :cascade do |t|
@@ -348,6 +358,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_05_154556) do
   add_foreign_key "loans", "loan_reserves", column: "payment_reserve_id"
   add_foreign_key "payments", "loan_reserves"
   add_foreign_key "payments", "loans"
+  add_foreign_key "payments", "payments", column: "reserve_draw_for_id"
   add_foreign_key "statement_sends", "loan_statements"
   add_foreign_key "statement_sends", "users", column: "sent_by_id"
   add_foreign_key "welcome_email_sends", "loans"

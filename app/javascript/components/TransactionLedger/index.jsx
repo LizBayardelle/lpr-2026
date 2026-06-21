@@ -28,6 +28,7 @@ export default function TransactionLedger({ entries: initialEntries, loan, godpo
         if (e.id !== entryId) return e
         const copy = { ...e }
         if (attrs.effective_date) copy.effectiveDate = attrs.effective_date
+        if (attrs.pertains_to_month !== undefined) copy.pertainsToMonth = attrs.pertains_to_month
         if (attrs.description !== undefined) copy.description = attrs.description
         if (attrs.amount !== undefined) copy.amount = attrs.amount
         return copy
@@ -71,11 +72,12 @@ export default function TransactionLedger({ entries: initialEntries, loan, godpo
     }
   }, [basePath])
 
-  const handleAdd = useCallback(async ({ entryType, effectiveDate, amount, description }) => {
+  const handleAdd = useCallback(async ({ entryType, effectiveDate, pertainsToMonth, amount, description }) => {
     try {
       const data = await apiRequest(basePath, "POST", {
         entry_type: entryType,
         effective_date: effectiveDate,
+        pertains_to_month: pertainsToMonth || null,
         amount: amount,
         description: description || `${entryType.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())}`,
       })
@@ -186,6 +188,7 @@ export default function TransactionLedger({ entries: initialEntries, loan, godpo
                   </span>
                 </th>
                 <th>Type</th>
+                <th>Pertains To</th>
                 <th>Description</th>
                 <th className="text-right">Debit</th>
                 <th className="text-right">Credit</th>

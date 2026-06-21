@@ -59,7 +59,7 @@ export default function EditableCell({ value, displayValue, type, sign, onSave, 
       <td ref={cellRef} style={style}>
         <input
           ref={inputRef}
-          type={type === "date" ? "date" : "text"}
+          type={type === "date" ? "date" : type === "month" ? "month" : "text"}
           inputMode={type === "number" ? "decimal" : undefined}
           value={editValue}
           onChange={e => setEditValue(e.target.value)}

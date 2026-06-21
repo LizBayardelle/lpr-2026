@@ -25,6 +25,16 @@ class LoanReserve < ApplicationRecord
     remaining_balance <= 0
   end
 
+  # Recompute active/depleted from the current draws. Called when a reserve draw
+  # payment is added, edited, or deleted so the status doesn't get stuck
+  # "depleted" after a draw is reduced or removed. Terminal states are left alone.
+  def recompute_status!
+    return if %w[released forfeited].include?(status)
+
+    new_status = depleted? ? "depleted" : "active"
+    update_column(:status, new_status) if status != new_status
+  end
+
   def draw!(payment_attrs)
     draw_amount = payment_attrs[:amount].to_d
     raise "Draw amount exceeds reserve balance (#{remaining_balance})" if draw_amount > remaining_balance

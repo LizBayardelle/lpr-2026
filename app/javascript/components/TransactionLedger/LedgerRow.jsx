@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react"
 import EditableCell from "./EditableCell"
 import TypeBadge from "./TypeBadge"
-import { formatCurrency, formatDate, monthlyInterestDue, MEMO_TYPES } from "./ledgerUtils"
+import { formatCurrency, formatDate, formatMonth, monthInputValue, monthToDate, monthlyInterestDue, MEMO_TYPES } from "./ledgerUtils"
 
 const EDITABLE_FIELDS = ["date", "description", "debit", "credit"]
 
@@ -37,8 +37,8 @@ export default function LedgerRow({ entry, loan, godpowers, onUpdate, onReverse,
         <td style={{ whiteSpace: "nowrap" }}>
           <TypeBadge entryType={entry.entryType} reversed={reversed} reversal={reversal} />
         </td>
-        <td colSpan={5} style={{ fontSize: "0.8125rem", color: "var(--color-steel)" }}>{entry.description || fallback}</td>
-        <td style={{ textAlign: "right", paddingRight: godpowers || isGenericMemo ? 0 : "2rem" }}>
+        <td colSpan={6} style={{ fontSize: "0.8125rem", color: "var(--color-steel)" }}>{entry.description || fallback}</td>
+        <td style={{ textAlign: "right", paddingRight: godpowers || isGenericMemo ? 0 : "2rem", verticalAlign: "middle" }}>
           {!isGenericMemo && !reversed && !reversal && (
             <button
               onClick={() => { if (confirm("Reverse this entry?")) onReverse(entry.id) }}
@@ -90,6 +90,13 @@ export default function LedgerRow({ entry, loan, godpowers, onUpdate, onReverse,
         <TypeBadge entryType={entry.entryType} reversed={reversed} reversal={reversal} />
       </td>
       <EditableCell
+        value={monthInputValue(entry.pertainsToMonth)}
+        displayValue={formatMonth(entry.pertainsToMonth)}
+        type="month"
+        onSave={(val) => onUpdate(entry.id, { pertains_to_month: monthToDate(val) })}
+        style={{ whiteSpace: "nowrap", color: "var(--color-steel)", fontSize: "0.8125rem" }}
+      />
+      <EditableCell
         value={entry.description}
         displayValue={entry.description}
         type="text"
@@ -122,12 +129,12 @@ export default function LedgerRow({ entry, loan, godpowers, onUpdate, onReverse,
           <span className="ledger-tooltip">Principal: {formatCurrency(entry.principalAtEntry)}</span>
         </span>
       </td>
-      <td style={{ paddingRight: godpowers ? 0 : "2rem" }}>
+      <td style={{ paddingRight: godpowers ? 0 : "2rem", verticalAlign: "middle" }}>
         {!reversed && !reversal && (
           <button
             onClick={() => { if (confirm("Reverse this ledger entry? This will post an offsetting entry.")) onReverse(entry.id) }}
             className="btn-filled btn-filled-danger"
-            style={{ fontSize: "11px", padding: "4px 10px" }}
+            style={{ fontSize: "10px", padding: "2px 8px" }}
           >Reverse</button>
         )}
       </td>

@@ -1,11 +1,12 @@
 import React, { useState, useRef } from "react"
-import { ADDABLE_TYPES, MEMO_TYPES } from "./ledgerUtils"
+import { ADDABLE_TYPES, MEMO_TYPES, monthToDate } from "./ledgerUtils"
 
 const CREDIT_TYPES = ["payment_interest", "payment_principal", "payment_late_fee", "fee_paid"]
 
 export default function AddEntryRow({ onAdd, godpowers }) {
   const [entryType, setEntryType] = useState("")
   const [date, setDate] = useState(new Date().toISOString().split("T")[0])
+  const [pertainsMonth, setPertainsMonth] = useState(new Date().toISOString().slice(0, 7))
   const [description, setDescription] = useState("")
   const [amount, setAmount] = useState("")
   const [principalAffecting, setPrincipalAffecting] = useState(false)
@@ -41,7 +42,7 @@ export default function AddEntryRow({ onAdd, godpowers }) {
           ? (-Math.abs(parseFloat(amount))).toString()
           : amount
 
-      await onAdd({ entryType: type, effectiveDate: date, amount: sendAmount, description })
+      await onAdd({ entryType: type, effectiveDate: date, pertainsToMonth: monthToDate(pertainsMonth), amount: sendAmount, description })
       reset()
     } finally {
       setSubmitting(false)
@@ -86,6 +87,15 @@ export default function AddEntryRow({ onAdd, godpowers }) {
             Splits interest / principal
           </span>
         )}
+      </td>
+      <td>
+        <input
+          type="month"
+          value={pertainsMonth}
+          onChange={e => setPertainsMonth(e.target.value)}
+          onKeyDown={handleKeyDown}
+          style={{ fontSize: "0.75rem", padding: "3px 4px", border: "1px solid var(--color-concrete)", borderRadius: "3px", fontFamily: "inherit" }}
+        />
       </td>
       <td>
         <input

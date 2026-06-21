@@ -2,16 +2,16 @@ module LedgerSourceable
   extend ActiveSupport::Concern
 
   included do
-    has_many :loan_ledger_entries, as: :source, dependent: :nullify
-    before_destroy :reverse_ledger_entries
+    # Deleting the source removes its ledger entries outright, then balances and
+    # interest accruals are recomputed — so the record's impact is fully undone
+    # (rather than left as today-dated reversals that mis-time historical interest).
+    has_many :loan_ledger_entries, as: :source, dependent: :destroy
+    after_destroy_commit :rebalance_ledger_after_removal
   end
 
   private
 
-  def reverse_ledger_entries
-    service = LoanLedger::PostingService.new(loan)
-    loan_ledger_entries.not_reversed.find_each do |entry|
-      service.reverse!(entry, reason: "Source record deleted")
-    end
+  def rebalance_ledger_after_removal
+    LoanLedger::PostingService.new(loan).rebalance!
   end
 end

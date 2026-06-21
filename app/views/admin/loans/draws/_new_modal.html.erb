@@ -19,6 +19,12 @@
         </div>
 
         <div class="field">
+          <%= f.label :pertains_to_month, "Statement Month (pertains to)" %>
+          <%= f.select :pertains_to_month, pertains_to_month_options(@loan), { selected: Date.today.beginning_of_month.to_s }, class: "field-input" %>
+          <span class="text-small">Which statement this counts toward — defaults to the draw's month.</span>
+        </div>
+
+        <div class="field">
           <%= f.label :description, "Description" %>
           <%= f.text_field :description, class: "field-input" %>
         </div>

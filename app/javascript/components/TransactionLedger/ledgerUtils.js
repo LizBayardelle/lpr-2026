@@ -87,6 +87,23 @@ export function formatDate(isoDate) {
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
 }
 
+// "2026-04-01" -> "Apr 2026" for display
+export function formatMonth(isoDate) {
+  if (!isoDate) return ""
+  const d = new Date(isoDate + "T00:00:00")
+  return d.toLocaleDateString("en-US", { month: "short", year: "numeric" })
+}
+
+// "2026-04-01" -> "2026-04" for <input type="month">
+export function monthInputValue(isoDate) {
+  return isoDate ? isoDate.slice(0, 7) : ""
+}
+
+// "2026-04" -> "2026-04-01" to persist as a date
+export function monthToDate(monthValue) {
+  return monthValue ? `${monthValue}-01` : ""
+}
+
 export function getCSRFToken() {
   return document.querySelector('meta[name="csrf-token"]')?.content || ""
 }

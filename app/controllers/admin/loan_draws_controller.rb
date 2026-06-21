@@ -56,6 +56,6 @@ class Admin::LoanDrawsController < Admin::BaseController
   end
 
   def draw_params
-    params.require(:loan_draw).permit(:draw_date, :amount, :description, :inspection_notes, :status)
+    params.require(:loan_draw).permit(:draw_date, :amount, :description, :inspection_notes, :status, :pertains_to_month)
   end
 end

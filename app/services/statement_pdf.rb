@@ -183,7 +183,7 @@ class StatementPdf
 
     rows = [["Beginning Balance", number_to_currency(@statement.beginning_balance)]]
 
-    draws = @loan.loan_draws.funded.where(draw_date: @statement.period_start..@statement.period_end)
+    draws = @loan.loan_draws.funded.pertaining_to_period(@statement.period_start, @statement.period_end)
     rows << ["Draws Funded", "+ #{number_to_currency(draws.sum(:amount))}"] if draws.any?
 
     rows << ["Interest Charged", number_to_currency(@statement.interest_due)]
@@ -241,10 +241,11 @@ class StatementPdf
       end
       pdf.move_down 13
 
-      # Nested cash/reserve split under Interest
+      # Nested cash/reserve split under Interest — derived from this statement's
+      # interest_due so the parts sum exactly to it (no penny drift vs. the total).
       if label == "Interest" && @loan.split_payment?
-        [["Cash", number_to_currency(@loan.monthly_cash_payment)],
-         ["Reserve", number_to_currency(@loan.reserve_payment_amount)]].each do |sub_label, sub_value|
+        [["Cash", number_to_currency(@statement.cash_due)],
+         ["Reserve", number_to_currency(@statement.reserve_due)]].each do |sub_label, sub_value|
           draw_corner_arrow(pdf, 20, pdf.cursor - 4, CONCRETE)
           pdf.font("Helvetica", size: 7) do
             pdf.fill_color CONCRETE
@@ -590,7 +591,7 @@ class StatementPdf
   # ────────────────────────────────────────────────────────────────
 
   def period_payments
-    @period_payments ||= @loan.payments.for_period(@statement.period_start, @statement.period_end)
+    @period_payments ||= @loan.payments.pertaining_to_period(@statement.period_start, @statement.period_end)
   end
 
   def build_activity
@@ -608,14 +609,12 @@ class StatementPdf
       activity << { date: @statement.period_start, item: "Principal Due", amount: @statement.principal_due, balance: running_balance }
     end
 
-    period = @statement.period_start..@statement.period_end
-
-    @loan.loan_draws.funded.where(draw_date: period).order(:draw_date).each do |draw|
+    @loan.loan_draws.funded.pertaining_to_period(@statement.period_start, @statement.period_end).order(:draw_date).each do |draw|
       running_balance += draw.amount
       activity << { date: draw.draw_date, item: "Draw Funded", description: draw.description, amount: draw.amount, balance: running_balance }
     end
 
-    @loan.loan_fees.where(fee_date: period).order(:fee_date).each do |fee|
+    @loan.loan_fees.pertaining_to_period(@statement.period_start, @statement.period_end).order(:fee_date).each do |fee|
       activity << { date: fee.fee_date, item: "Fee — #{fee.fee_type.titleize}", description: fee.description, amount: fee.amount, balance: running_balance }
     end
 

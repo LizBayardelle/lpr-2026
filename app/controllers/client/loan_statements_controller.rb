@@ -6,9 +6,9 @@ class Client::LoanStatementsController < ApplicationController
   def show
     respond_to do |format|
       format.html do
-        @period_payments = @loan.payments.for_period(@statement.period_start, @statement.period_end).order(:payment_date)
-        @period_draws = @loan.loan_draws.funded.where(draw_date: @statement.period_start..@statement.period_end).order(:draw_date)
-        @period_fees = @loan.loan_fees.where(fee_date: @statement.period_start..@statement.period_end).order(:fee_date)
+        @period_payments = @loan.payments.pertaining_to_period(@statement.period_start, @statement.period_end).order(:payment_date)
+        @period_draws = @loan.loan_draws.funded.pertaining_to_period(@statement.period_start, @statement.period_end).order(:draw_date)
+        @period_fees = @loan.loan_fees.pertaining_to_period(@statement.period_start, @statement.period_end).order(:fee_date)
       end
       format.pdf do
         pdf_data = StatementPdf.new(@statement).render

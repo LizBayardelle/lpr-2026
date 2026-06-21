@@ -21,6 +21,7 @@ module LoanLedger
           @loan.loan_ledger_entries.create!(
             entry_type: attrs[:entry_type],
             effective_date: attrs[:effective_date],
+            pertains_to_month: attrs[:pertains_to_month] || source_pertains_to_month(attrs[:source]),
             amount: attrs[:amount],
             running_balance: current_balance,
             description: attrs[:description],
@@ -47,6 +48,7 @@ module LoanLedger
       post!({
         entry_type: entry.entry_type,
         effective_date: Date.current,
+        pertains_to_month: entry.pertains_to_month,
         amount: -entry.amount,
         description: "#{reason}: reversal of ##{entry.id}",
         source: entry.source,
@@ -107,6 +109,10 @@ module LoanLedger
     end
 
     private
+
+    def source_pertains_to_month(source)
+      source.pertains_to_month if source.respond_to?(:pertains_to_month)
+    end
 
     def balance_delta(entry_type, amount)
       if LoanLedgerEntry::BALANCE_AFFECTING_TYPES.include?(entry_type)

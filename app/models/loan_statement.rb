@@ -13,19 +13,32 @@ class LoanStatement < ApplicationRecord
   scope :recent, -> { order(created_at: :desc) }
   scope :for_year, ->(year) { where(statement_date: Date.new(year, 1, 1)..Date.new(year, 12, 31)) }
 
+  # Cash/reserve split of the interest due, for split-payment loans.
+  # Derived from THIS statement's actual interest_due (not the loan's generic
+  # monthly figure) so the parts always sum exactly to interest_due — no penny
+  # drift between the total and its breakdown.
+  def cash_due
+    return BigDecimal("0") unless loan.split_payment?
+    [loan.monthly_cash_payment.to_d, interest_due.to_d].min
+  end
+
+  def reserve_due
+    return BigDecimal("0") unless loan.split_payment?
+    [interest_due.to_d - cash_due, BigDecimal("0")].max
+  end
+
   # True if underlying data changed OR a newer statement covers the same period
   def stale?
     cutoff = created_at
-    range = period_start..period_end
 
     # A newer statement exists for an overlapping period
     loan.loan_statements
       .where("id != ? AND period_start <= ? AND period_end >= ? AND created_at > ?", id, period_end, period_start, cutoff)
       .exists? ||
     # Underlying data changed since generation
-    loan.payments.for_period(period_start, period_end).where("payments.created_at > :t OR payments.updated_at > :t", t: cutoff).exists? ||
-      loan.loan_draws.funded.where(draw_date: range).where("loan_draws.created_at > :t OR loan_draws.updated_at > :t", t: cutoff).exists? ||
-      loan.loan_fees.where(fee_date: range).where("loan_fees.created_at > :t OR loan_fees.updated_at > :t", t: cutoff).exists?
+    loan.payments.pertaining_to_period(period_start, period_end).where("payments.created_at > :t OR payments.updated_at > :t", t: cutoff).exists? ||
+      loan.loan_draws.funded.pertaining_to_period(period_start, period_end).where("loan_draws.created_at > :t OR loan_draws.updated_at > :t", t: cutoff).exists? ||
+      loan.loan_fees.pertaining_to_period(period_start, period_end).where("loan_fees.created_at > :t OR loan_fees.updated_at > :t", t: cutoff).exists?
   end
 
   # Generate a statement for a loan.
@@ -36,22 +49,27 @@ class LoanStatement < ApplicationRecord
     period_end   ||= date.end_of_month
     statement_date = period_end
 
-    # Calculate balances ad hoc from payment/draw history
-    principal_paid_before = loan.payments.where("payment_date < ?", period_start).sum(:principal_amount)
-    draws_before = loan.loan_draws.funded.where("draw_date < ?", period_start).sum(:amount)
+    # Calculate balances ad hoc from payment/draw history, partitioned by the
+    # month each item pertains to (not its raw transaction date).
+    month_start = period_start.beginning_of_month
+    principal_paid_before = loan.payments.where("pertains_to_month < ?", month_start).sum(:principal_amount)
+    draws_before = loan.loan_draws.funded.where("pertains_to_month < ?", month_start).sum(:amount)
     beginning_balance = loan.loan_amount + draws_before - principal_paid_before
 
-    # Payments received during this period
-    period_payments = loan.payments.for_period(period_start, period_end)
+    # Payments pertaining to this period
+    period_payments = loan.payments.pertaining_to_period(period_start, period_end)
     payments_total = period_payments.sum(:amount)
     period_principal_paid = period_payments.sum(:principal_amount)
 
-    # Draws funded during this period
-    period_draws = loan.loan_draws.funded.where(draw_date: period_start..period_end).sum(:amount)
+    # Draws pertaining to this period
+    period_draws = loan.loan_draws.funded.pertaining_to_period(period_start, period_end).sum(:amount)
 
-    # Calculate interest pro-rated by days in period
+    # Interest charged for the period. Use the SAME calculation the ledger uses
+    # to accrue interest (monthly_interest_for_period) so "Interest Charged" on
+    # the statement matches the ledger accrual and the amount payments are sized
+    # against — instead of a cruder daily-rounded figure that drifted by pennies.
     days_in_period = (period_end - period_start).to_i + 1
-    interest_due = (loan.daily_interest(beginning_balance) * days_in_period).round(2)
+    interest_due = loan.monthly_interest_for_period(beginning_balance, days_in_period, period_end, period_start: period_start)
     principal_due = loan.payment_type == "interest_only" ? 0 : loan.monthly_payment_amount - interest_due
     principal_due = [principal_due, 0].max
     total_due = interest_due + principal_due

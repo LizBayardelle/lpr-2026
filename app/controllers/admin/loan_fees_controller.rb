@@ -46,6 +46,6 @@ class Admin::LoanFeesController < Admin::BaseController
   end
 
   def fee_params
-    params.require(:loan_fee).permit(:fee_type, :amount, :fee_date, :description, :paid)
+    params.require(:loan_fee).permit(:fee_type, :amount, :fee_date, :description, :paid, :pertains_to_month)
   end
 end

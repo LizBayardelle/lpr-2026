@@ -19,4 +19,21 @@ module ApplicationHelper
       content_tag(:button, label, class: css, **opts)
     end
   end
+
+  # Options for a "pertains to month" select on a loan. Spans from the loan's
+  # origination month through two months ahead of today. Each option's value is
+  # the first day of the month (e.g. "2026-04-01"), label like "April 2026".
+  def pertains_to_month_options(loan)
+    first = loan.origination_date.beginning_of_month
+    last = Date.current.beginning_of_month >> 2
+    last = first if last < first
+
+    months = []
+    cursor = first
+    while cursor <= last
+      months << [cursor.strftime("%B %Y"), cursor.to_s]
+      cursor = cursor >> 1
+    end
+    months.reverse
+  end
 end
