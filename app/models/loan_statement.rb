@@ -32,13 +32,26 @@ class LoanStatement < ApplicationRecord
     cutoff = created_at
 
     # A newer statement exists for an overlapping period
-    loan.loan_statements
+    return true if loan.loan_statements
       .where("id != ? AND period_start <= ? AND period_end >= ? AND created_at > ?", id, period_end, period_start, cutoff)
-      .exists? ||
-    # Underlying data changed since generation
-    loan.payments.pertaining_to_period(period_start, period_end).where("payments.created_at > :t OR payments.updated_at > :t", t: cutoff).exists? ||
-      loan.loan_draws.funded.pertaining_to_period(period_start, period_end).where("loan_draws.created_at > :t OR loan_draws.updated_at > :t", t: cutoff).exists? ||
-      loan.loan_fees.pertaining_to_period(period_start, period_end).where("loan_fees.created_at > :t OR loan_fees.updated_at > :t", t: cutoff).exists?
+      .exists?
+
+    # Period activity was added or edited since generation (timestamp checks)
+    return true if loan.payments.pertaining_to_period(period_start, period_end).where("payments.created_at > :t OR payments.updated_at > :t", t: cutoff).exists?
+    return true if loan.loan_draws.funded.pertaining_to_period(period_start, period_end).where("loan_draws.created_at > :t OR loan_draws.updated_at > :t", t: cutoff).exists?
+    return true if loan.loan_fees.pertaining_to_period(period_start, period_end).where("loan_fees.created_at > :t OR loan_fees.updated_at > :t", t: cutoff).exists?
+
+    # Period activity was DELETED since generation. A deletion leaves no row for
+    # the timestamp checks above to see, so compare the stored figures to a live
+    # recompute — if a payment or draw vanished, these no longer match.
+    period_payments = loan.payments.pertaining_to_period(period_start, period_end)
+    return true if period_payments.sum(:amount) != payments_received
+
+    live_draws = loan.loan_draws.funded.pertaining_to_period(period_start, period_end).sum(:amount)
+    live_principal_paid = period_payments.sum(:principal_amount)
+    return true if (beginning_balance + live_draws - live_principal_paid) != ending_balance
+
+    false
   end
 
   # Generate a statement for a loan.
