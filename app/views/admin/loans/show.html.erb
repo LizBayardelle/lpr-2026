@@ -382,7 +382,8 @@
                 <th class="text-right">Payments Received</th>
                 <th class="text-right">Past Due</th>
                 <th class="text-right">Late Fee</th>
-                <th class="text-right" style="padding-right: 2rem;">Ending Bal</th>
+                <th class="text-right">Ending Bal</th>
+                <th style="padding-right: 2rem;"></th>
               </tr>
             </thead>
             <tbody>
@@ -404,7 +405,10 @@
                   <td class="text-money"><%= number_to_currency(statement.payments_received) %></td>
                   <td class="text-money"><%= number_to_currency(statement.past_due_amount) %></td>
                   <td class="text-money"><%= number_to_currency(statement.late_fee) %></td>
-                  <td class="text-money" style="padding-right: 2rem;"><%= number_to_currency(statement.ending_balance) %></td>
+                  <td class="text-money"><%= number_to_currency(statement.ending_balance) %></td>
+                  <td style="padding-right: 2rem;" onclick="event.stopPropagation()">
+                    <%= button_to "Delete", admin_loan_loan_statement_path(@loan, statement), method: :delete, class: "btn-filled btn-filled-danger", style: "font-size: 11px; padding: 4px 10px;", data: { turbo_confirm: "Delete this statement?" } %>
+                  </td>
                 </tr>
               <% end %>
             </tbody>

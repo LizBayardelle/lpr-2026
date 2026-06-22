@@ -49,7 +49,7 @@ class Admin::LoanStatementsController < Admin::BaseController
 
   def destroy
     @statement.destroy
-    redirect_to admin_loan_path(@loan), notice: "Statement deleted."
+    redirect_to admin_loan_path(@loan, tab: "statements"), notice: "Statement deleted."
   end
 
   private
