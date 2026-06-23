@@ -134,7 +134,7 @@ class StatementPdf
   def cards_row(pdf)
     gap = 12
     col_w = (pdf.bounds.width - gap * 2) / 3.0
-    # Fixed height — enough for the tallest card (Amount Due with late fee + children + split payment)
+    # Fixed height — enough for the tallest card (Due Next Period with late fee + children + split payment)
     card_h = @loan.split_payment? ? 215 : 185
     top = pdf.cursor
 
@@ -221,7 +221,7 @@ class StatementPdf
   end
 
   def draw_amount_due(pdf, col_w)
-    card_heading(pdf, "Amount Due")
+    card_heading(pdf, "Due Next Period")
     inner = col_w - 32
 
     # Total Due (normal weight)
