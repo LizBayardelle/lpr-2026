@@ -1,6 +1,7 @@
 class Admin::LoanLedgerEntriesController < Admin::BaseController
   before_action :set_loan
   before_action :set_entry, only: [:reverse, :destroy, :update]
+  before_action :block_payment_sourced_entry, only: [:reverse, :destroy]
 
   def index
     render json: { entries: entries_json }
@@ -185,6 +186,19 @@ class Admin::LoanLedgerEntriesController < Admin::BaseController
 
   def set_entry
     @entry = @loan.loan_ledger_entries.find(params[:id])
+  end
+
+  # Payment-sourced ledger entries are owned by their Payment record. Deleting or
+  # reversing them here would leave the Payment orphaned (still counted on the
+  # Payments tab and statements) — so route those actions to the Payments tab,
+  # which cascades to the ledger and keeps the two in sync.
+  def block_payment_sourced_entry
+    return unless @entry.source_type == "Payment"
+    message = "Payment entries are managed on the Payments tab — edit or delete the payment there and the ledger updates automatically."
+    respond_to do |format|
+      format.json { render json: { error: message }, status: :unprocessable_entity }
+      format.html { redirect_to admin_loan_path(@loan, tab: "payments"), alert: message }
+    end
   end
 
   # Auto-split a payment_interest entry: if the payment exceeds outstanding

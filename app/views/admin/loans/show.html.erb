@@ -340,9 +340,12 @@
                   <td class="text-small"><%= payment.notes %></td>
                   <td style="padding-right: 2rem;">
                     <% if payment.auto_reserve_draw? %>
-                      <span class="text-small" style="color: var(--color-concrete);">Auto</span>
+                      <span class="text-small" style="color: var(--color-concrete);" title="Auto-generated reserve draw — managed via its cash payment">Auto</span>
                     <% else %>
-                      <%= link_to "Edit", edit_admin_loan_payment_path(@loan, payment) %>
+                      <div class="action-icons">
+                        <%= edit_icon edit_admin_loan_payment_path(@loan, payment) %>
+                        <%= delete_icon admin_loan_payment_path(@loan, payment), confirm: "Delete this payment? Its ledger entries#{' and reserve draw' if payment.reserve_draw.present?} will be removed too." %>
+                      </div>
                     <% end %>
                   </td>
                 </tr>
@@ -407,7 +410,9 @@
                   <td class="text-money"><%= number_to_currency(statement.late_fee) %></td>
                   <td class="text-money"><%= number_to_currency(statement.ending_balance) %></td>
                   <td style="padding-right: 2rem;" onclick="event.stopPropagation()">
-                    <%= button_to "Delete", admin_loan_loan_statement_path(@loan, statement), method: :delete, class: "btn-filled btn-filled-danger", style: "font-size: 11px; padding: 4px 10px;", data: { turbo_confirm: "Delete this statement?" } %>
+                    <div class="action-icons">
+                      <%= delete_icon admin_loan_loan_statement_path(@loan, statement), confirm: "Delete this statement?" %>
+                    </div>
                   </td>
                 </tr>
               <% end %>
@@ -453,14 +458,16 @@
                        end %>
                     <span class="badge badge-<%= draw_color %>"><%= draw.status.titleize %></span>
                   </td>
-                  <td style="display: flex; gap: 0.5rem; padding-right: 2rem;">
-                    <% if draw.status == "pending" %>
-                      <%= button_to "Approve", approve_admin_loan_loan_draw_path(@loan, draw), method: :post, class: "btn-filled btn-filled-primary", style: "font-size: 11px; padding: 4px 10px;" %>
-                      <%= button_to "Reject", reject_admin_loan_loan_draw_path(@loan, draw), method: :post, class: "btn-filled btn-filled-danger", style: "font-size: 11px; padding: 4px 10px;" %>
-                    <% elsif draw.status == "approved" %>
-                      <%= button_to "Fund", fund_admin_loan_loan_draw_path(@loan, draw), method: :post, class: "btn-filled btn-filled-primary", style: "font-size: 11px; padding: 4px 10px;" %>
-                    <% end %>
-                    <%= link_to "Edit", edit_admin_loan_loan_draw_path(@loan, draw) %>
+                  <td style="padding-right: 2rem;">
+                    <div class="action-icons">
+                      <% if draw.status == "pending" %>
+                        <%= button_to "Approve", approve_admin_loan_loan_draw_path(@loan, draw), method: :post, class: "btn-filled btn-filled-primary", style: "font-size: 11px; padding: 4px 10px;" %>
+                        <%= button_to "Reject", reject_admin_loan_loan_draw_path(@loan, draw), method: :post, class: "btn-filled btn-filled-danger", style: "font-size: 11px; padding: 4px 10px;" %>
+                      <% elsif draw.status == "approved" %>
+                        <%= button_to "Fund", fund_admin_loan_loan_draw_path(@loan, draw), method: :post, class: "btn-filled btn-filled-primary", style: "font-size: 11px; padding: 4px 10px;" %>
+                      <% end %>
+                      <%= edit_icon edit_admin_loan_loan_draw_path(@loan, draw) %>
+                    </div>
                   </td>
                 </tr>
               <% end %>
@@ -505,12 +512,14 @@
                       <span class="badge badge-warning">Unpaid</span>
                     <% end %>
                   </td>
-                  <td style="display: flex; gap: 0.5rem; padding-right: 2rem;">
-                    <% unless fee.paid? %>
-                      <%= button_to "Mark Paid", mark_paid_admin_loan_loan_fee_path(@loan, fee), method: :post, class: "btn-filled", style: "font-size: 11px; padding: 4px 10px;" %>
-                    <% end %>
-                    <%= link_to "Edit", edit_admin_loan_loan_fee_path(@loan, fee) %>
-                    <%= button_to "Delete", admin_loan_loan_fee_path(@loan, fee), method: :delete, class: "btn-filled btn-filled-danger", style: "font-size: 11px; padding: 4px 10px;", data: { turbo_confirm: "Delete this fee?" } %>
+                  <td style="padding-right: 2rem;">
+                    <div class="action-icons">
+                      <% unless fee.paid? %>
+                        <%= button_to "Mark Paid", mark_paid_admin_loan_loan_fee_path(@loan, fee), method: :post, class: "btn-filled", style: "font-size: 11px; padding: 4px 10px;" %>
+                      <% end %>
+                      <%= edit_icon edit_admin_loan_loan_fee_path(@loan, fee) %>
+                      <%= delete_icon admin_loan_loan_fee_path(@loan, fee), confirm: "Delete this fee?" %>
+                    </div>
                   </td>
                 </tr>
               <% end %>
@@ -558,9 +567,9 @@
                   <td style="white-space: nowrap;"><span class="badge badge-neutral"><%= document.uploaded_by %></span></td>
                   <td style="white-space: nowrap;"><%= document.created_at.strftime("%-m/%-d/%y") %></td>
                   <td style="padding-right: 2rem;">
-                    <%= button_to admin_loan_loan_document_path(@loan, document), method: :delete, style: "background: none; border: none; cursor: pointer; color: var(--color-concrete); padding: 0.25rem;", data: { turbo_confirm: "Delete this document?" } do %>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                    <% end %>
+                    <div class="action-icons">
+                      <%= delete_icon admin_loan_loan_document_path(@loan, document), confirm: "Delete this document?" %>
+                    </div>
                   </td>
                 </tr>
               <% end %>
@@ -848,13 +857,15 @@
                       onkeydown="if(event.key==='Escape'){this.value=this.dataset.originalValue; this.blur();} if(event.key==='Enter'){this.blur();}"
                     >
                   </td>
-                  <td style="display: flex; gap: 0.5rem; flex-wrap: wrap; padding-right: 2rem;">
-                    <% if reserve.status == "active" && reserve.remaining_balance > 0 %>
-                      <%= btn_filled_tag "Draw", "#", data: { modal_target: "draw-reserve-modal-#{reserve.id}" }, style: "font-size: 11px; padding: 4px 10px;" %>
-                      <%= button_to "Release", release_admin_loan_loan_reserve_path(@loan, reserve), method: :post, class: "btn-filled", style: "font-size: 11px; padding: 4px 10px;", data: { turbo_confirm: "Release remaining #{number_to_currency(reserve.remaining_balance)} back to borrower?" } %>
-                      <%= button_to "Forfeit", forfeit_admin_loan_loan_reserve_path(@loan, reserve), method: :post, class: "btn-filled btn-filled-danger", style: "font-size: 11px; padding: 4px 10px;", data: { turbo_confirm: "Forfeit remaining #{number_to_currency(reserve.remaining_balance)}? Lender keeps these funds." } %>
-                    <% end %>
-                    <%= button_to "Delete", admin_loan_loan_reserve_path(@loan, reserve), method: :delete, class: "btn-filled btn-filled-danger", style: "font-size: 11px; padding: 4px 10px;", data: { turbo_confirm: "Delete this reserve?" } %>
+                  <td style="padding-right: 2rem;">
+                    <div class="action-icons" style="flex-wrap: wrap;">
+                      <% if reserve.status == "active" && reserve.remaining_balance > 0 %>
+                        <%= btn_filled_tag "Draw", "#", data: { modal_target: "draw-reserve-modal-#{reserve.id}" }, style: "font-size: 11px; padding: 4px 10px;" %>
+                        <%= button_to "Release", release_admin_loan_loan_reserve_path(@loan, reserve), method: :post, class: "btn-filled", style: "font-size: 11px; padding: 4px 10px;", data: { turbo_confirm: "Release remaining #{number_to_currency(reserve.remaining_balance)} back to borrower?" } %>
+                        <%= button_to "Forfeit", forfeit_admin_loan_loan_reserve_path(@loan, reserve), method: :post, class: "btn-filled btn-filled-danger", style: "font-size: 11px; padding: 4px 10px;", data: { turbo_confirm: "Forfeit remaining #{number_to_currency(reserve.remaining_balance)}? Lender keeps these funds." } %>
+                      <% end %>
+                      <%= delete_icon admin_loan_loan_reserve_path(@loan, reserve), confirm: "Delete this reserve?" %>
+                    </div>
                   </td>
                 </tr>
               <% end %>
@@ -936,7 +947,9 @@
                   <td class="text-right"><%= extension.new_rate.present? ? "#{extension.new_rate}%" : "—" %></td>
                   <td class="text-small"><%= extension.notes %></td>
                   <td style="padding-right: 2rem;">
-                    <%= button_to "Delete", admin_loan_loan_extension_path(@loan, extension), method: :delete, class: "btn-filled btn-filled-danger", style: "font-size: 11px; padding: 4px 10px;", data: { turbo_confirm: "Delete this extension?" } %>
+                    <div class="action-icons">
+                      <%= delete_icon admin_loan_loan_extension_path(@loan, extension), confirm: "Delete this extension?" %>
+                    </div>
                   </td>
                 </tr>
               <% end %>

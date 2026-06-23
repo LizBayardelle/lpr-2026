@@ -194,8 +194,7 @@ export default function TransactionLedger({ entries: initialEntries, loan, godpo
                 <th className="text-right">Credit</th>
                 <th className="text-right">Amount Owed</th>
                 <th className="text-right">Mo. Interest</th>
-                <th style={{ paddingRight: godpowers ? 0 : "2rem" }}>Actions</th>
-                {godpowers && <th style={{ width: "1rem" }}></th>}
+                <th className="text-right" style={{ paddingRight: "2rem" }}>Actions</th>
               </tr>
             </thead>
             <tbody>

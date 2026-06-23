@@ -38,24 +38,27 @@ export default function LedgerRow({ entry, loan, godpowers, onUpdate, onReverse,
           <TypeBadge entryType={entry.entryType} reversed={reversed} reversal={reversal} />
         </td>
         <td colSpan={6} style={{ fontSize: "0.8125rem", color: "var(--color-steel)" }}>{entry.description || fallback}</td>
-        <td style={{ textAlign: "right", paddingRight: godpowers || isGenericMemo ? 0 : "2rem", verticalAlign: "middle" }}>
-          {!isGenericMemo && !reversed && !reversal && (
-            <button
-              onClick={() => { if (confirm("Reverse this entry?")) onReverse(entry.id) }}
-              className="btn-filled btn-filled-danger"
-              style={{ fontSize: "10px", padding: "2px 8px" }}
-            >Reverse</button>
-          )}
-          {!isGenericMemo && reversed && <span className="badge badge-danger">Reversed</span>}
+        <td style={{ paddingRight: "2rem", verticalAlign: "middle" }}>
+          <div className="action-icons" style={{ justifyContent: "flex-end" }}>
+            {!isGenericMemo && !reversed && !reversal && (
+              <button
+                onClick={() => { if (confirm("Reverse this entry?")) onReverse(entry.id) }}
+                className="action-icon"
+                title="Reverse — posts an offsetting entry"
+                aria-label="Reverse"
+              ><i className="fa-solid fa-rotate-left" /></button>
+            )}
+            {!isGenericMemo && reversed && <span className="badge badge-danger">Reversed</span>}
+            {showDelete && (
+              <button
+                onClick={() => { if (confirm(isGenericMemo ? "Delete this memo?" : "Delete this entry?")) onDelete(entry.id) }}
+                className="action-icon action-icon-danger"
+                title={isGenericMemo ? "Delete memo" : "Delete entry"}
+                aria-label="Delete"
+              ><i className="fa-solid fa-trash-can" /></button>
+            )}
+          </div>
         </td>
-        {showDelete && (
-          <td style={{ textAlign: "center", verticalAlign: "middle" }}>
-            <button
-              onClick={() => { if (confirm(isGenericMemo ? "Delete this memo?" : "Delete this entry?")) onDelete(entry.id) }}
-              style={{ background: "none", border: "none", cursor: "pointer", color: "#ccc", fontSize: "14px", padding: "2px 4px", lineHeight: 1 }}
-            >&#x2715;</button>
-          </td>
-        )}
       </tr>
     )
   }
@@ -129,23 +132,34 @@ export default function LedgerRow({ entry, loan, godpowers, onUpdate, onReverse,
           <span className="ledger-tooltip">Principal: {formatCurrency(entry.principalAtEntry)}</span>
         </span>
       </td>
-      <td style={{ paddingRight: godpowers ? 0 : "2rem", verticalAlign: "middle" }}>
-        {!reversed && !reversal && (
-          <button
-            onClick={() => { if (confirm("Reverse this ledger entry? This will post an offsetting entry.")) onReverse(entry.id) }}
-            className="btn-filled btn-filled-danger"
-            style={{ fontSize: "10px", padding: "2px 8px" }}
-          >Reverse</button>
-        )}
+      <td style={{ paddingRight: "2rem", verticalAlign: "middle" }}>
+        <div className="action-icons" style={{ justifyContent: "flex-end" }}>
+          {isPayment ? (
+            // Payment entries are owned by the Payment record — manage them on the
+            // Payments tab so the ledger and payments can never drift apart.
+            <span className="text-small" style={{ color: "var(--color-concrete)" }} title="Edit or delete this on the Payments tab — the ledger stays in sync automatically.">Via Payments</span>
+          ) : (
+            <>
+              {!reversed && !reversal && (
+                <button
+                  onClick={() => { if (confirm("Reverse this ledger entry? This will post an offsetting entry.")) onReverse(entry.id) }}
+                  className="action-icon"
+                  title="Reverse — posts an offsetting entry"
+                  aria-label="Reverse"
+                ><i className="fa-solid fa-rotate-left" /></button>
+              )}
+              {godpowers && (
+                <button
+                  onClick={() => { if (confirm("Permanently delete this ledger entry? This cannot be undone and will recalculate all balances.")) onDelete(entry.id) }}
+                  className="action-icon action-icon-danger"
+                  title="Delete entry — recalculates all balances"
+                  aria-label="Delete"
+                ><i className="fa-solid fa-trash-can" /></button>
+              )}
+            </>
+          )}
+        </div>
       </td>
-      {godpowers && (
-        <td style={{ textAlign: "center", verticalAlign: "middle" }}>
-          <button
-            onClick={() => { if (confirm("Permanently delete this ledger entry? This cannot be undone and will recalculate all balances.")) onDelete(entry.id) }}
-            style={{ background: "none", border: "none", cursor: "pointer", color: "#ccc", fontSize: "14px", padding: "2px 4px", lineHeight: 1 }}
-          >&#x2715;</button>
-        </td>
-      )}
     </tr>
   )
 }

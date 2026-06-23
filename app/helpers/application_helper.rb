@@ -20,6 +20,22 @@ module ApplicationHelper
     end
   end
 
+  # Unified icon-only row actions (FontAwesome). Use inside a `.action-icons`
+  # wrapper in data-table action cells so edit/delete look the same everywhere.
+  def edit_icon(path, title: "Edit")
+    link_to path, class: "action-icon", title: title, "aria-label": title do
+      tag.i(class: "fa-solid fa-pen-to-square")
+    end
+  end
+
+  def delete_icon(path, confirm:, title: "Delete", method: :delete, icon: "fa-trash-can")
+    button_to path, method: method, class: "action-icon action-icon-danger",
+              title: title, "aria-label": title,
+              data: { turbo_confirm: confirm } do
+      tag.i(class: "fa-solid #{icon}")
+    end
+  end
+
   # Options for a "pertains to month" select on a loan. Spans from the loan's
   # origination month through two months ahead of today. Each option's value is
   # the first day of the month (e.g. "2026-04-01"), label like "April 2026".

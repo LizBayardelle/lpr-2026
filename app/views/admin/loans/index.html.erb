@@ -87,7 +87,9 @@
                 <span class="badge badge-<%= status_color %>"><%= loan.status.titleize %></span>
               </td>
               <td style="padding-right: 2rem;">
-                <%= link_to "Edit", edit_admin_loan_path(loan) %>
+                <div class="action-icons">
+                  <%= edit_icon edit_admin_loan_path(loan) %>
+                </div>
               </td>
             </tr>
           <% end %>

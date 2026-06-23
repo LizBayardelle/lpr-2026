@@ -121,7 +121,7 @@ export default function AddEntryRow({ onAdd, godpowers }) {
       <td></td>
       <td></td>
       <td></td>
-      <td style={{ paddingRight: godpowers ? 0 : "2rem" }}>
+      <td style={{ paddingRight: "2rem", textAlign: "right" }}>
         <button
           onClick={handleSubmit}
           disabled={submitting || !entryType || !date || (!amount && !isMemo)}
@@ -129,7 +129,6 @@ export default function AddEntryRow({ onAdd, godpowers }) {
           style={{ fontSize: "11px", padding: "4px 10px", opacity: (!entryType || !date || (!amount && !isMemo)) ? 0.4 : 1 }}
         >Add</button>
       </td>
-      {godpowers && <td></td>}
     </tr>
   )
 }

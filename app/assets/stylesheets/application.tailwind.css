@@ -451,6 +451,37 @@ a:hover {
   text-align: right;
 }
 
+/* Unified row actions — icon-only edit/delete (and friends) in data tables */
+.action-icons {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+.action-icons form {
+  display: inline-flex;
+  margin: 0;
+}
+.action-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 0.875rem;
+  line-height: 1;
+  color: var(--color-steel);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.action-icon:hover { color: var(--color-navy); }
+.action-icon-danger:hover { color: var(--color-maroon); }
+.action-icon:disabled,
+.action-icon[disabled] { opacity: 0.35; cursor: default; }
+.action-icon:disabled:hover,
+.action-icon[disabled]:hover { color: var(--color-steel); }
+
 .ledger-tooltip-trigger {
   position: relative;
 }
