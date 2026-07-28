@@ -319,7 +319,7 @@ class StatementPdf
         reserve.display_name,
         reserve.established_date.strftime("%b %-d, %Y"),
         number_to_currency(reserve.amount),
-        number_to_currency(reserve.remaining_balance)
+        number_to_currency(reserve.remaining_balance_as_of(@statement.period_end))
       ]
     end
 
@@ -627,9 +627,9 @@ class StatementPdf
       desc_parts = []
       desc_parts << payment.notes if payment.notes.present?
       desc_parts << "Ref: #{payment.reference_number}" if payment.reference_number.present?
-      desc_parts << "From reserve" if payment.loan_reserve_id.present?
+      is_reserve_draw = payment.loan_reserve_id.present?
 
-      activity << { date: payment.payment_date, item: "Payment Received", description: desc_parts.join(" \u00B7 "), amount: -payment.amount, balance: running_balance }
+      activity << { date: payment.payment_date, item: is_reserve_draw ? "Draw from Reserve" : "Payment Received", description: desc_parts.join(" \u00B7 "), amount: -payment.amount, balance: running_balance }
     end
 
     activity.sort_by.with_index { |a, i| [a[:date], i] }

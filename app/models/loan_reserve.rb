@@ -21,6 +21,15 @@ class LoanReserve < ApplicationRecord
     amount - payments.sum(:amount)
   end
 
+  # Balance as it stood for a given statement period: counts only draws that
+  # pertain to that period or earlier. Keeps a statement's reserve figure tied to
+  # its own period — a later-pertaining draw won't bleed into an earlier
+  # statement, and regenerating an old statement shows that period's balance
+  # rather than today's live one.
+  def remaining_balance_as_of(period_end)
+    amount - payments.where("pertains_to_month <= ?", period_end).sum(:amount)
+  end
+
   def depleted?
     remaining_balance <= 0
   end

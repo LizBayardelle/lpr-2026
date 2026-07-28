@@ -221,7 +221,7 @@
                 <td style="padding-left: 2rem; font-weight: 600;"><%= reserve.display_name %></td>
                 <td><%= reserve.established_date.strftime("%b %-d, %Y") %></td>
                 <td class="text-money"><%= number_to_currency(reserve.amount) %></td>
-                <td class="text-money" style="padding-right: 2rem;"><%= number_to_currency(reserve.remaining_balance) %></td>
+                <td class="text-money" style="padding-right: 2rem;"><%= number_to_currency(reserve.remaining_balance_as_of(@statement.period_end)) %></td>
               </tr>
             <% end %>
           </tbody>
@@ -264,9 +264,9 @@
       desc_parts = []
       desc_parts << payment.notes if payment.notes.present?
       desc_parts << "Ref: #{payment.reference_number}" if payment.reference_number.present?
-      desc_parts << "From reserve" if payment.loan_reserve_id.present?
+      is_reserve_draw = payment.loan_reserve_id.present?
 
-      activity << { date: payment.payment_date, item: "Payment Received", description: desc_parts.join(" · "), amount: -payment.amount, balance: running_balance }
+      activity << { date: payment.payment_date, item: is_reserve_draw ? "Draw from Reserve" : "Payment Received", description: desc_parts.join(" · "), amount: -payment.amount, balance: running_balance }
     end
 
     activity = activity.sort_by.with_index { |a, i| [a[:date], i] }

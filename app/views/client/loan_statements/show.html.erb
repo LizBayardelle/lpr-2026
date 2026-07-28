@@ -205,7 +205,7 @@
       desc_parts = []
       desc_parts << "Ref: #{payment.reference_number}" if payment.reference_number.present?
 
-      activity << { date: payment.payment_date, item: "Payment Received", description: desc_parts.join(" · "), amount: -payment.amount, balance: running_balance }
+      activity << { date: payment.payment_date, item: payment.loan_reserve_id.present? ? "Draw from Reserve" : "Payment Received", description: desc_parts.join(" · "), amount: -payment.amount, balance: running_balance }
     end
 
     activity = activity.sort_by.with_index { |a, i| [a[:date], i] }
