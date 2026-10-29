@@ -88,12 +88,20 @@ class LoanStatement < ApplicationRecord
     total_due = interest_due + principal_due
     ending_balance = beginning_balance + period_draws - period_principal_paid
 
-    # Past due: total owed minus total paid through this period
-    past_due = [total_due - payments_total, 0].max
+    # The period's payment is due the 1st of the following month. Nothing is past
+    # due before then, and no late fee applies until the grace period has passed —
+    # otherwise a statement generated mid-period (before the borrower could pay)
+    # would show the whole period as past due and assess a late fee.
+    due_date = period_end + 1.day
+    past_due = 0
+    if Date.current > due_date
+      # Past due: total owed minus total paid through this period
+      past_due = [total_due - payments_total, 0].max
+    end
 
     # Late fee
     late_fee = 0
-    if past_due > 0 && loan.grace_period_days.present?
+    if past_due > 0 && loan.grace_period_days.present? && Date.current > due_date + loan.grace_period_days.days
       late_fee = loan.calculate_late_fee(past_due)
     end
 
